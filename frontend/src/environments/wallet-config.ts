@@ -8,7 +8,7 @@
  * 4. Replace 'YOUR_REOWN_PROJECT_ID' below
  */
 
-export const REOWN_PROJECT_ID = 'YOUR_REOWN_PROJECT_ID';
+export const REOWN_PROJECT_ID = 'ff9fa0efdc94bc398850632c21195957';
 
 /**
  * For development, you can use this public demo project ID:

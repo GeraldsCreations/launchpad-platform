@@ -40,7 +40,7 @@ export class SolanaWalletService {
     });
 
     // Create AppKit instance
-    const projectId = REOWN_PROJECT_ID !== 'YOUR_REOWN_PROJECT_ID' 
+    const projectId = REOWN_PROJECT_ID !== 'ff9fa0efdc94bc398850632c21195957' 
       ? REOWN_PROJECT_ID 
       : REOWN_DEMO_PROJECT_ID;
 
