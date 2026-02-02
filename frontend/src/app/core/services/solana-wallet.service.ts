@@ -34,10 +34,7 @@ export class SolanaWalletService {
 
   private initializeAppKit() {
     // Solana Adapter
-    this.solanaAdapter = new SolanaAdapter({
-      // Configure default chain (devnet for testing)
-      defaultChain: solanaDevnet
-    });
+    this.solanaAdapter = new SolanaAdapter();
 
     // Create AppKit instance
     const projectId = REOWN_PROJECT_ID !== 'YOUR_REOWN_PROJECT_ID' 
@@ -45,7 +42,7 @@ export class SolanaWalletService {
       : REOWN_DEMO_PROJECT_ID;
 
     this.appKit = createAppKit({
-      adapters: [this.solanaAdapter],
+      adapters: [this.solanaAdapter as any],
       networks: [solana, solanaTestnet, solanaDevnet],
       projectId,
       metadata: APP_METADATA,
@@ -204,7 +201,7 @@ export class SolanaWalletService {
       'devnet': 'https://api.devnet.solana.com'
     };
     
-    return new Connection(endpoints[network] || endpoints.devnet, 'confirmed');
+    return new Connection(endpoints[network] || endpoints['devnet'], 'confirmed');
   }
 
   /**
@@ -216,15 +213,17 @@ export class SolanaWalletService {
     }
 
     try {
-      // Get the wallet provider from adapter
-      const provider = await this.solanaAdapter?.getWalletProvider();
+      // Use AppKit's connection provider
+      const connection = this.getConnection();
+      
+      // Get the connected wallet's provider through the adapter
+      const provider = (this.solanaAdapter as any)?.provider || (window as any).solana;
       
       if (!provider) {
         throw new Error('Wallet provider not available');
       }
 
       // Sign and send transaction
-      const connection = this.getConnection();
       const { signature } = await provider.sendTransaction(transaction, connection);
       
       // Wait for confirmation
@@ -246,7 +245,8 @@ export class SolanaWalletService {
     }
 
     try {
-      const provider = await this.solanaAdapter?.getWalletProvider();
+      // Get the connected wallet's provider
+      const provider = (this.solanaAdapter as any)?.provider || (window as any).solana;
       
       if (!provider?.signMessage) {
         throw new Error('Wallet does not support message signing');
