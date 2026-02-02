@@ -28,6 +28,12 @@ import { TradeRepository } from './repositories/trade.repository';
           synchronize: configService.get('NODE_ENV') === 'development',
           logging: configService.get('NODE_ENV') === 'development',
           ssl: configService.get('DATABASE_SSL') === 'true' ? { rejectUnauthorized: false } : false,
+          connectTimeoutMS: 30000,
+          maxQueryExecutionTime: 5000,
+          extra: {
+            connectionTimeoutMillis: 30000,
+            query_timeout: 30000,
+          },
         };
 
         // Log connection details in development
