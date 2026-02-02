@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { distinctUntilChanged } from 'rxjs/operators';
 import { SolanaWalletService, WalletState } from './solana-wallet.service';
 import { PublicKey, Transaction, VersionedTransaction } from '@solana/web3.js';
 
@@ -20,21 +21,28 @@ export class WalletService {
   public wallet$ = this.walletSubject.asObservable();
 
   constructor(private solanaWallet: SolanaWalletService) {
-    // Subscribe to wallet state changes
-    this.solanaWallet.getWalletState().subscribe((state: WalletState) => {
-      this.connectedSubject.next(state.connected);
-      
-      if (state.address) {
-        try {
-          this.walletSubject.next(new PublicKey(state.address));
-        } catch (error) {
-          console.error('Invalid public key:', error);
+    // Subscribe to wallet state changes with deduplication
+    this.solanaWallet.getWalletState()
+      .pipe(
+        distinctUntilChanged((prev, curr) => 
+          prev.connected === curr.connected && 
+          prev.address === curr.address
+        )
+      )
+      .subscribe((state: WalletState) => {
+        this.connectedSubject.next(state.connected);
+        
+        if (state.address) {
+          try {
+            this.walletSubject.next(new PublicKey(state.address));
+          } catch (error) {
+            console.error('Invalid public key:', error);
+            this.walletSubject.next(null);
+          }
+        } else {
           this.walletSubject.next(null);
         }
-      } else {
-        this.walletSubject.next(null);
-      }
-    });
+      });
   }
 
   /**

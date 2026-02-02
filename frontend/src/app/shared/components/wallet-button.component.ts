@@ -5,7 +5,7 @@ import { MenuModule } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
 import { WalletService } from '../../core/services/wallet.service';
 import { NotificationService } from '../../core/services/notification.service';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, distinctUntilChanged } from 'rxjs';
 import { PublicKey } from '@solana/web3.js';
 
 @Component({
@@ -54,7 +54,10 @@ export class WalletButtonComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.walletService.connected$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(
+        distinctUntilChanged(),
+        takeUntil(this.destroy$)
+      )
       .subscribe(connected => {
         this.connected = connected;
         if (connected) {
@@ -67,13 +70,19 @@ export class WalletButtonComponent implements OnInit, OnDestroy {
       });
 
     this.walletService.connecting$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(
+        distinctUntilChanged(),
+        takeUntil(this.destroy$)
+      )
       .subscribe(connecting => {
         this.connecting = connecting;
       });
 
     this.walletService.wallet$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(
+        distinctUntilChanged((prev, curr) => prev?.equals(curr ?? null) ?? curr === null),
+        takeUntil(this.destroy$)
+      )
       .subscribe(wallet => {
         if (wallet) {
           this.updateWalletInfo();
