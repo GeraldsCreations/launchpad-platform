@@ -1,0 +1,178 @@
+#!/bin/bash
+# LaunchPad CLI - Main entry point for all commands
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPTS_DIR="$SCRIPT_DIR/scripts"
+
+# Version
+VERSION="1.0.0"
+
+#######################
+# Usage
+#######################
+
+usage() {
+    cat << EOF
+LaunchPad Trader CLI v${VERSION}
+AI-powered token trading on bonding curves
+
+USAGE:
+    launchpad <COMMAND> [OPTIONS]
+
+COMMANDS:
+    create              Create new token with bonding curve
+    buy                 Buy tokens from bonding curve
+    sell                Sell tokens to bonding curve
+    balance             Check token balances and portfolio
+    trending            List trending tokens by volume
+    new                 List recently created tokens
+    search              Search tokens by keyword
+    info                Get detailed token information
+    
+    version             Show version information
+    help                Show this help message
+
+EXAMPLES:
+    # Create token
+    launchpad create --name "Gereld Bot" --symbol "GERELD" --initial-buy 1.0
+
+    # Buy tokens
+    launchpad buy GERELD 0.5
+
+    # Sell tokens
+    launchpad sell GERELD 50000
+
+    # Check balance
+    launchpad balance
+
+    # View trending
+    launchpad trending --limit 10
+
+    # Search tokens
+    launchpad search "gereld"
+
+    # Get token info
+    launchpad info GERELD
+
+ENVIRONMENT VARIABLES:
+    LAUNCHPAD_API_URL          API endpoint (default: https://api.launchpad.fun/v1)
+    LAUNCHPAD_WALLET_PATH      Solana wallet path (required for trading)
+    LAUNCHPAD_RPC_URL          Custom Solana RPC URL
+    LAUNCHPAD_SLIPPAGE         Default slippage tolerance (default: 0.05)
+    LAUNCHPAD_AUTO_CONFIRM     Skip confirmations (default: false)
+    LAUNCHPAD_API_KEY          API key for rate limit increases (optional)
+
+SETUP:
+    1. Install dependencies:
+       - Solana CLI (for wallet operations)
+       - jq (for JSON parsing)
+       - curl (for API requests)
+
+    2. Create wallet:
+       solana-keygen new --outfile ~/.config/solana/launchpad-bot.json
+       export LAUNCHPAD_WALLET_PATH=~/.config/solana/launchpad-bot.json
+
+    3. Fund wallet:
+       solana airdrop 1 --keypair \$LAUNCHPAD_WALLET_PATH
+
+For detailed command help, run:
+    launchpad <COMMAND> --help
+
+Documentation: See SKILL.md
+Website: https://launchpad.fun
+EOF
+}
+
+#######################
+# Check Dependencies
+#######################
+
+check_dependencies() {
+    local missing=()
+    
+    # Check for required commands
+    for cmd in jq curl bc; do
+        if ! command -v "$cmd" &> /dev/null; then
+            missing+=("$cmd")
+        fi
+    done
+    
+    # Check for Solana CLI (only for trading commands)
+    if [[ "$1" =~ ^(create|buy|sell|balance)$ ]]; then
+        if ! command -v solana-keygen &> /dev/null; then
+            missing+=("solana CLI")
+        fi
+    fi
+    
+    if [[ ${#missing[@]} -gt 0 ]]; then
+        echo "Error: Missing required dependencies: ${missing[*]}" >&2
+        echo "" >&2
+        echo "Install instructions:" >&2
+        echo "  - jq: sudo apt-get install jq (or brew install jq)" >&2
+        echo "  - curl: sudo apt-get install curl" >&2
+        echo "  - bc: sudo apt-get install bc" >&2
+        echo "  - Solana CLI: sh -c \"\$(curl -sSfL https://release.solana.com/stable/install)\"" >&2
+        exit 1
+    fi
+}
+
+#######################
+# Parse Command
+#######################
+
+if [[ $# -lt 1 ]]; then
+    usage
+    exit 1
+fi
+
+COMMAND="$1"
+shift
+
+case "$COMMAND" in
+    create)
+        check_dependencies "$COMMAND"
+        exec "$SCRIPTS_DIR/create-token.sh" "$@"
+        ;;
+    buy)
+        check_dependencies "$COMMAND"
+        exec "$SCRIPTS_DIR/buy-token.sh" "$@"
+        ;;
+    sell)
+        check_dependencies "$COMMAND"
+        exec "$SCRIPTS_DIR/sell-token.sh" "$@"
+        ;;
+    balance|bal|portfolio)
+        check_dependencies "$COMMAND"
+        exec "$SCRIPTS_DIR/get-balance.sh" "$@"
+        ;;
+    trending|trend|hot)
+        check_dependencies "$COMMAND"
+        exec "$SCRIPTS_DIR/list-trending.sh" "$@"
+        ;;
+    new|recent|latest)
+        check_dependencies "$COMMAND"
+        exec "$SCRIPTS_DIR/list-new.sh" "$@"
+        ;;
+    search|find)
+        check_dependencies "$COMMAND"
+        exec "$SCRIPTS_DIR/search-tokens.sh" "$@"
+        ;;
+    info|details|show)
+        check_dependencies "$COMMAND"
+        exec "$SCRIPTS_DIR/get-token-info.sh" "$@"
+        ;;
+    version|--version|-v)
+        echo "LaunchPad Trader CLI v${VERSION}"
+        ;;
+    help|--help|-h)
+        usage
+        ;;
+    *)
+        echo "Error: Unknown command: $COMMAND" >&2
+        echo "" >&2
+        echo "Run 'launchpad help' for usage information" >&2
+        exit 1
+        ;;
+esac

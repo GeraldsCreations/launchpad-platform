@@ -1,0 +1,30 @@
+{
+  "name": "launchpad-contracts",
+  "version": "0.1.0",
+  "description": "Solana smart contracts for LaunchPad token platform",
+  "scripts": {
+    "test": "anchor test",
+    "test:unit": "anchor test --skip-local-validator",
+    "build": "anchor build",
+    "deploy:devnet": "anchor deploy --provider.cluster devnet",
+    "deploy:mainnet": "anchor deploy --provider.cluster mainnet",
+    "verify": "anchor verify",
+    "clean": "anchor clean"
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "^0.30.1",
+    "@solana/web3.js": "^1.95.8",
+    "@solana/spl-token": "^0.4.9",
+    "@metaplex-foundation/mpl-token-metadata": "^4.1.2"
+  },
+  "devDependencies": {
+    "@types/bn.js": "^5.1.5",
+    "@types/chai": "^4.3.5",
+    "@types/mocha": "^9.1.1",
+    "chai": "^4.3.7",
+    "mocha": "^10.2.0",
+    "ts-mocha": "^10.0.0",
+    "typescript": "^5.0.4",
+    "prettier": "^2.8.8"
+  }
+}

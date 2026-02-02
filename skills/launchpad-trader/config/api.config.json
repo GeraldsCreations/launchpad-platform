@@ -1,0 +1,47 @@
+{
+  "api": {
+    "base_url": "https://api.launchpad.fun/v1",
+    "timeout_ms": 30000,
+    "retry_attempts": 3,
+    "retry_delay_ms": 2000
+  },
+  "blockchain": {
+    "network": "mainnet-beta",
+    "rpc_url": "https://api.mainnet-beta.solana.com",
+    "commitment": "confirmed"
+  },
+  "trading": {
+    "default_slippage": 0.05,
+    "max_slippage": 0.20,
+    "fee_percent": 1.0,
+    "auto_confirm": false
+  },
+  "bonding_curve": {
+    "initial_price": 0.0001,
+    "max_supply": 1000000000,
+    "graduation_threshold_usd": 69000
+  },
+  "limits": {
+    "max_initial_buy_sol": 10.0,
+    "min_token_amount": 1,
+    "max_query_results": 50
+  },
+  "endpoints": {
+    "create_token": "/tokens/create",
+    "get_token": "/tokens/{address}",
+    "trending": "/tokens/trending",
+    "new_tokens": "/tokens/new",
+    "search": "/tokens/search",
+    "trade_buy": "/trade/buy",
+    "trade_sell": "/trade/sell",
+    "trade_quote": "/trade/quote",
+    "trade_history": "/trade/history",
+    "user_portfolio": "/user/portfolio",
+    "user_balance": "/user/balance"
+  },
+  "websocket": {
+    "url": "wss://api.launchpad.fun/v1/ws",
+    "reconnect_delay_ms": 5000,
+    "ping_interval_ms": 30000
+  }
+}

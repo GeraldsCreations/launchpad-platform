@@ -1,0 +1,32 @@
+[
+  /* This is an example Solana wallet keypair file */
+  /* DO NOT USE THIS - Generate your own with: solana-keygen new */
+  
+  /* To create a new wallet for LaunchPad trading:
+   * 
+   * 1. Install Solana CLI:
+   *    sh -c "$(curl -sSfL https://release.solana.com/stable/install)"
+   * 
+   * 2. Generate new keypair:
+   *    solana-keygen new --outfile ~/.config/solana/launchpad-bot.json
+   * 
+   * 3. Fund the wallet:
+   *    solana airdrop 1 --keypair ~/.config/solana/launchpad-bot.json
+   *    (or transfer SOL from another wallet)
+   * 
+   * 4. Set environment variable:
+   *    export LAUNCHPAD_WALLET_PATH="$HOME/.config/solana/launchpad-bot.json"
+   * 
+   * 5. Verify balance:
+   *    solana balance --keypair ~/.config/solana/launchpad-bot.json
+   */
+  
+  0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0
+]

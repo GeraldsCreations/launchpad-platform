@@ -1,0 +1,186 @@
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
+
+export interface Token {
+  address: string;
+  name: string;
+  symbol: string;
+  description?: string;
+  image_url?: string;
+  creator: string;
+  creator_type: 'human' | 'clawdbot' | 'agent';
+  bonding_curve: string;
+  current_price: number;
+  market_cap: number;
+  total_supply: number;
+  holder_count: number;
+  volume_24h: number;
+  graduated: boolean;
+  graduated_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Trade {
+  id: number;
+  transaction_signature: string;
+  token_address: string;
+  trader: string;
+  side: 'buy' | 'sell';
+  amount_sol: number;
+  amount_tokens: number;
+  price: number;
+  fee: number;
+  timestamp: string;
+}
+
+export interface CreateTokenRequest {
+  name: string;
+  symbol: string;
+  description?: string;
+  image_url?: string;
+  initial_buy_sol?: number;
+}
+
+export interface TradeRequest {
+  token_address: string;
+  amount: number;
+  slippage?: number;
+}
+
+export interface QuoteResponse {
+  price: number;
+  amount_out: number;
+  fee: number;
+  slippage: number;
+  price_impact: number;
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+export class ApiService {
+  private baseUrl = environment.apiUrl;
+
+  constructor(private http: HttpClient) {}
+
+  // Token endpoints
+  getTrendingTokens(limit: number = 20): Observable<Token[]> {
+    return this.http.get<Token[]>(`${this.baseUrl}/tokens/trending`, {
+      params: new HttpParams().set('limit', limit.toString())
+    }).pipe(catchError(this.handleError));
+  }
+
+  getNewTokens(limit: number = 20): Observable<Token[]> {
+    return this.http.get<Token[]>(`${this.baseUrl}/tokens/new`, {
+      params: new HttpParams().set('limit', limit.toString())
+    }).pipe(catchError(this.handleError));
+  }
+
+  getToken(address: string): Observable<Token> {
+    return this.http.get<Token>(`${this.baseUrl}/tokens/${address}`)
+      .pipe(catchError(this.handleError));
+  }
+
+  searchTokens(query: string): Observable<Token[]> {
+    return this.http.get<Token[]>(`${this.baseUrl}/tokens/search`, {
+      params: new HttpParams().set('q', query)
+    }).pipe(catchError(this.handleError));
+  }
+
+  filterTokens(filters: {
+    minMarketCap?: number;
+    maxMarketCap?: number;
+    creatorType?: string;
+    graduated?: boolean;
+    sortBy?: string;
+    order?: 'asc' | 'desc';
+    limit?: number;
+  }): Observable<Token[]> {
+    let params = new HttpParams();
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        params = params.set(key, value.toString());
+      }
+    });
+    return this.http.get<Token[]>(`${this.baseUrl}/tokens/filter`, { params })
+      .pipe(catchError(this.handleError));
+  }
+
+  createToken(request: CreateTokenRequest): Observable<{ token_address: string; transaction_signature: string }> {
+    return this.http.post<{ token_address: string; transaction_signature: string }>(
+      `${this.baseUrl}/tokens/create`,
+      request
+    ).pipe(catchError(this.handleError));
+  }
+
+  // Trading endpoints
+  getBuyQuote(tokenAddress: string, amountSol: number): Observable<QuoteResponse> {
+    return this.http.get<QuoteResponse>(`${this.baseUrl}/trade/quote`, {
+      params: new HttpParams()
+        .set('token_address', tokenAddress)
+        .set('side', 'buy')
+        .set('amount', amountSol.toString())
+    }).pipe(catchError(this.handleError));
+  }
+
+  getSellQuote(tokenAddress: string, amountTokens: number): Observable<QuoteResponse> {
+    return this.http.get<QuoteResponse>(`${this.baseUrl}/trade/quote`, {
+      params: new HttpParams()
+        .set('token_address', tokenAddress)
+        .set('side', 'sell')
+        .set('amount', amountTokens.toString())
+    }).pipe(catchError(this.handleError));
+  }
+
+  buyToken(request: TradeRequest): Observable<{ transaction_signature: string }> {
+    return this.http.post<{ transaction_signature: string }>(
+      `${this.baseUrl}/trade/buy`,
+      request
+    ).pipe(catchError(this.handleError));
+  }
+
+  sellToken(request: TradeRequest): Observable<{ transaction_signature: string }> {
+    return this.http.post<{ transaction_signature: string }>(
+      `${this.baseUrl}/trade/sell`,
+      request
+    ).pipe(catchError(this.handleError));
+  }
+
+  getTradeHistory(tokenAddress: string, limit: number = 50): Observable<Trade[]> {
+    return this.http.get<Trade[]>(`${this.baseUrl}/trade/history`, {
+      params: new HttpParams()
+        .set('token_address', tokenAddress)
+        .set('limit', limit.toString())
+    }).pipe(catchError(this.handleError));
+  }
+
+  // User endpoints
+  getUserPortfolio(walletAddress: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/user/portfolio`, {
+      params: new HttpParams().set('wallet', walletAddress)
+    }).pipe(catchError(this.handleError));
+  }
+
+  getUserBalance(walletAddress: string): Observable<{ balance: number }> {
+    return this.http.get<{ balance: number }>(`${this.baseUrl}/user/balance`, {
+      params: new HttpParams().set('wallet', walletAddress)
+    }).pipe(catchError(this.handleError));
+  }
+
+  getUserTrades(walletAddress: string, limit: number = 50): Observable<Trade[]> {
+    return this.http.get<Trade[]>(`${this.baseUrl}/user/trades`, {
+      params: new HttpParams()
+        .set('wallet', walletAddress)
+        .set('limit', limit.toString())
+    }).pipe(catchError(this.handleError));
+  }
+
+  private handleError(error: any) {
+    console.error('API Error:', error);
+    return throwError(() => new Error(error.message || 'Server error'));
+  }
+}
