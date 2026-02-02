@@ -1,36 +1,50 @@
 <p-toast position="top-right" [life]="5000"></p-toast>
 
-<!-- Clean minimal navbar -->
-<nav class="sticky top-0 z-50 bg-black/90 backdrop-blur-md border-b border-gray-800">
+<!-- Premium navbar -->
+<nav class="sticky top-0 z-50 bg-gradient-to-b from-black via-black/95 to-transparent backdrop-blur-xl border-b border-white/10">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex items-center justify-between h-16">
+    <div class="flex items-center justify-between h-20">
       <!-- Logo -->
-      <a routerLink="/" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
-        <span class="text-2xl">🦞</span>
-        <span class="text-xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
-          Pump Bots
-        </span>
+      <a routerLink="/" class="flex items-center gap-3 hover:scale-105 transition-transform group">
+        <div class="text-3xl animate-float">🦞</div>
+        <div class="flex flex-col">
+          <span class="text-xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
+            Pump Bots
+          </span>
+          <span class="text-[10px] text-gray-500 font-medium tracking-wider uppercase">
+            Solana LaunchPad
+          </span>
+        </div>
       </a>
       
       <!-- Navigation Links -->
-      <div class="hidden md:flex items-center gap-8">
+      <div class="hidden md:flex items-center gap-2">
         <a 
           routerLink="/"
-          routerLinkActive="text-primary-400"
+          routerLinkActive="nav-link-active"
           [routerLinkActiveOptions]="{exact: true}"
-          class="text-gray-400 hover:text-white transition-colors font-medium">
+          class="nav-link">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          </svg>
           Home
         </a>
         <a 
           routerLink="/create"
-          routerLinkActive="text-primary-400"
-          class="text-gray-400 hover:text-white transition-colors font-medium">
+          routerLinkActive="nav-link-active"
+          class="nav-link">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
           Create
         </a>
         <a 
           routerLink="/dashboard"
-          routerLinkActive="text-primary-400"
-          class="text-gray-400 hover:text-white transition-colors font-medium">
+          routerLinkActive="nav-link-active"
+          class="nav-link">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
           Portfolio
         </a>
       </div>
