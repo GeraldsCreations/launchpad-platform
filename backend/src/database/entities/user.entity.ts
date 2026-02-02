@@ -11,7 +11,7 @@ export class User {
   @PrimaryColumn({ length: 44 })
   wallet: string;
 
-  @Column({ length: 64, unique: true, nullable: true })
+  @Column('varchar', { length: 64, unique: true, nullable: true })
   apiKey: string | null;
 
   @Column({ length: 20, default: 'free' })

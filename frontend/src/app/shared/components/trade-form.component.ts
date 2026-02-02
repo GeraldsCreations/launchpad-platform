@@ -7,6 +7,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { TabViewModule } from 'primeng/tabview';
 import { ApiService, QuoteResponse } from '../../core/services/api.service';
 import { WalletService } from '../../core/services/wallet.service';
+import { NotificationService } from '../../core/services/notification.service';
 import { Subject, debounceTime, takeUntil } from 'rxjs';
 
 @Component({
@@ -162,7 +163,8 @@ export class TradeFormComponent implements OnInit, OnDestroy {
 
   constructor(
     private apiService: ApiService,
-    private walletService: WalletService
+    private walletService: WalletService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -240,14 +242,16 @@ export class TradeFormComponent implements OnInit, OnDestroy {
       }).toPromise();
 
       if (result) {
-        alert(`Purchase successful! Transaction: ${result.transaction_signature}`);
+        const tokensReceived = this.buyQuote?.amount_out || 0;
+        this.notificationService.transactionSuccess(result.transaction_signature);
+        this.notificationService.buySuccess(this.tokenSymbol, tokensReceived);
         this.buyAmount = 0;
         this.buyQuote = null;
         this.loadTokenBalance();
       }
     } catch (error: any) {
       console.error('Buy failed:', error);
-      alert(`Buy failed: ${error.message}`);
+      this.notificationService.transactionFailed(error.message || 'Failed to purchase tokens');
     } finally {
       this.buying = false;
     }
@@ -265,14 +269,15 @@ export class TradeFormComponent implements OnInit, OnDestroy {
       }).toPromise();
 
       if (result) {
-        alert(`Sale successful! Transaction: ${result.transaction_signature}`);
+        this.notificationService.transactionSuccess(result.transaction_signature);
+        this.notificationService.sellSuccess(this.tokenSymbol, this.sellAmount);
         this.sellAmount = 0;
         this.sellQuote = null;
         this.loadTokenBalance();
       }
     } catch (error: any) {
       console.error('Sell failed:', error);
-      alert(`Sell failed: ${error.message}`);
+      this.notificationService.transactionFailed(error.message || 'Failed to sell tokens');
     } finally {
       this.selling = false;
     }

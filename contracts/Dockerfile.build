@@ -1,0 +1,18 @@
+# Use older Anchor/Solana versions that don't have edition2024 issues
+FROM projectserum/build:v0.27.0 AS builder
+
+WORKDIR /workspace
+
+# Copy workspace files
+COPY Cargo.toml ./
+COPY Cargo.lock* ./
+COPY programs ./programs
+
+# Install specific Rust version that matches Solana platform-tools
+RUN rustup install 1.75.0 && rustup default 1.75.0
+
+# Build all programs
+RUN anchor build
+
+FROM scratch AS export
+COPY --from=builder /workspace/target/deploy/*.so /

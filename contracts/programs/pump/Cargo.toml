@@ -1,0 +1,25 @@
+[package]
+name = "pump"
+version = "0.1.0"
+description = "Created with Anchor"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "pump"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+
+[dependencies]
+getrandom = { version = "0.1", features = ["dummy"] }
+anchor-lang = { version = "0.24.2", default-features = false, features = [] }
+anchor-spl = { version = "0.24.2", default-features = false, features = ["token", "associated_token"] }
+solana-program = { version = "1.9.29", default-features = false, features = [] }
+blake3 = "=1.5.1"
+ahash = "=0.7.8"
+# raydium-contract-instructions = { git = "https://github.com/raydium-io/raydium-contract-instructions.git" }

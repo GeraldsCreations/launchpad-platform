@@ -17,7 +17,7 @@ import { Token } from '../../core/services/api.service';
       <ng-template pTemplate="header">
         <div class="relative">
           <img 
-            [src]="token.image_url || 'assets/default-token.png'" 
+            [src]="token.image_url || 'assets/default-token.svg'" 
             [alt]="token.name"
             class="w-full h-48 object-cover"
             (error)="onImageError($event)">
@@ -162,6 +162,6 @@ export class TokenCardComponent {
   }
 
   onImageError(event: any): void {
-    event.target.src = 'assets/default-token.png';
+    event.target.src = 'assets/default-token.svg';
   }
 }

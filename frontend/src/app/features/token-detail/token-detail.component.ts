@@ -7,6 +7,7 @@ import { BadgeModule } from 'primeng/badge';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ApiService, Token, Trade } from '../../core/services/api.service';
 import { WebSocketService } from '../../core/services/websocket.service';
+import { NotificationService } from '../../core/services/notification.service';
 import { PriceChartComponent } from '../../shared/components/price-chart.component';
 import { TradeFormComponent } from '../../shared/components/trade-form.component';
 import { Subject, takeUntil } from 'rxjs';
@@ -35,7 +36,7 @@ import { Subject, takeUntil } from 'rxjs';
           <div class="flex items-start justify-between">
             <div class="flex items-center gap-4">
               <img 
-                [src]="token.image_url || 'assets/default-token.png'" 
+                [src]="token.image_url || 'assets/default-token.svg'" 
                 [alt]="token.name"
                 class="w-20 h-20 rounded-full object-cover"
                 (error)="onImageError($event)">
@@ -185,7 +186,8 @@ export class TokenDetailComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private apiService: ApiService,
-    private wsService: WebSocketService
+    private wsService: WebSocketService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -304,11 +306,11 @@ export class TokenDetailComponent implements OnInit, OnDestroy {
   copyAddress(): void {
     if (this.token) {
       navigator.clipboard.writeText(this.token.address);
-      alert('Address copied to clipboard!');
+      this.notificationService.copyToClipboard('Token address');
     }
   }
 
   onImageError(event: any): void {
-    event.target.src = 'assets/default-token.png';
+    event.target.src = 'assets/default-token.svg';
   }
 }

@@ -1,189 +1,224 @@
-# LaunchPad Frontend
+# 🚀 Meteora LaunchPad Frontend
 
-Beautiful, responsive Angular web application for the LaunchPad token launch platform on Solana.
+A beautiful, Pump.fun-inspired frontend for token launches via Meteora on Solana.
 
-## 🚀 Features
+## Features
 
-- **Token Discovery**: Browse trending, new, and graduated tokens
-- **Real-time Updates**: Live price updates via WebSocket
-- **Wallet Integration**: Connect Phantom, Solflare, or Coinbase Wallet
-- **Trading**: Buy and sell tokens with live quotes
-- **Token Creation**: Launch your own token with bonding curve
-- **Portfolio Dashboard**: Track your holdings and PnL
-- **Advanced Search**: Find tokens with filters and sorting
-- **Responsive Design**: Works on all screen sizes
-- **Dark/Light Mode**: Beautiful UI themes
+### 🏠 Core Pages
 
-## 🛠️ Tech Stack
+1. **Home Page** (`/`)
+   - Platform statistics (total tokens, 24h volume, trades, graduated tokens)
+   - Real-time search with debouncing
+   - Trending, New, and Graduated tokens tabs
+   - WebSocket integration for live updates
+   - Quick actions (Create Token, View Portfolio)
 
-- **Angular 21**: Latest Angular with standalone components
-- **PrimeNG 17**: Rich UI component library
-- **Tailwind CSS**: Utility-first CSS framework
-- **Solana Web3.js**: Blockchain integration
-- **Solana Wallet Adapter**: Multi-wallet support
-- **TradingView Lightweight Charts**: Professional charting
-- **RxJS**: Reactive programming
-- **TypeScript**: Type-safe development
+2. **Create Token Page** (`/create`)
+   - Token metadata form (name, symbol, description, image)
+   - Initial buy configuration
+   - Bonding curve preview with key metrics
+   - 1 SOL launch fee display
+   - Wallet integration with transaction confirmation
 
-## 📦 Installation
+3. **Token Detail Page** (`/token/:address`)
+   - Real-time price chart with bonding curve visualization
+   - Buy/Sell trading interface with live quotes
+   - Token statistics (volume, holders, supply)
+   - Recent trade history
+   - Price impact calculation
+   - Social links and explorer integration
 
-### Prerequisites
+4. **Portfolio/Dashboard** (`/dashboard`)
+   - SOL balance display
+   - Token holdings with P&L tracking
+   - Transaction history
+   - Portfolio value calculation
+   - Quick links to token pages
 
-- Node.js 18+ and npm 9+
-- Angular CLI 21+
+5. **Explore Page** (`/explore`)
+   - Advanced token search and filtering
+   - Sort by market cap, volume, holders, or date
+   - Real-time results
 
-### Setup
+### 🎨 UI Components
 
-1. **Install dependencies:**
-   ```bash
-   npm install --legacy-peer-deps
-   ```
+- **Token Card** - Beautiful card display for token listings
+- **Trade Form** - Buy/sell interface with live quotes and price impact
+- **Price Chart** - Lightweight Charts integration for bonding curve visualization
+- **Wallet Button** - Phantom/Solflare wallet connection with dropdown menu
+- **Token Stats** - Animated platform statistics with gradient cards
 
-2. **Configure environment:**
-   Edit `src/environments/environment.ts` for local development:
-   ```typescript
-   export const environment = {
-     production: false,
-     apiUrl: 'http://localhost:3000/v1',
-     wsUrl: 'ws://localhost:3000/v1/ws',
-     solanaRpcUrl: 'https://api.devnet.solana.com',
-     solanaNetwork: 'devnet'
-   };
-   ```
+### 🔧 Services
 
-3. **Start development server:**
-   ```bash
-   npm start
-   ```
-   
-   App runs on `http://localhost:4200`
+- **API Service** - Complete REST API integration for all endpoints
+- **Wallet Service** - Solana wallet adapter (Phantom, Solflare, Coinbase)
+- **WebSocket Service** - Real-time price updates and trade notifications
+- **Notification Service** - Toast notifications for all user actions
 
-## 🏗️ Project Structure
+## Tech Stack
 
-```
-src/app/
-├── core/                     # Core services
-│   ├── services/
-│   │   ├── api.service.ts           # HTTP API client
-│   │   ├── websocket.service.ts     # Real-time updates
-│   │   ├── wallet.service.ts        # Solana wallet
-│   │   └── blockchain.service.ts    # Blockchain queries
-│   └── guards/
-│       └── wallet.guard.ts          # Route protection
-│
-├── features/                 # Feature modules
-│   ├── home/                        # Homepage
-│   ├── token-detail/                # Token detail page
-│   ├── create-token/                # Create token form
-│   ├── dashboard/                   # User dashboard
-│   └── explore/                     # Search & explore
-│
-├── shared/                   # Shared components
-│   └── components/
-│       ├── wallet-button.component.ts
-│       ├── token-card.component.ts
-│       ├── price-chart.component.ts
-│       └── trade-form.component.ts
-│
-└── app.routes.ts             # Application routes
-```
+- **Framework**: Angular 21 (standalone components)
+- **UI Library**: PrimeNG 17 (dark theme)
+- **Styling**: TailwindCSS + Custom SCSS
+- **Charts**: Lightweight Charts 4.2
+- **Blockchain**: Solana Web3.js
+- **State**: RxJS Observables
 
-## 🎨 Key Components
+## Design
 
-### WalletButton
-Connects to Solana wallets (Phantom, Solflare, Coinbase).
+### Theme
+- Dark mode optimized for crypto aesthetic
+- Gradient accents (primary: #667eea → #764ba2)
+- Smooth animations and transitions
+- Professional, trustworthy appearance
+- Mobile-responsive design
 
-### TokenCard
-Displays token information with live updates.
+### Colors
+- Background: Gray-950
+- Cards: Gray-900/1a1a1a
+- Primary: Blue-500
+- Success: Green-500
+- Danger: Red-500
+- Warning: Amber-500
 
-### PriceChart
-TradingView-powered candlestick chart.
-
-### TradeForm
-Buy/sell interface with live quotes and slippage protection.
-
-## 🔌 Services
-
-### ApiService
-HTTP client for backend REST API.
-
-### WebSocketService
-Real-time updates for prices, trades, and new tokens.
-
-### WalletService
-Solana wallet connection and transaction signing.
-
-### BlockchainService
-Direct blockchain queries for balances and confirmations.
-
-## 🚦 Routes
-
-- `/` - Homepage (trending, new, graduated tokens)
-- `/explore` - Search and filter tokens
-- `/token/:address` - Token detail page with trading
-- `/create` - Create new token
-- `/dashboard` - User portfolio and holdings
-
-## 🔧 Scripts
+## Development
 
 ```bash
-npm start          # Start dev server (port 4200)
-npm run build      # Production build
-npm run watch      # Build with watch mode
-npm test           # Run tests
-npm run lint       # Lint code
+# Install dependencies
+npm install
+
+# Start dev server
+npm start
+# Opens http://localhost:4200
+
+# Build for production
+npm run build
+
+# Run tests
+npm test
 ```
 
-## 🌐 Environment Variables
+## Environment Configuration
 
 ### Development (`environment.ts`)
-- `apiUrl`: Backend API URL
-- `wsUrl`: WebSocket URL
-- `solanaRpcUrl`: Solana RPC endpoint
-- `solanaNetwork`: Solana cluster (devnet/mainnet-beta)
+- API: http://localhost:3000/v1
+- WebSocket: ws://localhost:3000/v1/ws
+- Solana RPC: Devnet
 
 ### Production (`environment.prod.ts`)
-Update for production deployment.
+- API: https://api.launchpad.fun/v1
+- WebSocket: wss://api.launchpad.fun/v1/ws
+- Solana RPC: Mainnet-beta
 
-## 🎯 Performance
+## Key Features
 
-- **Time to Interactive**: <2s
-- **First Contentful Paint**: <1s
-- **Code Splitting**: Lazy-loaded routes
-- **Optimized Build**: AOT compilation + tree-shaking
+### 🔗 Wallet Integration
+- Automatic wallet detection (Phantom, Solflare)
+- Connect/disconnect with visual feedback
+- Balance display with auto-refresh
+- Transaction signing support
 
-## ♿ Accessibility
+### 💹 Trading Features
+- Real-time price quotes
+- Slippage calculation
+- Price impact warnings (yellow >5%, red >10%)
+- Gas fee estimation
+- Success/error notifications
 
-- WCAG 2.1 AA compliant
-- Keyboard navigation
-- Screen reader support
-- Semantic HTML
+### 📊 Real-time Updates
+- WebSocket connection for live prices
+- New token notifications
+- Trade feed updates
+- Automatic reconnection
 
-## 🐛 Troubleshooting
+### 🎯 User Experience
+- Debounced search (300ms)
+- Loading states with skeletons
+- Error handling with toast notifications
+- Copy-to-clipboard with confirmation
+- Responsive grid layouts
+- Smooth page transitions
 
-### Wallet not connecting
-1. Ensure Phantom wallet is installed
-2. Check browser console for errors
-3. Verify network matches (devnet/mainnet)
+## Project Structure
 
-### WebSocket connection failed
-1. Check backend is running
-2. Verify WebSocket URL in environment
-3. Check browser security settings
+```
+src/
+├── app/
+│   ├── core/
+│   │   └── services/
+│   │       ├── api.service.ts           # REST API client
+│   │       ├── wallet.service.ts        # Wallet connection
+│   │       ├── websocket.service.ts     # Real-time data
+│   │       ├── notification.service.ts  # Toast notifications
+│   │       └── blockchain.service.ts    # Solana interactions
+│   ├── features/
+│   │   ├── home/                        # Home page
+│   │   ├── create-token/                # Token creation
+│   │   ├── token-detail/                # Token details
+│   │   ├── dashboard/                   # User portfolio
+│   │   └── explore/                     # Token search
+│   ├── shared/
+│   │   └── components/
+│   │       ├── token-card.component.ts
+│   │       ├── trade-form.component.ts
+│   │       ├── price-chart.component.ts
+│   │       ├── wallet-button.component.ts
+│   │       └── token-stats.component.ts
+│   ├── app.ts                           # Root component
+│   ├── app.config.ts                    # App configuration
+│   └── app.routes.ts                    # Route definitions
+├── environments/                        # Environment configs
+├── styles.scss                          # Global styles
+└── index.html                          # HTML entry
 
-### API requests failing
-1. Verify backend API is running
-2. Check CORS configuration
-3. Ensure correct API URL in environment
+public/
+└── assets/
+    └── default-token.png               # Default token image
+```
 
-## 📝 License
+## Backend Integration
 
-MIT
+All components are ready to integrate with the backend API at `localhost:3000/v1`:
 
-## 👨‍💻 Contributing
+### Endpoints Used
+- `GET /tokens/trending` - Trending tokens
+- `GET /tokens/new` - New launches
+- `GET /tokens/:address` - Token details
+- `GET /tokens/search` - Search tokens
+- `POST /tokens/create` - Create new token
+- `GET /trade/quote` - Get buy/sell quote
+- `POST /trade/buy` - Execute buy order
+- `POST /trade/sell` - Execute sell order
+- `GET /trade/history` - Trade history
+- `GET /user/portfolio` - User holdings
+- `GET /user/trades` - User transaction history
 
-Built with 💜 by the LaunchPad team
+### WebSocket Events
+- `token:new` - New token created
+- `token:price` - Price update
+- `token:trade` - New trade executed
+- `token:graduated` - Token graduated to Raydium
+
+## Deployment
+
+1. Update environment.prod.ts with production URLs
+2. Build: `npm run build`
+3. Deploy `dist/` folder to hosting provider
+4. Configure CORS on backend for production domain
+
+## Browser Support
+
+- Chrome/Edge 90+
+- Firefox 88+
+- Safari 14+
+- Mobile browsers (iOS Safari, Chrome Mobile)
+
+## Credits
+
+Built with ❤️ by Gereld 🍆
+Inspired by Pump.fun
+Powered by Solana & Meteora
 
 ---
 
-**🍆 Powered by Gereld - AI Company Manager**
+**Status**: ✅ Complete and ready for integration with backend!

@@ -16,7 +16,10 @@ no-idl = []
 no-log-ix-name = []
 
 [dependencies]
-anchor-lang = "0.27.0"
-anchor-spl = "0.27.0"
+getrandom = { version = "0.1", features = ["dummy"] }
+anchor-lang = "0.24.2"
+anchor-spl = "0.24.2"
+blake3 = "=1.5.1"
+ahash = "=0.7.8"
 
 # Removed dev-dependencies to avoid blake3 edition2024 conflict

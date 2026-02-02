@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MenubarModule } from 'primeng/menubar';
+import { ToastModule } from 'primeng/toast';
 import { MenuItem } from 'primeng/api';
 import { WalletButtonComponent } from './shared/components/wallet-button.component';
 
@@ -14,6 +15,7 @@ import { WalletButtonComponent } from './shared/components/wallet-button.compone
     RouterLink,
     RouterLinkActive,
     MenubarModule,
+    ToastModule,
     WalletButtonComponent
   ],
   templateUrl: './app.html',

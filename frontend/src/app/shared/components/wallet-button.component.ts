@@ -4,6 +4,7 @@ import { ButtonModule } from 'primeng/button';
 import { MenuModule } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
 import { WalletService } from '../../core/services/wallet.service';
+import { NotificationService } from '../../core/services/notification.service';
 import { Subject, takeUntil } from 'rxjs';
 import { PublicKey } from '@solana/web3.js';
 
@@ -46,7 +47,10 @@ export class WalletButtonComponent implements OnInit, OnDestroy {
   menuItems: MenuItem[] = [];
   private destroy$ = new Subject<void>();
 
-  constructor(private walletService: WalletService) {}
+  constructor(
+    private walletService: WalletService,
+    private notificationService: NotificationService
+  ) {}
 
   ngOnInit(): void {
     this.walletService.connected$
@@ -55,6 +59,10 @@ export class WalletButtonComponent implements OnInit, OnDestroy {
         this.connected = connected;
         if (connected) {
           this.updateWalletInfo();
+          const address = this.walletService.getPublicKeyString();
+          if (address) {
+            this.notificationService.walletConnected(address);
+          }
         }
       });
 
@@ -92,8 +100,10 @@ export class WalletButtonComponent implements OnInit, OnDestroy {
       await this.walletService.disconnect();
       this.walletAddress = '';
       this.balance = 0;
-    } catch (error) {
+      this.notificationService.walletDisconnected();
+    } catch (error: any) {
       console.error('Failed to disconnect wallet:', error);
+      this.notificationService.error('Failed to disconnect', error.message);
     }
   }
 
@@ -145,7 +155,7 @@ export class WalletButtonComponent implements OnInit, OnDestroy {
     const address = this.walletService.getPublicKeyString();
     if (address) {
       navigator.clipboard.writeText(address);
-      // You could add a toast notification here
+      this.notificationService.copyToClipboard('Wallet address');
     }
   }
 

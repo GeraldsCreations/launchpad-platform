@@ -4,6 +4,8 @@ import { Trade } from './entities/trade.entity';
 import { Holder } from './entities/holder.entity';
 import { User } from './entities/user.entity';
 import { PlatformStats } from './entities/platform-stats.entity';
+import { MeteoraPool } from '../meteora-api/entities/meteora-pool.entity';
+import { MeteoraTransaction } from '../meteora-api/entities/meteora-transaction.entity';
 import * as dotenv from 'dotenv';
 
 // Load .env file
@@ -12,7 +14,7 @@ dotenv.config();
 // Parse DATABASE_URL if provided, otherwise use individual vars
 let dbConfig: any = {
   type: 'postgres',
-  entities: [Token, Trade, Holder, User, PlatformStats],
+  entities: [Token, Trade, Holder, User, PlatformStats, MeteoraPool, MeteoraTransaction],
   migrations: ['src/database/migrations/*.ts'],
   synchronize: false,
   logging: process.env.NODE_ENV === 'development',

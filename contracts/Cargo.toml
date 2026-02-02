@@ -1,15 +1,19 @@
 [workspace]
 members = [
-    "programs/bonding-curve",
-    "programs/token-factory",
-    "programs/graduation"
+    "programs/pump"
 ]
 resolver = "2"
+
+[patch.crates-io]
+# Stub logging dependencies for BPF builds (no-op, avoids atty/termcolor/regex issues)
+env_logger = { path = "/tmp/stub-crates/env_logger" }
+solana-logger = { path = "/tmp/stub-crates/solana-logger" }
 
 [profile.release]
 overflow-checks = true
 lto = "fat"
 codegen-units = 1
+opt-level = "z"  # Optimize for size to reduce stack usage
 
 [profile.release.build-override]
 opt-level = 3

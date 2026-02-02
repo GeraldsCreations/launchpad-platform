@@ -7,8 +7,10 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { InputNumberModule } from 'primeng/inputnumber';
+import { FileUploadModule } from 'primeng/fileupload';
 import { ApiService } from '../../core/services/api.service';
 import { WalletService } from '../../core/services/wallet.service';
+import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
   selector: 'app-create-token',
@@ -20,7 +22,8 @@ import { WalletService } from '../../core/services/wallet.service';
     ButtonModule,
     InputTextModule,
     InputTextareaModule,
-    InputNumberModule
+    InputNumberModule,
+    FileUploadModule
   ],
   template: `
     <div class="create-token-container max-w-3xl mx-auto px-4 py-8">
@@ -88,13 +91,48 @@ import { WalletService } from '../../core/services/wallet.service';
             <small class="text-gray-400">Optional: Buy tokens immediately after creation</small>
           </div>
 
-          <div class="bg-gray-800 p-4 rounded-lg">
-            <h3 class="font-semibold mb-2">⚠️ Before you create:</h3>
+          <!-- Bonding Curve Info -->
+          <div class="bg-gradient-to-r from-primary-900/20 to-secondary-900/20 border border-primary-500/30 p-6 rounded-lg">
+            <h3 class="font-semibold mb-3 flex items-center gap-2">
+              <i class="pi pi-chart-line text-primary-400"></i>
+              Bonding Curve Preview
+            </h3>
+            <div class="space-y-3">
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-400">Initial Supply:</span>
+                <span class="font-semibold">1,000,000,000 tokens</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-400">Initial Price:</span>
+                <span class="font-semibold">~0.00000003 SOL</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-400">Graduation Target:</span>
+                <span class="font-semibold text-success-400">$69,000 Market Cap</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-400">Raydium Liquidity:</span>
+                <span class="font-semibold">85 SOL</span>
+              </div>
+            </div>
+            <div class="mt-4 pt-4 border-t border-gray-700">
+              <p class="text-xs text-gray-400">
+                💡 Your token will trade on a bonding curve until it reaches $69K market cap, 
+                then automatically graduate to Raydium with permanent liquidity.
+              </p>
+            </div>
+          </div>
+
+          <div class="bg-yellow-900/20 border border-yellow-500/30 p-4 rounded-lg">
+            <h3 class="font-semibold mb-2 flex items-center gap-2">
+              <i class="pi pi-exclamation-triangle text-yellow-500"></i>
+              Important Information
+            </h3>
             <ul class="text-sm text-gray-400 space-y-1">
-              <li>• Token creation costs ~0.5 SOL</li>
-              <li>• Tokens use a bonding curve for price discovery</li>
-              <li>• Tokens graduate to Raydium at $69K market cap</li>
+              <li>• Creation fee: 1 SOL (includes initial liquidity)</li>
               <li>• All transactions are final and on-chain</li>
+              <li>• You'll receive 10% of total supply</li>
+              <li>• Trading fee: 1% on all transactions</li>
             </ul>
           </div>
 
@@ -138,6 +176,7 @@ export class CreateTokenComponent {
   constructor(
     private apiService: ApiService,
     private walletService: WalletService,
+    private notificationService: NotificationService,
     private router: Router
   ) {
     this.walletService.connected$.subscribe(connected => {
@@ -156,15 +195,22 @@ export class CreateTokenComponent {
     if (!this.canCreate()) return;
 
     this.creating = true;
+    this.notificationService.info('Creating token...', 'Please confirm the transaction in your wallet');
+    
     try {
       const result = await this.apiService.createToken(this.formData).toPromise();
       if (result) {
-        alert(`Token created successfully!\\nAddress: ${result.token_address}\\nTransaction: ${result.transaction_signature}`);
-        this.router.navigate(['/token', result.token_address]);
+        this.notificationService.transactionSuccess(result.transaction_signature);
+        this.notificationService.tokenCreated(this.formData.name, result.token_address);
+        
+        // Navigate after a short delay to allow user to see the success message
+        setTimeout(() => {
+          this.router.navigate(['/token', result.token_address]);
+        }, 1500);
       }
     } catch (error: any) {
       console.error('Failed to create token:', error);
-      alert(`Failed to create token: ${error.message}`);
+      this.notificationService.transactionFailed(error.message || 'Failed to create token');
     } finally {
       this.creating = false;
     }

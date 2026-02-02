@@ -50,10 +50,10 @@ export class IndexerService implements OnModuleInit, OnModuleDestroy {
     private readonly blockchainService: BlockchainService,
   ) {
     const rpcUrl = this.configService.get<string>('SOLANA_RPC_URL') || 'https://api.devnet.solana.com';
-    const wsUrl = this.configService.get<string>('SOLANA_WS_URL') || 'wss://api.devnet.solana.com';
     
+    // Connection class handles WebSockets internally - use http(s) URL for both
     this.connection = new Connection(rpcUrl, 'confirmed');
-    this.wsConnection = new Connection(wsUrl, 'confirmed');
+    this.wsConnection = new Connection(rpcUrl, 'confirmed');
     
     this.bondingCurveProgramId = new PublicKey(
       this.configService.get<string>('BONDING_CURVE_PROGRAM_ID') || 'BondCurve11111111111111111111111111111111',

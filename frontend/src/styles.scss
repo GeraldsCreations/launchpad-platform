@@ -71,3 +71,189 @@ body {
 .card-shadow-lg {
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
+
+/* PrimeNG Custom Overrides */
+.p-card {
+  background: #1a1a1a;
+  border: 1px solid #2d2d2d;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.p-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.p-card .p-card-body {
+  padding: 1.25rem;
+}
+
+.p-card .p-card-content {
+  padding: 0;
+}
+
+/* Buttons */
+.p-button {
+  transition: all 0.2s ease;
+}
+
+.p-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.p-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* Input fields */
+.p-inputtext,
+.p-inputnumber-input {
+  background: #0a0a0a;
+  border-color: #2d2d2d;
+  color: #e5e7eb;
+}
+
+.p-inputtext:focus,
+.p-inputnumber-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Tabs */
+.p-tabview .p-tabview-nav {
+  background: transparent;
+  border-bottom: 2px solid #2d2d2d;
+}
+
+.p-tabview .p-tabview-nav li .p-tabview-nav-link {
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  padding: 1rem 1.5rem;
+  transition: all 0.2s ease;
+}
+
+.p-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link {
+  background: transparent;
+  color: #3b82f6;
+  border-bottom: 2px solid #3b82f6;
+}
+
+.p-tabview .p-tabview-nav li .p-tabview-nav-link:hover {
+  color: #e5e7eb;
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.p-tabview .p-tabview-panels {
+  background: transparent;
+  padding: 1.5rem 0;
+}
+
+/* Toast notifications */
+.p-toast {
+  opacity: 0.98;
+}
+
+.p-toast .p-toast-message {
+  backdrop-filter: blur(10px);
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* Badges */
+.p-badge {
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+}
+
+/* Menu */
+.p-menu {
+  background: #1a1a1a;
+  border: 1px solid #2d2d2d;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.p-menu .p-menuitem-link:hover {
+  background: rgba(59, 130, 246, 0.1);
+}
+
+/* Skeleton */
+.p-skeleton {
+  background: linear-gradient(90deg, #1a1a1a 25%, #2d2d2d 50%, #1a1a1a 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s ease-in-out infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Smooth page transitions */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-enter {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Success/Error colors */
+.text-success-400 {
+  color: #10b981;
+}
+
+.text-success-500 {
+  color: #059669;
+}
+
+.border-success-400 {
+  border-color: #10b981;
+}
+
+/* Custom grid animations */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.token-card {
+  animation: slideUp 0.4s ease-out;
+  animation-fill-mode: both;
+}
+
+.token-card:nth-child(1) { animation-delay: 0.05s; }
+.token-card:nth-child(2) { animation-delay: 0.1s; }
+.token-card:nth-child(3) { animation-delay: 0.15s; }
+.token-card:nth-child(4) { animation-delay: 0.2s; }
+.token-card:nth-child(5) { animation-delay: 0.25s; }
+.token-card:nth-child(6) { animation-delay: 0.3s; }
+.token-card:nth-child(7) { animation-delay: 0.35s; }
+.token-card:nth-child(8) { animation-delay: 0.4s; }
