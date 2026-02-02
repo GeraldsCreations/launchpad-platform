@@ -33,10 +33,10 @@ export class MeteoraPool {
   creator: string;
 
   @Column({ length: 100, nullable: true })
-  creatorBotId: string; // OpenClaw agent ID (if created by bot)
+  creatorBotId?: string; // OpenClaw agent ID (if created by bot)
 
   @Column({ length: 44, nullable: true })
-  creatorBotWallet: string; // Bot's Solana wallet for rewards
+  creatorBotWallet?: string; // Bot's Solana wallet for rewards
 
   @Column('decimal', { precision: 5, scale: 2, default: 50 })
   creatorRevenueSharePercent: number; // Default 50% to creator

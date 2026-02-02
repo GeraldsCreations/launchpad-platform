@@ -18,9 +18,9 @@ import {
 import DLMM, { ActivationType } from '@meteora-ag/dlmm';
 import BN from 'bn.js';
 import { MeteoraService } from './meteora.service';
-import { FeeCollectionService } from './fee-collection.service';
 import { MeteoraPool } from '../entities/meteora-pool.entity';
 import { MeteoraTransaction, TransactionType } from '../entities/meteora-transaction.entity';
+import { FeeClaimerVault } from '../../database/entities/fee-claimer-vault.entity';
 import { CreateTokenDto } from '../dto/create-token.dto';
 
 @Injectable()
@@ -32,11 +32,12 @@ export class PoolCreationService {
 
   constructor(
     private meteoraService: MeteoraService,
-    private feeCollectionService: FeeCollectionService,
     @InjectRepository(MeteoraPool)
     private poolRepository: Repository<MeteoraPool>,
     @InjectRepository(MeteoraTransaction)
     private transactionRepository: Repository<MeteoraTransaction>,
+    @InjectRepository(FeeClaimerVault)
+    private vaultRepository: Repository<FeeClaimerVault>,
   ) {}
 
   /**
@@ -72,35 +73,47 @@ export class PoolCreationService {
       this.logger.log(`Meteora pool created: ${poolAddress}`);
 
       // Step 3: Create fee claimer vault
-      const vault = await this.feeCollectionService.createFeeClaimerVault(
-        poolAddress,
-        tokenMint.toBase58(),
+      // Derive fee claimer vault PDA (Program Derived Address)
+      const [feeClaimerPDA] = await PublicKey.findProgramAddress(
+        [Buffer.from('fee_claimer'), new PublicKey(poolAddress).toBuffer()],
+        new PublicKey('LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo'), // Meteora DLMM program
       );
+
+      const vault = this.vaultRepository.create({
+        poolAddress,
+        tokenAddress: tokenMint.toBase58(),
+        feeClaimerPubkey: feeClaimerPDA.toBase58(),
+        totalFeesCollected: 0,
+        claimedFees: 0,
+        unclaimedFees: 0,
+        claimCount: 0,
+      });
+
+      await this.vaultRepository.save(vault);
 
       this.logger.log(`Fee claimer vault created: ${vault.feeClaimerPubkey}`);
 
       // Step 4: Save pool to database
-      const pool = this.poolRepository.create({
-        poolAddress,
-        tokenAddress: tokenMint.toBase58(),
-        baseTokenAddress: this.NATIVE_SOL.toBase58(),
-        tokenName: dto.name,
-        tokenSymbol: dto.symbol,
-        creator: dto.creator,
-        creatorBotId: dto.creatorBotId || null,
-        creatorBotWallet: dto.creatorBotWallet || null,
-        creatorRevenueSharePercent: dto.revenueSharePercent || 50,
-        binStep: dto.binStep || 25,
-        activeId: this.calculateActiveBinId(dto.initialPrice),
-        currentPrice: dto.initialPrice,
-        volume24h: 0,
-        liquidity: dto.initialLiquidity,
-        tvl: dto.initialLiquidity * dto.initialPrice,
-        feeRate: dto.feeBps || 25,
-        platformFeesCollected: 0,
-        launchFeeCollected: this.meteoraService.getLaunchFee(),
-        isActive: true,
-      });
+      const pool = new MeteoraPool();
+      pool.poolAddress = poolAddress;
+      pool.tokenAddress = tokenMint.toBase58();
+      pool.baseTokenAddress = this.NATIVE_SOL.toBase58();
+      pool.tokenName = dto.name;
+      pool.tokenSymbol = dto.symbol;
+      pool.creator = dto.creator;
+      pool.creatorBotId = dto.creatorBotId || undefined;
+      pool.creatorBotWallet = dto.creatorBotWallet || undefined;
+      pool.creatorRevenueSharePercent = dto.revenueSharePercent || 50;
+      pool.binStep = dto.binStep || 25;
+      pool.activeId = this.calculateActiveBinId(dto.initialPrice);
+      pool.currentPrice = dto.initialPrice;
+      pool.volume24h = 0;
+      pool.liquidity = dto.initialLiquidity;
+      pool.tvl = dto.initialLiquidity * dto.initialPrice;
+      pool.feeRate = dto.feeBps || 25;
+      pool.platformFeesCollected = 0;
+      pool.launchFeeCollected = this.meteoraService.getLaunchFee();
+      pool.isActive = true;
 
       await this.poolRepository.save(pool);
 
