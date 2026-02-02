@@ -1,0 +1,71 @@
+{
+  "name": "launchpad-platform",
+  "version": "0.1.0",
+  "description": "Token launch platform for AI agents and humans on Solana",
+  "private": true,
+  "scripts": {
+    "install:all": "npm run install:contracts && npm run install:backend && npm run install:frontend",
+    "install:contracts": "cd contracts && npm install",
+    "install:backend": "cd backend && npm install",
+    "install:frontend": "cd frontend && npm install",
+    
+    "dev": "concurrently \"npm run dev:contracts\" \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:contracts": "cd contracts && anchor localnet",
+    "dev:backend": "cd backend && npm run start:dev",
+    "dev:frontend": "cd frontend && npm start",
+    "dev:indexer": "cd backend && npm run indexer:dev",
+    
+    "build": "npm run build:contracts && npm run build:backend && npm run build:frontend",
+    "build:contracts": "cd contracts && anchor build",
+    "build:backend": "cd backend && npm run build",
+    "build:frontend": "cd frontend && npm run build",
+    
+    "test": "npm run test:contracts && npm run test:backend && npm run test:frontend",
+    "test:contracts": "cd contracts && anchor test",
+    "test:backend": "cd backend && npm run test",
+    "test:frontend": "cd frontend && npm run test",
+    
+    "deploy:devnet": "cd contracts && anchor deploy --provider.cluster devnet",
+    "deploy:mainnet": "cd contracts && anchor deploy --provider.cluster mainnet-beta",
+    
+    "db:init": "cd backend && npm run migration:run",
+    "db:migrate": "cd backend && npm run migration:generate",
+    "db:seed": "cd backend && npm run seed",
+    
+    "lint": "npm run lint:backend && npm run lint:frontend",
+    "lint:backend": "cd backend && npm run lint",
+    "lint:frontend": "cd frontend && npm run lint",
+    
+    "format": "prettier --write \"**/*.{ts,js,json,md}\"",
+    "prepare": "husky install"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^18.4.3",
+    "@commitlint/config-conventional": "^18.4.3",
+    "concurrently": "^8.2.2",
+    "husky": "^8.0.3",
+    "prettier": "^3.1.1"
+  },
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YOUR_ORG/launchpad-platform"
+  },
+  "keywords": [
+    "solana",
+    "defi",
+    "bonding-curve",
+    "token-launch",
+    "ai-agents",
+    "crypto"
+  ],
+  "author": "Gereld 🍆",
+  "license": "MIT"
+}
