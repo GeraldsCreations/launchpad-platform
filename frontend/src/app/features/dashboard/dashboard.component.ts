@@ -253,21 +253,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.solBalance = await this.walletService.getBalance();
 
-    // Load portfolio from API
-    this.apiService.getUserPortfolio(walletAddress)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (data) => {
-          this.portfolio = data.tokens || [];
-          this.totalValue = data.total_value || 0;
-          this.totalPnl = data.total_pnl || 0;
-          this.loading = false;
-        },
-        error: (error) => {
-          console.error('Failed to load portfolio:', error);
-          this.loading = false;
-        }
-      });
+    // TODO: Implement portfolio endpoint in backend
+    // For now, show empty portfolio
+    this.portfolio = [];
+    this.totalValue = 0;
+    this.totalPnl = 0;
+    this.loading = false;
   }
 
   loadTransactionHistory(): void {

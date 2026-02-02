@@ -104,19 +104,20 @@ export class ExploreComponent implements OnInit {
     
     if (this.searchQuery) {
       this.apiService.searchTokens(this.searchQuery).subscribe({
-        next: (tokens) => {
+        next: (tokens: Token[]) => {
           this.tokens = tokens;
           this.loading = false;
         },
         error: () => this.loading = false
       });
     } else {
-      this.apiService.filterTokens({
-        sortBy: this.sortBy,
-        order: 'desc',
-        limit: 50
-      }).subscribe({
-        next: (tokens) => {
+      // Use trending or new tokens based on sort option
+      const apiCall = this.sortBy === 'created_at' 
+        ? this.apiService.getNewTokens(50)
+        : this.apiService.getTrendingTokens(50);
+      
+      apiCall.subscribe({
+        next: (tokens: Token[]) => {
           this.tokens = tokens;
           this.loading = false;
         },
