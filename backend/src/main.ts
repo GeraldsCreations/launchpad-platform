@@ -6,6 +6,19 @@ import * as winston from 'winston';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
+  // Log environment info in development
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔍 [Bootstrap] Environment check:');
+    console.log('  NODE_ENV:', process.env.NODE_ENV);
+    console.log('  DATABASE_HOST:', process.env.DATABASE_HOST || 'NOT SET');
+    console.log('  DATABASE_PORT:', process.env.DATABASE_PORT || 'NOT SET');
+    console.log('  DATABASE_NAME:', process.env.DATABASE_NAME || 'NOT SET');
+    console.log('  DATABASE_USER:', process.env.DATABASE_USER || 'NOT SET');
+    console.log('  DATABASE_PASSWORD:', process.env.DATABASE_PASSWORD ? '***' + process.env.DATABASE_PASSWORD.slice(-4) : 'NOT SET');
+    console.log('  DATABASE_SSL:', process.env.DATABASE_SSL || 'NOT SET');
+    console.log('  SOLANA_RPC_URL:', process.env.SOLANA_RPC_URL || 'NOT SET');
+  }
+
   // Configure Winston logger
   const logger = WinstonModule.createLogger({
     transports: [
