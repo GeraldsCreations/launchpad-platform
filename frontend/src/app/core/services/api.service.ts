@@ -91,23 +91,16 @@ export class ApiService {
     }).pipe(catchError(this.handleError));
   }
 
-  filterTokens(filters: {
-    minMarketCap?: number;
-    maxMarketCap?: number;
-    creatorType?: string;
-    graduated?: boolean;
-    sortBy?: string;
-    order?: 'asc' | 'desc';
-    limit?: number;
-  }): Observable<Token[]> {
-    let params = new HttpParams();
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        params = params.set(key, value.toString());
-      }
-    });
-    return this.http.get<Token[]>(`${this.baseUrl}/tokens/filter`, { params })
-      .pipe(catchError(this.handleError));
+  getGraduatedTokens(limit: number = 20): Observable<Token[]> {
+    return this.http.get<Token[]>(`${this.baseUrl}/tokens/filter/graduated`, {
+      params: new HttpParams().set('limit', limit.toString())
+    }).pipe(catchError(this.handleError));
+  }
+
+  getTokensByCreator(creator: string, limit: number = 20): Observable<Token[]> {
+    return this.http.get<Token[]>(`${this.baseUrl}/tokens/filter/creator/${creator}`, {
+      params: new HttpParams().set('limit', limit.toString())
+    }).pipe(catchError(this.handleError));
   }
 
   createToken(request: CreateTokenRequest): Observable<{ token_address: string; transaction_signature: string }> {
@@ -119,19 +112,17 @@ export class ApiService {
 
   // Trading endpoints
   getBuyQuote(tokenAddress: string, amountSol: number): Observable<QuoteResponse> {
-    return this.http.get<QuoteResponse>(`${this.baseUrl}/trade/quote`, {
+    return this.http.get<QuoteResponse>(`${this.baseUrl}/trade/quote/buy`, {
       params: new HttpParams()
-        .set('token_address', tokenAddress)
-        .set('side', 'buy')
+        .set('token', tokenAddress)
         .set('amount', amountSol.toString())
     }).pipe(catchError(this.handleError));
   }
 
   getSellQuote(tokenAddress: string, amountTokens: number): Observable<QuoteResponse> {
-    return this.http.get<QuoteResponse>(`${this.baseUrl}/trade/quote`, {
+    return this.http.get<QuoteResponse>(`${this.baseUrl}/trade/quote/sell`, {
       params: new HttpParams()
-        .set('token_address', tokenAddress)
-        .set('side', 'sell')
+        .set('token', tokenAddress)
         .set('amount', amountTokens.toString())
     }).pipe(catchError(this.handleError));
   }
@@ -151,31 +142,21 @@ export class ApiService {
   }
 
   getTradeHistory(tokenAddress: string, limit: number = 50): Observable<Trade[]> {
-    return this.http.get<Trade[]>(`${this.baseUrl}/trade/history`, {
-      params: new HttpParams()
-        .set('token_address', tokenAddress)
-        .set('limit', limit.toString())
+    return this.http.get<Trade[]>(`${this.baseUrl}/trade/history/${tokenAddress}`, {
+      params: new HttpParams().set('limit', limit.toString())
+    }).pipe(catchError(this.handleError));
+  }
+
+  getRecentTrades(limit: number = 50): Observable<Trade[]> {
+    return this.http.get<Trade[]>(`${this.baseUrl}/trade/recent`, {
+      params: new HttpParams().set('limit', limit.toString())
     }).pipe(catchError(this.handleError));
   }
 
   // User endpoints
-  getUserPortfolio(walletAddress: string): Observable<any> {
-    return this.http.get(`${this.baseUrl}/user/portfolio`, {
-      params: new HttpParams().set('wallet', walletAddress)
-    }).pipe(catchError(this.handleError));
-  }
-
-  getUserBalance(walletAddress: string): Observable<{ balance: number }> {
-    return this.http.get<{ balance: number }>(`${this.baseUrl}/user/balance`, {
-      params: new HttpParams().set('wallet', walletAddress)
-    }).pipe(catchError(this.handleError));
-  }
-
   getUserTrades(walletAddress: string, limit: number = 50): Observable<Trade[]> {
-    return this.http.get<Trade[]>(`${this.baseUrl}/user/trades`, {
-      params: new HttpParams()
-        .set('wallet', walletAddress)
-        .set('limit', limit.toString())
+    return this.http.get<Trade[]>(`${this.baseUrl}/trade/user/${walletAddress}`, {
+      params: new HttpParams().set('limit', limit.toString())
     }).pipe(catchError(this.handleError));
   }
 

@@ -271,7 +271,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   private loadGraduatedTokens(): void {
-    this.apiService.filterTokens({ graduated: true, sortBy: 'graduated_at', order: 'desc', limit: 20 })
+    this.apiService.getGraduatedTokens(20)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (tokens) => {
