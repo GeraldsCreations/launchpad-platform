@@ -31,14 +31,8 @@ export class TokensController {
     return this.tokenService.createToken(createTokenDto);
   }
 
-  @Get(':address')
-  @ApiOperation({ summary: 'Get token details by address' })
-  @ApiResponse({ status: 200, description: 'Token found' })
-  @ApiResponse({ status: 404, description: 'Token not found' })
-  async getToken(@Param('address') address: string): Promise<Token> {
-    return this.tokenService.getToken(address);
-  }
-
+  // IMPORTANT: Specific routes must come BEFORE wildcard routes!
+  
   @Get('trending')
   @ApiOperation({ summary: 'Get trending tokens' })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
@@ -84,5 +78,14 @@ export class TokensController {
   @ApiResponse({ status: 200, description: 'List of graduated tokens' })
   async getGraduated(@Query('limit') limit?: number): Promise<Token[]> {
     return this.tokenService.getGraduatedTokens(limit || 10);
+  }
+
+  // Wildcard route MUST be last!
+  @Get(':address')
+  @ApiOperation({ summary: 'Get token details by address' })
+  @ApiResponse({ status: 200, description: 'Token found' })
+  @ApiResponse({ status: 404, description: 'Token not found' })
+  async getToken(@Param('address') address: string): Promise<Token> {
+    return this.tokenService.getToken(address);
   }
 }

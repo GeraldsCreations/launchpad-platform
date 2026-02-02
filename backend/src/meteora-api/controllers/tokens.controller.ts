@@ -50,38 +50,7 @@ export class TokensController {
     return await this.poolCreationService.createTokenAndPool(dto);
   }
 
-  @Get(':address')
-  @ApiOperation({ summary: 'Get token information' })
-  @ApiResponse({
-    status: 200,
-    description: 'Token information retrieved',
-    type: TokenInfoDto,
-  })
-  async getToken(@Param('address') address: string): Promise<TokenInfoDto> {
-    const pool = await this.poolRepository.findOne({
-      where: { tokenAddress: address },
-    });
-
-    if (!pool) {
-      throw new Error('Token not found');
-    }
-
-    const priceChange24h = await this.priceOracleService.getPriceChange24h(
-      pool.poolAddress,
-    );
-
-    return {
-      address: pool.tokenAddress,
-      name: pool.tokenName,
-      symbol: pool.tokenSymbol,
-      poolAddress: pool.poolAddress,
-      currentPrice: Number(pool.currentPrice),
-      volume24h: Number(pool.volume24h),
-      liquidity: Number(pool.liquidity),
-      priceChange24h,
-      createdAt: pool.createdAt,
-    };
-  }
+  // IMPORTANT: Specific routes must come BEFORE wildcard routes!
 
   @Get('trending')
   @ApiOperation({ summary: 'Get trending tokens' })
@@ -164,6 +133,40 @@ export class TokensController {
     return {
       tokens,
       total: tokens.length,
+    };
+  }
+
+  // Wildcard route MUST be last!
+  @Get(':address')
+  @ApiOperation({ summary: 'Get token information' })
+  @ApiResponse({
+    status: 200,
+    description: 'Token information retrieved',
+    type: TokenInfoDto,
+  })
+  async getToken(@Param('address') address: string): Promise<TokenInfoDto> {
+    const pool = await this.poolRepository.findOne({
+      where: { tokenAddress: address },
+    });
+
+    if (!pool) {
+      throw new Error('Token not found');
+    }
+
+    const priceChange24h = await this.priceOracleService.getPriceChange24h(
+      pool.poolAddress,
+    );
+
+    return {
+      address: pool.tokenAddress,
+      name: pool.tokenName,
+      symbol: pool.tokenSymbol,
+      poolAddress: pool.poolAddress,
+      currentPrice: Number(pool.currentPrice),
+      volume24h: Number(pool.volume24h),
+      liquidity: Number(pool.liquidity),
+      priceChange24h,
+      createdAt: pool.createdAt,
     };
   }
 }
