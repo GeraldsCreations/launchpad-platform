@@ -219,7 +219,11 @@ export class WalletButtonComponent implements OnInit, OnDestroy {
 
     this.walletService.wallet$
       .pipe(
-        distinctUntilChanged((prev, curr) => prev?.equals(curr ?? null) ?? curr === null),
+        distinctUntilChanged((prev, curr) => {
+          if (!prev && !curr) return true;
+          if (!prev || !curr) return false;
+          return prev.equals(curr);
+        }),
         takeUntil(this.destroy$)
       )
       .subscribe(wallet => {
