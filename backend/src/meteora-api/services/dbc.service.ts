@@ -156,30 +156,28 @@ export class DbcService {
         // Additional config
         collectFeeMode: 0, // CollectFeeMode.QuoteToken
         creatorTradingFeePercentage: params.creatorFeeBps,
-        poolCreationFee: params.poolCreationFee,
+        poolCreationFee: Math.floor(params.poolCreationFee), // Keep as number - SDK will convert
         migrationOption: MigrationOption.MET_DAMM_V2,
         migrationFeeOption: MigrationFeeOption.FixedBps25, // 0.25% after migration
       });
 
       this.logger.log(`✅ Bonding curve built with ${curveConfig.curve?.length || 0} points`);
-      this.logger.log(`Curve config keys: ${Object.keys(curveConfig).join(', ')}`);
+      this.logger.log(`poolCreationFee TYPE: ${typeof curveConfig.poolCreationFee}`);
+      this.logger.log(`poolCreationFee VALUE: ${curveConfig.poolCreationFee}`);
+      this.logger.log(`poolCreationFee IS BN: ${curveConfig.poolCreationFee instanceof BN}`);
+      this.logger.log(`poolCreationFee toString: ${curveConfig.poolCreationFee?.toString?.()}`);
       this.logger.log(`Has poolFees? ${!!curveConfig.poolFees}`);
-      if (curveConfig.poolFees) {
-        this.logger.log(`Pool fees: ${JSON.stringify(curveConfig.poolFees)}`);
-      }
 
       // Generate config keypair
       const configKeypair = Keypair.generate();
 
-      // Create config transaction (curveConfig contains all parameters)
+      // Create config transaction (spread curveConfig directly!)
       const configTx = await this.partnerService.createConfig({
-        createConfigParam: {
-          configParameters: curveConfig, // Use the complete curve config object
-          quoteMint: new PublicKey('So11111111111111111111111111111111111111112'), // Native SOL
-        },
+        ...curveConfig, // Spread the curve config at the top level
         config: configKeypair,
         feeClaimer: platformWallet.publicKey,
         leftoverReceiver: platformWallet.publicKey,
+        quoteMint: new PublicKey('So11111111111111111111111111111111111111112'), // Native SOL
         payer: platformWallet.publicKey,
       });
 
