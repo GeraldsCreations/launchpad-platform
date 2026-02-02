@@ -8,6 +8,10 @@ import { User } from './entities/user.entity';
 import { PlatformStats } from './entities/platform-stats.entity';
 import { MeteoraPool } from '../meteora-api/entities/meteora-pool.entity';
 import { MeteoraTransaction } from '../meteora-api/entities/meteora-transaction.entity';
+import { FeeClaimerVault } from './entities/fee-claimer-vault.entity';
+import { BotCreatorReward } from './entities/bot-creator-reward.entity';
+import { LpPosition } from '../meteora-api/entities/lp-position.entity';
+import { LpWithdrawal } from '../meteora-api/entities/lp-withdrawal.entity';
 import { TokenRepository } from './repositories/token.repository';
 import { TradeRepository } from './repositories/trade.repository';
 
@@ -24,7 +28,7 @@ import { TradeRepository } from './repositories/trade.repository';
           username: configService.get('DATABASE_USER'),
           password: configService.get('DATABASE_PASSWORD'),
           database: configService.get('DATABASE_NAME'),
-          entities: [Token, Trade, Holder, User, PlatformStats, MeteoraPool, MeteoraTransaction],
+          entities: [Token, Trade, Holder, User, PlatformStats, MeteoraPool, MeteoraTransaction, FeeClaimerVault, BotCreatorReward, LpPosition, LpWithdrawal],
           synchronize: configService.get('NODE_ENV') === 'development',
           logging: configService.get('NODE_ENV') === 'development',
           ssl: configService.get('DATABASE_SSL') === 'true' ? { rejectUnauthorized: false } : false,
@@ -51,7 +55,7 @@ import { TradeRepository } from './repositories/trade.repository';
         return dbConfig;
       },
     }),
-    TypeOrmModule.forFeature([Token, Trade, Holder, User, PlatformStats, MeteoraPool, MeteoraTransaction]),
+    TypeOrmModule.forFeature([Token, Trade, Holder, User, PlatformStats, MeteoraPool, MeteoraTransaction, FeeClaimerVault, BotCreatorReward, LpPosition, LpWithdrawal]),
   ],
   providers: [TokenRepository, TradeRepository],
   exports: [TypeOrmModule, TokenRepository, TradeRepository],

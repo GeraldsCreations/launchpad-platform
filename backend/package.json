@@ -27,6 +27,7 @@
   "dependencies": {
     "@coral-xyz/anchor": "^0.30.1",
     "@meteora-ag/dlmm": "^1.9.3",
+    "@meteora-ag/dynamic-bonding-curve-sdk": "^1.5.1",
     "@nestjs/common": "^10.3.0",
     "@nestjs/config": "^3.1.1",
     "@nestjs/core": "^10.3.0",

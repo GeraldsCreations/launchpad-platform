@@ -8,14 +8,17 @@ import {
   Transaction,
   sendAndConfirmTransaction,
   LAMPORTS_PER_SOL,
+  SystemProgram,
+  ComputeBudgetProgram,
 } from '@solana/web3.js';
 import {
   createMint,
   getOrCreateAssociatedTokenAccount,
   mintTo,
   TOKEN_PROGRAM_ID,
+  getAssociatedTokenAddressSync,
 } from '@solana/spl-token';
-import DLMM, { ActivationType } from '@meteora-ag/dlmm';
+import DLMM, { ActivationType, StrategyType, LBCLMM_PROGRAM_IDS } from '@meteora-ag/dlmm';
 import BN from 'bn.js';
 import { MeteoraService } from './meteora.service';
 import { MeteoraPool } from '../entities/meteora-pool.entity';
@@ -29,6 +32,9 @@ export class PoolCreationService {
 
   // Native SOL mint address (wrapped SOL)
   private readonly NATIVE_SOL = new PublicKey('So11111111111111111111111111111111111111112');
+  
+  // Meteora DLMM program ID (devnet)
+  private readonly DLMM_PROGRAM_ID = new PublicKey(LBCLMM_PROGRAM_IDS['devnet']);
 
   constructor(
     private meteoraService: MeteoraService,
@@ -47,11 +53,26 @@ export class PoolCreationService {
     const connection = this.meteoraService.getConnection();
 
     try {
-      // In production, you'd get the creator's keypair from a wallet/signature
-      // For now, we'll create a temporary keypair for testing
-      const creatorKeypair = Keypair.generate();
+      // Load platform wallet from environment
+      const platformWalletKey = process.env.PLATFORM_WALLET_KEYPAIR;
+      if (!platformWalletKey) {
+        throw new Error('PLATFORM_WALLET_KEYPAIR not configured');
+      }
       
-      this.logger.log(`Creating token with symbol: ${dto.symbol}`);
+      const keypairArray = JSON.parse(platformWalletKey);
+      const creatorKeypair = Keypair.fromSecretKey(new Uint8Array(keypairArray));
+      
+      this.logger.log(`Creating token with symbol: ${dto.symbol} using platform wallet: ${creatorKeypair.publicKey.toBase58()}`);
+
+      // Check balance
+      const balance = await connection.getBalance(creatorKeypair.publicKey);
+      const requiredBalance = (dto.initialLiquidity + 0.5) * LAMPORTS_PER_SOL; // Liquidity + fees
+      
+      if (balance < requiredBalance) {
+        throw new Error(`Insufficient balance. Have: ${balance / LAMPORTS_PER_SOL} SOL, Need: ${requiredBalance / LAMPORTS_PER_SOL} SOL`);
+      }
+
+      this.logger.log(`Platform wallet balance: ${balance / LAMPORTS_PER_SOL} SOL`);
 
       // Step 1: Create the token mint
       const tokenMint = await this.createTokenMint(
@@ -63,7 +84,7 @@ export class PoolCreationService {
       this.logger.log(`Token mint created: ${tokenMint.toBase58()}`);
 
       // Step 2: Create Meteora DLMM pool
-      const { poolAddress, signature } = await this.createMeteoraPool(
+      const { poolAddress, signature: createPoolSig } = await this.createMeteoraPool(
         connection,
         creatorKeypair,
         tokenMint,
@@ -72,11 +93,21 @@ export class PoolCreationService {
 
       this.logger.log(`Meteora pool created: ${poolAddress}`);
 
-      // Step 3: Create fee claimer vault
-      // Derive fee claimer vault PDA (Program Derived Address)
+      // Step 3: Add initial liquidity
+      const liquiditySig = await this.addInitialLiquidity(
+        connection,
+        creatorKeypair,
+        poolAddress,
+        tokenMint,
+        dto.initialLiquidity,
+      );
+
+      this.logger.log(`Initial liquidity added: ${liquiditySig}`);
+
+      // Step 4: Create fee claimer vault
       const [feeClaimerPDA] = await PublicKey.findProgramAddress(
         [Buffer.from('fee_claimer'), new PublicKey(poolAddress).toBuffer()],
-        new PublicKey('LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo'), // Meteora DLMM program
+        this.DLMM_PROGRAM_ID,
       );
 
       const vault = this.vaultRepository.create({
@@ -93,7 +124,7 @@ export class PoolCreationService {
 
       this.logger.log(`Fee claimer vault created: ${vault.feeClaimerPubkey}`);
 
-      // Step 4: Save pool to database
+      // Step 5: Save pool to database
       const pool = new MeteoraPool();
       pool.poolAddress = poolAddress;
       pool.tokenAddress = tokenMint.toBase58();
@@ -105,28 +136,28 @@ export class PoolCreationService {
       pool.creatorBotWallet = dto.creatorBotWallet || undefined;
       pool.creatorRevenueSharePercent = dto.revenueSharePercent || 50;
       pool.binStep = dto.binStep || 25;
-      pool.activeId = this.calculateActiveBinId(dto.initialPrice);
+      pool.activeId = this.calculateActiveBinId(dto.initialPrice, dto.binStep || 25);
       pool.currentPrice = dto.initialPrice;
       pool.volume24h = 0;
       pool.liquidity = dto.initialLiquidity;
       pool.tvl = dto.initialLiquidity * dto.initialPrice;
       pool.feeRate = dto.feeBps || 25;
       pool.platformFeesCollected = 0;
-      pool.launchFeeCollected = this.meteoraService.getLaunchFee();
+      pool.launchFeeCollected = 0.05; // ~0.05 SOL for transaction fees
       pool.isActive = true;
 
       await this.poolRepository.save(pool);
 
-      // Step 5: Record creation transaction
+      // Step 6: Record creation transaction
       const transaction = this.transactionRepository.create({
-        signature,
+        signature: createPoolSig,
         poolAddress,
         wallet: dto.creator,
         txType: TransactionType.CREATE,
         tokenAmount: 0,
-        solAmount: dto.initialLiquidity + this.meteoraService.getLaunchFee(),
+        solAmount: dto.initialLiquidity + 0.05,
         price: dto.initialPrice,
-        platformFee: this.meteoraService.getLaunchFee(),
+        platformFee: 0.05,
         success: true,
       });
 
@@ -136,8 +167,9 @@ export class PoolCreationService {
         success: true,
         poolAddress,
         tokenAddress: tokenMint.toBase58(),
-        signature,
-        launchFee: this.meteoraService.getLaunchFee(),
+        signature: createPoolSig,
+        liquiditySignature: liquiditySig,
+        launchFee: 0.05,
         message: 'Token and pool created successfully',
       };
     } catch (error) {
@@ -147,7 +179,7 @@ export class PoolCreationService {
   }
 
   /**
-   * Create token mint
+   * Create token mint with initial supply
    */
   private async createTokenMint(
     connection: Connection,
@@ -155,32 +187,39 @@ export class PoolCreationService {
     dto: CreateTokenDto,
   ): Promise<PublicKey> {
     try {
+      this.logger.log('Creating SPL token mint...');
+      
       // Create mint with 9 decimals (standard for SPL tokens)
       const mint = await createMint(
         connection,
         payer,
-        payer.publicKey,
-        payer.publicKey,
+        payer.publicKey, // mint authority
+        null, // freeze authority (none)
         9, // decimals
-        undefined,
+        undefined, // keypair (auto-generate)
         { commitment: 'confirmed' },
         TOKEN_PROGRAM_ID,
       );
 
-      // Create token account for creator
+      this.logger.log(`Mint created: ${mint.toBase58()}`);
+
+      // Create token account for platform wallet
       const tokenAccount = await getOrCreateAssociatedTokenAccount(
         connection,
         payer,
         mint,
         payer.publicKey,
-        false,
+        false, // allowOwnerOffCurve
         'confirmed',
         { commitment: 'confirmed' },
         TOKEN_PROGRAM_ID,
       );
 
-      // Mint initial supply (e.g., 1 billion tokens)
+      this.logger.log(`Token account created: ${tokenAccount.address.toBase58()}`);
+
+      // Mint initial supply (1 billion tokens)
       const initialSupply = new BN(1_000_000_000).mul(new BN(10).pow(new BN(9)));
+      
       await mintTo(
         connection,
         payer,
@@ -192,6 +231,8 @@ export class PoolCreationService {
         { commitment: 'confirmed' },
         TOKEN_PROGRAM_ID,
       );
+
+      this.logger.log(`Minted ${initialSupply.toString()} tokens to platform wallet`);
 
       return mint;
     } catch (error) {
@@ -208,13 +249,18 @@ export class PoolCreationService {
     creator: Keypair,
     tokenMint: PublicKey,
     dto: CreateTokenDto,
-  ) {
+  ): Promise<{ poolAddress: string; signature: string }> {
     try {
+      this.logger.log('Creating Meteora DLMM pool...');
+      
       const binStep = new BN(dto.binStep || 25);
       const feeBps = new BN(dto.feeBps || 25);
-      const activeId = new BN(this.calculateActiveBinId(dto.initialPrice));
+      const activeId = new BN(this.calculateActiveBinId(dto.initialPrice, dto.binStep || 25));
+
+      this.logger.log(`Pool parameters - BinStep: ${binStep.toString()}, FeeBps: ${feeBps.toString()}, ActiveId: ${activeId.toString()}`);
 
       // Create customizable permissionless LB pair
+      // tokenX = new token, tokenY = SOL (native)
       const createPoolTx = await DLMM.createCustomizablePermissionlessLbPair(
         connection,
         binStep,
@@ -222,31 +268,59 @@ export class PoolCreationService {
         this.NATIVE_SOL, // tokenY (SOL)
         activeId,
         feeBps,
-        ActivationType.Timestamp,
+        ActivationType.Timestamp, // Activate immediately
         false, // hasAlphaVault
         creator.publicKey,
-        new BN(Math.floor(Date.now() / 1000)), // Activate immediately
+        new BN(Math.floor(Date.now() / 1000)), // activationPoint (now)
         false, // creatorPoolOnOffControl
       );
 
+      // Add compute budget to avoid transaction failures
+      const modifyComputeUnits = ComputeBudgetProgram.setComputeUnitLimit({
+        units: 400_000,
+      });
+
+      const addPriorityFee = ComputeBudgetProgram.setComputeUnitPrice({
+        microLamports: 50_000,
+      });
+
+      // Combine instructions
+      const transaction = new Transaction()
+        .add(modifyComputeUnits)
+        .add(addPriorityFee)
+        .add(...createPoolTx.instructions);
+
       // Sign and send transaction
+      this.logger.log('Sending pool creation transaction...');
+      
       const signature = await sendAndConfirmTransaction(
         connection,
-        createPoolTx,
+        transaction,
         [creator],
         {
           commitment: 'confirmed',
+          maxRetries: 3,
         },
       );
 
-      // Derive pool address
-      // Note: In production, you'd parse the transaction to get the actual pool address
-      // For now, we'll use a placeholder approach
-      const poolAddress = await this.findPoolAddress(
+      this.logger.log(`Pool creation tx: ${signature}`);
+
+      // Wait a moment for the pool to be indexed
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Find the created pool address
+      const poolPubkey = await DLMM.getCustomizablePermissionlessLbPairIfExists(
         connection,
         tokenMint,
         this.NATIVE_SOL,
       );
+
+      if (!poolPubkey) {
+        throw new Error('Pool not found after creation');
+      }
+
+      const poolAddress = poolPubkey.toBase58();
+      this.logger.log(`Pool address retrieved: ${poolAddress}`);
 
       return {
         poolAddress,
@@ -259,42 +333,102 @@ export class PoolCreationService {
   }
 
   /**
-   * Calculate active bin ID from price
+   * Add initial liquidity to the pool
    */
-  private calculateActiveBinId(price: number): number {
-    // Convert price to bin ID using Meteora's formula
-    // binId = floor(log(price) / log(1 + binStep/10000))
-    // For simplicity, using a basic formula
-    const binStep = 25;
-    const priceRatio = 1 + binStep / 10000;
-    const binId = Math.floor(Math.log(price) / Math.log(priceRatio));
-    return binId;
+  private async addInitialLiquidity(
+    connection: Connection,
+    payer: Keypair,
+    poolAddress: string,
+    tokenMint: PublicKey,
+    liquidityAmountSOL: number,
+  ): Promise<string> {
+    try {
+      this.logger.log(`Adding ${liquidityAmountSOL} SOL initial liquidity...`);
+
+      // Get DLMM instance
+      const dlmm = await DLMM.create(connection, new PublicKey(poolAddress));
+
+      // Generate position keypair
+      const positionKeypair = Keypair.generate();
+      this.logger.log(`Position pubkey: ${positionKeypair.publicKey.toBase58()}`);
+
+      // Calculate token amounts
+      // We're providing SOL (tokenY), so calculate how many tokens (tokenX) to provide
+      const solAmount = liquidityAmountSOL * LAMPORTS_PER_SOL;
+      
+      // For initial liquidity, we'll use a spot concentration strategy
+      // This puts all liquidity in bins around the active bin
+      const activeBin = await dlmm.getActiveBin();
+      const minBinId = Number(activeBin.binId) - 3; // 3 bins below
+      const maxBinId = Number(activeBin.binId) + 3; // 3 bins above
+
+      this.logger.log(`Active bin: ${activeBin.binId}, Range: ${minBinId} to ${maxBinId}`);
+
+      // Initialize position and add liquidity using balanced strategy
+      const addLiquidityTx = await dlmm.initializePositionAndAddLiquidityByStrategy({
+        positionPubKey: positionKeypair.publicKey,
+        totalXAmount: new BN(0), // We'll let it calculate based on SOL
+        totalYAmount: new BN(solAmount),
+        strategy: {
+          minBinId,
+          maxBinId,
+          strategyType: StrategyType.Spot,
+        },
+        user: payer.publicKey,
+        slippage: 500, // 5% slippage tolerance
+      });
+
+      // Add compute budget
+      const modifyComputeUnits = ComputeBudgetProgram.setComputeUnitLimit({
+        units: 600_000,
+      });
+
+      const addPriorityFee = ComputeBudgetProgram.setComputeUnitPrice({
+        microLamports: 50_000,
+      });
+
+      // Combine instructions
+      const transaction = new Transaction()
+        .add(modifyComputeUnits)
+        .add(addPriorityFee)
+        .add(...addLiquidityTx.instructions);
+
+      this.logger.log('Sending liquidity transaction...');
+
+      // Sign and send
+      const signature = await sendAndConfirmTransaction(
+        connection,
+        transaction,
+        [payer, positionKeypair],
+        {
+          commitment: 'confirmed',
+          maxRetries: 3,
+        },
+      );
+
+      this.logger.log(`Liquidity added: ${signature}`);
+
+      return signature;
+    } catch (error) {
+      this.logger.error('Failed to add initial liquidity:', error);
+      throw error;
+    }
   }
 
   /**
-   * Find pool address (helper method)
+   * Calculate active bin ID from price
+   * Formula: binId = floor(log(price) / log(1 + binStep/10000))
    */
-  private async findPoolAddress(
-    connection: Connection,
-    tokenX: PublicKey,
-    tokenY: PublicKey,
-  ): Promise<string> {
-    try {
-      // Use Meteora SDK to find the pool
-      const poolPubkey = await DLMM.getCustomizablePermissionlessLbPairIfExists(
-        connection,
-        tokenX,
-        tokenY,
-      );
-
-      if (poolPubkey) {
-        return poolPubkey.toBase58();
-      }
-
-      throw new Error('Pool address not found after creation');
-    } catch (error) {
-      this.logger.error('Failed to find pool address:', error);
-      throw error;
+  private calculateActiveBinId(price: number, binStep: number): number {
+    if (price <= 0) {
+      throw new Error('Price must be greater than 0');
     }
+
+    const priceRatio = 1 + binStep / 10000;
+    const binId = Math.floor(Math.log(price) / Math.log(priceRatio));
+    
+    this.logger.log(`Calculated binId ${binId} from price ${price} and binStep ${binStep}`);
+    
+    return binId;
   }
 }

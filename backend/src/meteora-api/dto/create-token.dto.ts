@@ -27,7 +27,7 @@ export class CreateTokenDto {
 
   @ApiProperty({ description: 'Initial liquidity in SOL', example: 5 })
   @IsNumber()
-  @Min(1)
+  @Min(0.1)
   initialLiquidity: number;
 
   @ApiProperty({ description: 'Bin step (volatility)', example: 25, default: 25 })
