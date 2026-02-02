@@ -1,167 +1,132 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { Connection, PublicKey, Transaction } from '@solana/web3.js';
-import { environment } from '../../../environments/environment';
+import { SolanaWalletService, WalletState } from './solana-wallet.service';
+import { PublicKey, Transaction, VersionedTransaction } from '@solana/web3.js';
 
-export interface WalletAdapter {
-  publicKey: PublicKey | null;
-  connected: boolean;
-  connecting: boolean;
-  connect(): Promise<void>;
-  disconnect(): Promise<void>;
-  signTransaction(transaction: Transaction): Promise<Transaction>;
-  signAllTransactions(transactions: Transaction[]): Promise<Transaction[]>;
-}
-
+/**
+ * Wallet Service - Facade for Solana wallet operations
+ * Uses SolanaWalletService (Reown AppKit) under the hood
+ */
 @Injectable({
   providedIn: 'root'
 })
 export class WalletService {
-  private walletSubject = new BehaviorSubject<PublicKey | null>(null);
   private connectedSubject = new BehaviorSubject<boolean>(false);
   private connectingSubject = new BehaviorSubject<boolean>(false);
-  private walletAdapter: any = null;
-  private connection: Connection;
+  private walletSubject = new BehaviorSubject<PublicKey | null>(null);
 
-  public wallet$ = this.walletSubject.asObservable();
   public connected$ = this.connectedSubject.asObservable();
   public connecting$ = this.connectingSubject.asObservable();
+  public wallet$ = this.walletSubject.asObservable();
 
-  constructor() {
-    this.connection = new Connection(environment.solanaRpcUrl, 'confirmed');
-    this.detectWallet();
-  }
-
-  private detectWallet(): void {
-    // Check if Phantom wallet is installed
-    if ((window as any).solana && (window as any).solana.isPhantom) {
-      this.walletAdapter = (window as any).solana;
+  constructor(private solanaWallet: SolanaWalletService) {
+    // Subscribe to wallet state changes
+    this.solanaWallet.getWalletState().subscribe((state: WalletState) => {
+      this.connectedSubject.next(state.connected);
       
-      // Listen for account changes
-      this.walletAdapter.on('connect', () => {
-        this.handleConnect();
-      });
-
-      this.walletAdapter.on('disconnect', () => {
-        this.handleDisconnect();
-      });
-
-      this.walletAdapter.on('accountChanged', (publicKey: PublicKey | null) => {
-        if (publicKey) {
-          this.walletSubject.next(publicKey);
-        } else {
-          this.handleDisconnect();
+      if (state.address) {
+        try {
+          this.walletSubject.next(new PublicKey(state.address));
+        } catch (error) {
+          console.error('Invalid public key:', error);
+          this.walletSubject.next(null);
         }
-      });
-
-      // Check if already connected
-      if (this.walletAdapter.isConnected) {
-        this.handleConnect();
+      } else {
+        this.walletSubject.next(null);
       }
-    }
+    });
   }
 
+  /**
+   * Connect wallet (opens modal)
+   */
   async connect(): Promise<void> {
-    if (!this.walletAdapter) {
-      throw new Error('Wallet not detected. Please install Phantom, Solflare, or Coinbase Wallet.');
-    }
-
-    if (this.connectedSubject.value) {
-      return;
-    }
-
+    this.connectingSubject.next(true);
+    
     try {
-      this.connectingSubject.next(true);
-      await this.walletAdapter.connect();
-    } catch (error: any) {
-      console.error('Failed to connect wallet:', error);
+      await this.solanaWallet.connect();
+    } finally {
       this.connectingSubject.next(false);
-      throw error;
     }
   }
 
+  /**
+   * Disconnect wallet
+   */
   async disconnect(): Promise<void> {
-    if (!this.walletAdapter) {
-      return;
-    }
-
-    try {
-      await this.walletAdapter.disconnect();
-    } catch (error) {
-      console.error('Failed to disconnect wallet:', error);
-      throw error;
-    }
+    await this.solanaWallet.disconnect();
   }
 
-  private handleConnect(): void {
-    if (this.walletAdapter && this.walletAdapter.publicKey) {
-      this.walletSubject.next(this.walletAdapter.publicKey);
-      this.connectedSubject.next(true);
-      this.connectingSubject.next(false);
-    }
-  }
-
-  private handleDisconnect(): void {
-    this.walletSubject.next(null);
-    this.connectedSubject.next(false);
-    this.connectingSubject.next(false);
-  }
-
-  async signTransaction(transaction: Transaction): Promise<Transaction> {
-    if (!this.walletAdapter || !this.connectedSubject.value) {
-      throw new Error('Wallet not connected');
-    }
-
-    try {
-      return await this.walletAdapter.signTransaction(transaction);
-    } catch (error) {
-      console.error('Failed to sign transaction:', error);
-      throw error;
-    }
-  }
-
-  async signAllTransactions(transactions: Transaction[]): Promise<Transaction[]> {
-    if (!this.walletAdapter || !this.connectedSubject.value) {
-      throw new Error('Wallet not connected');
-    }
-
-    try {
-      return await this.walletAdapter.signAllTransactions(transactions);
-    } catch (error) {
-      console.error('Failed to sign transactions:', error);
-      throw error;
-    }
-  }
-
-  async getBalance(): Promise<number> {
-    const publicKey = this.walletSubject.value;
-    if (!publicKey) {
-      return 0;
-    }
-
-    try {
-      const balance = await this.connection.getBalance(publicKey);
-      return balance / 1e9; // Convert lamports to SOL
-    } catch (error) {
-      console.error('Failed to get balance:', error);
-      return 0;
-    }
-  }
-
+  /**
+   * Get wallet public key
+   */
   getPublicKey(): PublicKey | null {
-    return this.walletSubject.value;
+    return this.solanaWallet.getPublicKey();
   }
 
+  /**
+   * Get wallet address as string
+   */
   getPublicKeyString(): string | null {
-    const publicKey = this.walletSubject.value;
-    return publicKey ? publicKey.toBase58() : null;
+    return this.solanaWallet.getAddress();
   }
 
+  /**
+   * Get SOL balance
+   */
+  async getBalance(): Promise<number> {
+    const state = this.solanaWallet.getCurrentState();
+    
+    if (state.balance !== null) {
+      return state.balance;
+    }
+
+    // Fetch if not available
+    await this.solanaWallet.updateBalance();
+    const updatedState = this.solanaWallet.getCurrentState();
+    
+    return updatedState.balance || 0;
+  }
+
+  /**
+   * Check if wallet is connected
+   */
   isConnected(): boolean {
-    return this.connectedSubject.value;
+    return this.solanaWallet.isConnected();
   }
 
-  getConnection(): Connection {
-    return this.connection;
+  /**
+   * Sign and send transaction
+   */
+  async signAndSendTransaction(transaction: Transaction | VersionedTransaction): Promise<string> {
+    return this.solanaWallet.signAndSendTransaction(transaction);
+  }
+
+  /**
+   * Sign message
+   */
+  async signMessage(message: Uint8Array): Promise<Uint8Array> {
+    return this.solanaWallet.signMessage(message);
+  }
+
+  /**
+   * Request airdrop (devnet/testnet only)
+   */
+  async requestAirdrop(amount: number = 1): Promise<string> {
+    return this.solanaWallet.requestAirdrop(amount);
+  }
+
+  /**
+   * Get current network
+   */
+  getCurrentNetwork(): 'mainnet' | 'testnet' | 'devnet' {
+    return this.solanaWallet.getCurrentState().network;
+  }
+
+  /**
+   * Get wallet state
+   */
+  getWalletState(): Observable<WalletState> {
+    return this.solanaWallet.getWalletState();
   }
 }
