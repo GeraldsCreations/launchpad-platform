@@ -22,6 +22,16 @@ html, body {
 
 body {
   @apply bg-gray-950 text-gray-100;
+  /* OpenClaw-inspired gradient background */
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a0a2e 50%, #0a0a0a 100%);
+  background-attachment: fixed;
+}
+
+/* OpenClaw purple accent colors */
+:root {
+  --openclaw-purple: #7c3aed;
+  --openclaw-blue: #3b82f6;
+  --gradient-primary: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
 }
 
 /* Dark mode support */

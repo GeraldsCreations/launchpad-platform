@@ -30,10 +30,10 @@ import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
     <div class="home-container max-w-7xl mx-auto px-4 py-8">
       <!-- Hero Section -->
       <div class="mb-8 text-center">
-        <h1 class="text-5xl font-bold mb-3 bg-gradient-to-r from-primary-400 to-secondary-400 bg-clip-text text-transparent">
-          🚀 Meteora LaunchPad
+        <h1 class="text-5xl font-bold mb-3 bg-gradient-to-r from-purple-400 to-blue-500 bg-clip-text text-transparent">
+          🍆 Pump Bots
         </h1>
-        <p class="text-xl text-gray-400 mb-6">Discover and trade the latest tokens on Solana</p>
+        <p class="text-xl text-gray-400 mb-6">AI-powered token launch platform on Solana</p>
         
         <!-- Search Bar -->
         <div class="max-w-2xl mx-auto mb-6">
