@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Param, Body, Query } from '@nestjs/common';
 import { FeeCollectionService } from '../services/fee-collection.service';
 
-@Controller('v1/rewards')
+@Controller('rewards')
 export class RewardsController {
   constructor(private feeCollectionService: FeeCollectionService) {}
 
