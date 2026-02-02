@@ -8,7 +8,7 @@ use mpl_token_metadata::{
     types::DataV2,
 };
 
-declare_id!("TknFctry1111111111111111111111111111111111");
+declare_id!("8SJXJETfrrb8YHCr1FJPDVXy6F3pV2aQ6N8RWB2N3e5h");
 
 #[program]
 pub mod token_factory {

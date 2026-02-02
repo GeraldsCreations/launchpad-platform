@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Mint, Token, TokenAccount, MintTo, Burn, Transfer};
 
-declare_id!("BondCrv11111111111111111111111111111111111");
+declare_id!("2bkDb7cox1a36tSuGdkTJAmmb4Qmm9yudSTbpL5yqmuz");
 
 #[program]
 pub mod bonding_curve {

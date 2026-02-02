@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Mint, Token, TokenAccount, Transfer};
 
-declare_id!("GradHdlr1111111111111111111111111111111111");
+declare_id!("BMH2GPLn8woVeGFKAHwJ3wPpBf7mhxRipPzPm9d6Pbjt");
 
 // Raydium AMM program ID (mainnet/devnet)
 const RAYDIUM_AMM_PROGRAM: &str = "675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8";

@@ -7,19 +7,19 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-bonding_curve = "BondCrv11111111111111111111111111111111111"
-token_factory = "TknFctry1111111111111111111111111111111111"
-graduation = "GradHdlr1111111111111111111111111111111111"
+bonding_curve = "2bkDb7cox1a36tSuGdkTJAmmb4Qmm9yudSTbpL5yqmuz"
+token_factory = "8SJXJETfrrb8YHCr1FJPDVXy6F3pV2aQ6N8RWB2N3e5h"
+graduation = "BMH2GPLn8woVeGFKAHwJ3wPpBf7mhxRipPzPm9d6Pbjt"
 
 [programs.devnet]
-bonding_curve = "BondCrv11111111111111111111111111111111111"
-token_factory = "TknFctry1111111111111111111111111111111111"
-graduation = "GradHdlr1111111111111111111111111111111111"
+bonding_curve = "2bkDb7cox1a36tSuGdkTJAmmb4Qmm9yudSTbpL5yqmuz"
+token_factory = "8SJXJETfrrb8YHCr1FJPDVXy6F3pV2aQ6N8RWB2N3e5h"
+graduation = "BMH2GPLn8woVeGFKAHwJ3wPpBf7mhxRipPzPm9d6Pbjt"
 
 [programs.mainnet]
-bonding_curve = "BondCrv11111111111111111111111111111111111"
-token_factory = "TknFctry1111111111111111111111111111111111"
-graduation = "GradHdlr1111111111111111111111111111111111"
+bonding_curve = "2bkDb7cox1a36tSuGdkTJAmmb4Qmm9yudSTbpL5yqmuz"
+token_factory = "8SJXJETfrrb8YHCr1FJPDVXy6F3pV2aQ6N8RWB2N3e5h"
+graduation = "BMH2GPLn8woVeGFKAHwJ3wPpBf7mhxRipPzPm9d6Pbjt"
 
 [registry]
 url = "https://api.apr.dev"
