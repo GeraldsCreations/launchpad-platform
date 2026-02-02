@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Observable, Subject, interval } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
+import { io, Socket } from 'socket.io-client';
 import { environment } from '../../../environments/environment';
 
 export interface WebSocketMessage {
@@ -13,6 +14,7 @@ export interface PriceUpdateEvent {
   price: number;
   market_cap: number;
   volume_24h: number;
+  timestamp: number;
 }
 
 export interface TokenCreatedEvent {
@@ -21,6 +23,8 @@ export interface TokenCreatedEvent {
   name: string;
   symbol: string;
   creator: string;
+  creator_type: string;
+  timestamp: number;
 }
 
 export interface TradeEvent {
@@ -28,108 +32,117 @@ export interface TradeEvent {
   token_address: string;
   side: 'buy' | 'sell';
   amount_sol: number;
-  amount_tokens: number;
+  amount_tokens: string;
   trader: string;
   price: number;
+  timestamp: number;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class WebSocketService {
-  private ws: WebSocket | null = null;
-  private messageSubject = new Subject<WebSocketMessage>();
-  private reconnectAttempts = 0;
-  private maxReconnectAttempts = 5;
-  private reconnectDelay = 3000;
+  private socket: Socket | null = null;
+  private messageSubject = new Subject<any>();
+  private connected = false;
 
   public messages$ = this.messageSubject.asObservable();
 
   constructor() {
-    // TODO: Install socket.io-client and migrate from native WebSocket to Socket.IO
-    // Backend uses Socket.IO, not native WebSocket
-    // For now, disable auto-connect to prevent console errors
-    // this.connect();
+    this.connect();
   }
 
   private connect(): void {
-    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+    if (this.socket?.connected) {
       return;
     }
 
-    try {
-      this.ws = new WebSocket(environment.wsUrl);
+    // Socket.IO connection - backend serves at /v1/ws path
+    this.socket = io(environment.apiUrl.replace('/v1', ''), {
+      path: '/v1/ws',
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      reconnectionAttempts: 5,
+    });
 
-      this.ws.onopen = () => {
-        console.log('WebSocket connected');
-        this.reconnectAttempts = 0;
-      };
+    this.socket.on('connect', () => {
+      console.log('✅ Socket.IO connected:', this.socket?.id);
+      this.connected = true;
+    });
 
-      this.ws.onmessage = (event) => {
-        try {
-          const message = JSON.parse(event.data);
-          this.messageSubject.next(message);
-        } catch (error) {
-          console.error('Failed to parse WebSocket message:', error);
-        }
-      };
+    this.socket.on('disconnect', (reason) => {
+      console.log('❌ Socket.IO disconnected:', reason);
+      this.connected = false;
+    });
 
-      this.ws.onerror = (error) => {
-        console.error('WebSocket error:', error);
-      };
+    this.socket.on('connect_error', (error) => {
+      console.error('Socket.IO connection error:', error.message);
+    });
 
-      this.ws.onclose = () => {
-        console.log('WebSocket disconnected');
-        this.reconnect();
-      };
-    } catch (error) {
-      console.error('Failed to create WebSocket connection:', error);
-      this.reconnect();
-    }
+    // Listen for all message events
+    this.socket.on('message', (data: any) => {
+      console.log('📨 WebSocket message:', data);
+      this.messageSubject.next(data);
+    });
+
+    // Listen for subscription confirmations
+    this.socket.on('subscribed', (data: any) => {
+      console.log('✅ Subscribed:', data);
+    });
+
+    this.socket.on('unsubscribed', (data: any) => {
+      console.log('🔕 Unsubscribed:', data);
+    });
   }
 
-  private reconnect(): void {
-    if (this.reconnectAttempts < this.maxReconnectAttempts) {
-      this.reconnectAttempts++;
-      console.log(`Reconnecting... Attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts}`);
-      setTimeout(() => this.connect(), this.reconnectDelay);
-    } else {
-      console.error('Max reconnection attempts reached');
+  subscribe(channel: string, token_address?: string): void {
+    if (!this.socket?.connected) {
+      console.warn('Socket not connected, waiting...');
+      setTimeout(() => this.subscribe(channel, token_address), 500);
+      return;
     }
+
+    const message: any = {
+      action: 'subscribe',
+      channel,
+    };
+
+    if (token_address) {
+      message.token_address = token_address;
+    }
+
+    console.log('📤 Subscribing to:', message);
+    this.socket.emit('subscribe', message);
   }
 
-  subscribe(channel: string, params?: any): void {
-    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify({
-        action: 'subscribe',
-        channel,
-        ...params
-      }));
-    } else {
-      console.warn('WebSocket not connected. Queuing subscription...');
-      // Wait for connection and retry
-      setTimeout(() => this.subscribe(channel, params), 1000);
+  unsubscribe(channel: string, token_address?: string): void {
+    if (!this.socket?.connected) {
+      return;
     }
+
+    const message: any = {
+      action: 'unsubscribe',
+      channel,
+    };
+
+    if (token_address) {
+      message.token_address = token_address;
+    }
+
+    console.log('📤 Unsubscribing from:', message);
+    this.socket.emit('unsubscribe', message);
   }
 
-  unsubscribe(channel: string, params?: any): void {
-    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify({
-        action: 'unsubscribe',
-        channel,
-        ...params
-      }));
-    }
-  }
-
-  subscribeToToken(tokenAddress: string): Observable<any> {
-    this.subscribe('token', { token_address: tokenAddress });
+  subscribeToToken(tokenAddress: string): Observable<PriceUpdateEvent | TradeEvent> {
+    this.subscribe('token', tokenAddress);
     
     return new Observable(observer => {
-      const subscription = this.messages$.subscribe(message => {
+      const subscription = this.messages$.subscribe((message: any) => {
         if (
           (message.event === 'price_update' || message.event === 'trade') &&
-          (message as any).token_address === tokenAddress
+          message.token_address === tokenAddress
         ) {
           observer.next(message);
         }
@@ -137,16 +150,16 @@ export class WebSocketService {
 
       return () => {
         subscription.unsubscribe();
-        this.unsubscribe('token', { token_address: tokenAddress });
+        this.unsubscribe('token', tokenAddress);
       };
     });
   }
 
-  subscribeToNewTokens(): Observable<any> {
+  subscribeToNewTokens(): Observable<TokenCreatedEvent> {
     this.subscribe('new_tokens');
     
     return new Observable(observer => {
-      const subscription = this.messages$.subscribe(message => {
+      const subscription = this.messages$.subscribe((message: any) => {
         if (message.event === 'token_created') {
           observer.next(message);
         }
@@ -159,12 +172,12 @@ export class WebSocketService {
     });
   }
 
-  subscribeToTrending(): Observable<any> {
+  subscribeToTrending(): Observable<PriceUpdateEvent> {
     this.subscribe('trending');
     
     return new Observable(observer => {
-      const subscription = this.messages$.subscribe(message => {
-        if (message.event === 'trending_update') {
+      const subscription = this.messages$.subscribe((message: any) => {
+        if (message.event === 'price_update') {
           observer.next(message);
         }
       });
@@ -176,10 +189,32 @@ export class WebSocketService {
     });
   }
 
+  subscribeToTrades(): Observable<TradeEvent> {
+    this.subscribe('trades');
+    
+    return new Observable(observer => {
+      const subscription = this.messages$.subscribe((message: any) => {
+        if (message.event === 'trade') {
+          observer.next(message);
+        }
+      });
+
+      return () => {
+        subscription.unsubscribe();
+        this.unsubscribe('trades');
+      };
+    });
+  }
+
+  isConnected(): boolean {
+    return this.connected && this.socket?.connected === true;
+  }
+
   disconnect(): void {
-    if (this.ws) {
-      this.ws.close();
-      this.ws = null;
+    if (this.socket) {
+      this.socket.disconnect();
+      this.socket = null;
+      this.connected = false;
     }
   }
 }
