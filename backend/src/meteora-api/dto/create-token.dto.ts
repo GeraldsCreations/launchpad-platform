@@ -47,6 +47,23 @@ export class CreateTokenDto {
   @ApiProperty({ description: 'Creator wallet address' })
   @IsString()
   creator: string;
+
+  @ApiProperty({ description: 'Bot creator ID (OpenClaw agent)', required: false })
+  @IsOptional()
+  @IsString()
+  creatorBotId?: string;
+
+  @ApiProperty({ description: 'Bot wallet for rewards', required: false })
+  @IsOptional()
+  @IsString()
+  creatorBotWallet?: string;
+
+  @ApiProperty({ description: 'Revenue share percent for bot', example: 50, default: 50 })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  revenueSharePercent?: number;
 }
 
 export class CreateTokenResponseDto {

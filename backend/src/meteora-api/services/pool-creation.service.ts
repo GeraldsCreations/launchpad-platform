@@ -18,6 +18,7 @@ import {
 import DLMM, { ActivationType } from '@meteora-ag/dlmm';
 import BN from 'bn.js';
 import { MeteoraService } from './meteora.service';
+import { FeeCollectionService } from './fee-collection.service';
 import { MeteoraPool } from '../entities/meteora-pool.entity';
 import { MeteoraTransaction, TransactionType } from '../entities/meteora-transaction.entity';
 import { CreateTokenDto } from '../dto/create-token.dto';
@@ -31,6 +32,7 @@ export class PoolCreationService {
 
   constructor(
     private meteoraService: MeteoraService,
+    private feeCollectionService: FeeCollectionService,
     @InjectRepository(MeteoraPool)
     private poolRepository: Repository<MeteoraPool>,
     @InjectRepository(MeteoraTransaction)
@@ -69,7 +71,15 @@ export class PoolCreationService {
 
       this.logger.log(`Meteora pool created: ${poolAddress}`);
 
-      // Step 3: Save pool to database
+      // Step 3: Create fee claimer vault
+      const vault = await this.feeCollectionService.createFeeClaimerVault(
+        poolAddress,
+        tokenMint.toBase58(),
+      );
+
+      this.logger.log(`Fee claimer vault created: ${vault.feeClaimerPubkey}`);
+
+      // Step 4: Save pool to database
       const pool = this.poolRepository.create({
         poolAddress,
         tokenAddress: tokenMint.toBase58(),
@@ -77,6 +87,9 @@ export class PoolCreationService {
         tokenName: dto.name,
         tokenSymbol: dto.symbol,
         creator: dto.creator,
+        creatorBotId: dto.creatorBotId || null,
+        creatorBotWallet: dto.creatorBotWallet || null,
+        creatorRevenueSharePercent: dto.revenueSharePercent || 50,
         binStep: dto.binStep || 25,
         activeId: this.calculateActiveBinId(dto.initialPrice),
         currentPrice: dto.initialPrice,
@@ -91,7 +104,7 @@ export class PoolCreationService {
 
       await this.poolRepository.save(pool);
 
-      // Step 4: Record creation transaction
+      // Step 5: Record creation transaction
       const transaction = this.transactionRepository.create({
         signature,
         poolAddress,
