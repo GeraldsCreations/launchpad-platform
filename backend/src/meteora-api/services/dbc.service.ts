@@ -136,6 +136,13 @@ export class DbcService {
           creatorFeePercentage: 0,
         },
         
+        // Migrated pool fee (after migration to DLMM)
+        migratedPoolFee: {
+          collectFeeMode: 0, // QuoteToken
+          dynamicFee: 0, // Disabled
+          poolFeeBps: 25, // 0.25% pool fee
+        },
+        
         // Liquidity distribution after migration (50/50 split)
         partnerPermanentLockedLiquidityPercentage: 0,
         partnerLiquidityPercentage: 50,
@@ -155,6 +162,11 @@ export class DbcService {
       });
 
       this.logger.log(`✅ Bonding curve built with ${curveConfig.curve?.length || 0} points`);
+      this.logger.log(`Curve config keys: ${Object.keys(curveConfig).join(', ')}`);
+      this.logger.log(`Has poolFees? ${!!curveConfig.poolFees}`);
+      if (curveConfig.poolFees) {
+        this.logger.log(`Pool fees: ${JSON.stringify(curveConfig.poolFees)}`);
+      }
 
       // Generate config keypair
       const configKeypair = Keypair.generate();
