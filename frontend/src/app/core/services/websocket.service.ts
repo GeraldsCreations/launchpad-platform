@@ -46,7 +46,10 @@ export class WebSocketService {
   public messages$ = this.messageSubject.asObservable();
 
   constructor() {
-    this.connect();
+    // TODO: Install socket.io-client and migrate from native WebSocket to Socket.IO
+    // Backend uses Socket.IO, not native WebSocket
+    // For now, disable auto-connect to prevent console errors
+    // this.connect();
   }
 
   private connect(): void {
