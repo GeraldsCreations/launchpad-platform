@@ -22,16 +22,19 @@ html, body {
 
 body {
   @apply bg-gray-950 text-gray-100;
-  /* OpenClaw-inspired gradient background */
-  background: linear-gradient(135deg, #0a0a0a 0%, #1a0a2e 50%, #0a0a0a 100%);
+  /* Clean dark background like pump.fun */
+  background: #0a0a0a;
   background-attachment: fixed;
 }
 
-/* OpenClaw purple accent colors */
+/* OpenClaw-inspired brand colors */
 :root {
-  --openclaw-purple: #7c3aed;
-  --openclaw-blue: #3b82f6;
-  --gradient-primary: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
+  --openclaw-purple: #a855f7;
+  --openclaw-blue: #60a5fa;
+  --openclaw-gradient: linear-gradient(135deg, #a855f7 0%, #60a5fa 100%);
+  --pump-bg: #0a0a0a;
+  --pump-card: #1a1a1a;
+  --pump-border: #2a2a2a;
 }
 
 /* Dark mode support */
