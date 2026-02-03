@@ -14,6 +14,7 @@ import { LiveChartComponent } from './components/live-chart.component';
 import { TradeInterfaceComponent } from './components/trade-interface.component';
 import { BondingCurveProgressComponent } from './components/bonding-curve-progress.component';
 import { TradesHoldersTabsComponent } from './components/trades-holders-tabs.component';
+import { WalletButtonComponent } from '../../shared/components/wallet-button.component';
 
 // Animations
 import { tokenDetailAnimations } from './token-detail.animations';
@@ -27,7 +28,8 @@ import { tokenDetailAnimations } from './token-detail.animations';
     LiveChartComponent,
     TradeInterfaceComponent,
     BondingCurveProgressComponent,
-    TradesHoldersTabsComponent
+    TradesHoldersTabsComponent,
+    WalletButtonComponent
   ],
   animations: tokenDetailAnimations,
   template: `
@@ -91,7 +93,7 @@ import { tokenDetailAnimations } from './token-detail.animations';
                 </div>
               </div>
               <div class="header-actions">
-                <button class="btn-connect-wallet">Connect Wallet</button>
+                <app-wallet-button></app-wallet-button>
               </div>
             </div>
           </div>
@@ -233,21 +235,9 @@ import { tokenDetailAnimations } from './token-detail.animations';
       color: var(--text-secondary);
     }
 
-    .btn-connect-wallet {
-      background: var(--gradient-purple);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 12px 24px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .btn-connect-wallet:hover {
-      background: var(--gradient-purple-hover);
-      transform: scale(1.02);
+    .header-actions {
+      display: flex;
+      align-items: center;
     }
 
     /* Bonding Curve Section (Full Width) */
