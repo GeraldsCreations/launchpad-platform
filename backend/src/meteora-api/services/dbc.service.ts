@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Connection, PublicKey, Keypair, Transaction } from '@solana/web3.js';
+import { AnchorProvider, Wallet } from '@coral-xyz/anchor';
 import {
   DynamicBondingCurveClient,
   PoolService,
@@ -41,7 +42,7 @@ export class DbcService {
 
     this.logger.log(`Initializing DBC Service with RPC: ${rpcUrl}`);
 
-    // Initialize DBC client
+    // SDK client initialization (doesn't need provider)
     this.client = new DynamicBondingCurveClient(this.connection, 'confirmed');
     
     // Initialize services (they take connection + commitment, not client)
@@ -177,37 +178,26 @@ export class DbcService {
       // Generate config keypair
       const configKeypair = Keypair.generate();
 
-      // Create config transaction using DBC client directly
-      // Create a simple wallet adapter for the keypair
-      const wallet = {
-        publicKey: platformWallet.publicKey,
-        signTransaction: async (tx: Transaction) => {
-          tx.partialSign(platformWallet);
-          return tx;
-        },
-        signAllTransactions: async (txs: Transaction[]) => {
-          return txs.map(tx => {
-            tx.partialSign(platformWallet);
-            return tx;
-          });
-        },
-      };
+      // Create Anchor Wallet wrapper for the platform wallet
+      // This provides the Provider interface that Anchor expects
+      const wallet = new Wallet(platformWallet);
 
       // Log what we're about to pass
       this.logger.log('Creating partner config with params:');
       this.logger.log(`  config: ${configKeypair.publicKey.toBase58()}`);
       this.logger.log(`  feeClaimer: ${platformWallet.publicKey.toBase58()}`);
       this.logger.log(`  quoteMint: So11111111111111111111111111111111111111112`);
-      this.logger.log(`  payer: ${wallet.publicKey.toBase58()}`);
+      this.logger.log(`  payer (wallet): ${wallet.publicKey.toBase58()}`);
       
       try {
-        const configTx = await this.partnerService.createConfig({
+        // Pass Anchor Wallet object for payer (has publicKey + signer interface)
+        const configTx = await this.client.partner.createConfig({
           ...curveConfig,
           config: configKeypair,
           feeClaimer: platformWallet.publicKey,
           leftoverReceiver: platformWallet.publicKey,
           quoteMint: new PublicKey('So11111111111111111111111111111111111111112'),
-          payer: wallet, // Pass wallet adapter with publicKey field
+          payer: wallet, // Anchor Wallet wrapper provides Provider interface
         });
         
         this.logger.log('✅ createConfig() succeeded!');
