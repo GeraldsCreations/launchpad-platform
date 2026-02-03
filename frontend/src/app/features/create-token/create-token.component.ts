@@ -71,8 +71,8 @@ import { NotificationService } from '../../core/services/notification.service';
             <label class="block text-sm font-medium mb-2">Image URL</label>
             <input 
               pInputText
-              [(ngModel)]="formData.image_url"
-              name="image_url"
+              [(ngModel)]="formData.imageUrl"
+              name="imageUrl"
               placeholder="https://..."
               class="w-full">
           </div>
@@ -80,8 +80,8 @@ import { NotificationService } from '../../core/services/notification.service';
           <div>
             <label class="block text-sm font-medium mb-2">Initial Buy (SOL)</label>
             <p-inputNumber 
-              [(ngModel)]="formData.initial_buy_sol"
-              name="initial_buy_sol"
+              [(ngModel)]="formData.initialBuySol"
+              name="initialBuySol"
               [min]="0"
               [maxFractionDigits]="4"
               mode="decimal"
@@ -166,8 +166,8 @@ export class CreateTokenComponent {
     name: '',
     symbol: '',
     description: '',
-    image_url: '',
-    initial_buy_sol: 0
+    imageUrl: '',
+    initialBuySol: 0
   };
 
   creating = false;

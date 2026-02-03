@@ -399,7 +399,7 @@ export class BotTokensComponent implements OnInit {
 
   calculateStats(): void {
     this.stats.totalTokens = this.tokens.length;
-    this.stats.totalVolume = this.tokens.reduce((sum, t) => sum + (t.volume_24h || 0), 0);
+    this.stats.totalVolume = this.tokens.reduce((sum, t) => sum + (t.volume24h || 0), 0);
     
     const graduatedCount = this.tokens.filter(t => t.graduated).length;
     this.stats.successRate = this.tokens.length > 0 
@@ -407,7 +407,7 @@ export class BotTokensComponent implements OnInit {
       : 0;
     
     this.stats.avgMarketCap = this.tokens.length > 0
-      ? this.tokens.reduce((sum, t) => sum + (t.market_cap || 0), 0) / this.tokens.length
+      ? this.tokens.reduce((sum, t) => sum + (t.marketCap || 0), 0) / this.tokens.length
       : 0;
   }
 
@@ -417,14 +417,14 @@ export class BotTokensComponent implements OnInit {
     switch (this.selectedSort) {
       case 'newest':
         return sorted.sort((a, b) => 
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
       case 'performance':
-        return sorted.sort((a, b) => (b.market_cap || 0) - (a.market_cap || 0));
+        return sorted.sort((a, b) => (b.marketCap || 0) - (a.marketCap || 0));
       case 'volume':
-        return sorted.sort((a, b) => (b.volume_24h || 0) - (a.volume_24h || 0));
+        return sorted.sort((a, b) => (b.volume24h || 0) - (a.volume24h || 0));
       case 'marketcap':
-        return sorted.sort((a, b) => (b.market_cap || 0) - (a.market_cap || 0));
+        return sorted.sort((a, b) => (b.marketCap || 0) - (a.marketCap || 0));
       default:
         return sorted;
     }

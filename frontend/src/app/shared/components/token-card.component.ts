@@ -18,7 +18,7 @@ import { BotBadgeComponent } from './bot-badge/bot-badge.component';
       <ng-template pTemplate="header">
         <div class="relative">
           <img 
-            [src]="token.image_url || 'assets/default-token.svg'" 
+            [src]="token.imageUrl || 'assets/default-token.svg'" 
             [alt]="token.name"
             class="w-full h-48 object-cover"
             (error)="onImageError($event)">
@@ -48,13 +48,13 @@ import { BotBadgeComponent } from './bot-badge/bot-badge.component';
           </p-chip>
         </div>
 
-        @if (token.creator_type) {
+        @if (token.creatorType) {
           <div class="flex items-center gap-2">
             <app-bot-badge 
-              [creatorType]="token.creator_type" 
+              [creatorType]="token.creatorType" 
               [compact]="true">
             </app-bot-badge>
-            @if (token.creator_type === 'human') {
+            @if (token.creatorType === 'human') {
               <span class="text-sm text-gray-400">
                 {{ getCreatorLabel() }}
               </span>
@@ -65,19 +65,19 @@ import { BotBadgeComponent } from './bot-badge/bot-badge.component';
         <div class="grid grid-cols-2 gap-2">
           <div>
             <div class="text-xs text-gray-500">Price</div>
-            <div class="font-semibold">{{ formatPrice(token.current_price) }} SOL</div>
+            <div class="font-semibold">{{ formatPrice(token.currentPrice) }} SOL</div>
           </div>
           <div>
             <div class="text-xs text-gray-500">Market Cap</div>
-            <div class="font-semibold">{{ formatMarketCap(token.market_cap) }}</div>
+            <div class="font-semibold">{{ formatMarketCap(token.marketCap) }}</div>
           </div>
           <div>
             <div class="text-xs text-gray-500">24h Volume</div>
-            <div class="font-semibold">{{ formatVolume(token.volume_24h) }}</div>
+            <div class="font-semibold">{{ formatVolume(token.volume24h) }}</div>
           </div>
           <div>
             <div class="text-xs text-gray-500">Holders</div>
-            <div class="font-semibold">{{ token.holder_count }}</div>
+            <div class="font-semibold">{{ token.holderCount }}</div>
           </div>
         </div>
 
@@ -113,13 +113,13 @@ export class TokenCardComponent {
   constructor(private router: Router) {}
 
   get isNew(): boolean {
-    const createdAt = new Date(this.token.created_at);
+    const createdAt = new Date(this.token.createdAt);
     const hoursSinceCreation = (Date.now() - createdAt.getTime()) / (1000 * 60 * 60);
     return hoursSinceCreation < 24;
   }
 
   getCreatorIcon(): string {
-    switch (this.token.creator_type) {
+    switch (this.token.creatorType) {
       case 'clawdbot':
         return 'pi pi-android text-primary-500';
       case 'agent':
@@ -132,7 +132,7 @@ export class TokenCardComponent {
   }
 
   getCreatorLabel(): string {
-    switch (this.token.creator_type) {
+    switch (this.token.creatorType) {
       case 'clawdbot':
         return 'Created by ClawdBot';
       case 'agent':

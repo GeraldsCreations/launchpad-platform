@@ -110,8 +110,8 @@ export class TokenWebSocketService implements OnDestroy {
   private handlePriceUpdate(event: PriceUpdateEvent): void {
     const update: TokenUpdate = {
       price: event.price,
-      marketCap: event.market_cap,
-      volume24h: event.volume_24h,
+      marketCap: event.marketCap || event.market_cap, // Support both formats
+      volume24h: event.volume24h || event.volume_24h, // Support both formats
     };
 
     this.priceUpdateSubject.next(update);

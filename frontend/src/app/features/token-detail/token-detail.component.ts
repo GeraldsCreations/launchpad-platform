@@ -68,13 +68,13 @@ import { tokenDetailAnimations } from './token-detail.animations';
           [tokenName]="token.name"
           [tokenSymbol]="token.symbol"
           [tokenAddress]="token.address"
-          [tokenImage]="token.image_url || ''"
+          [tokenImage]="token.imageUrl || ''"
           [currentPrice]="currentPrice"
           [priceChange24h]="priceChange24h"
           [graduated]="token.graduated"
           [canTrade]="true"
           [isLive]="isLive"
-          [creatorType]="token.creator_type"
+          [creatorType]="token.creatorType"
           (buyClicked)="scrollToTrade('buy')"
           (sellClicked)="scrollToTrade('sell')">
         </app-token-header>
@@ -89,17 +89,17 @@ import { tokenDetailAnimations } from './token-detail.animations';
                 [tokenName]="token.name"
                 [tokenSymbol]="token.symbol"
                 [tokenAddress]="token.address"
-                [tokenImage]="token.image_url || ''"
+                [tokenImage]="token.imageUrl || ''"
                 [currentPrice]="currentPrice"
-                [marketCap]="token.market_cap"
-                [volume24h]="token.volume_24h"
-                [holderCount]="token.holder_count"
-                [totalSupply]="token.total_supply"
+                [marketCap]="token.marketCap"
+                [volume24h]="token.volume24h"
+                [holderCount]="token.holderCount"
+                [totalSupply]="token.totalSupply"
                 [dbcProgress]="dbcProgress"
                 [graduated]="token.graduated"
                 [description]="token.description || ''"
                 [creatorAddress]="token.creator"
-                [createdAt]="token.created_at"
+                [createdAt]="token.createdAt"
                 [dlmmAddress]="''">
               </app-token-info-card>
             </div>
@@ -219,7 +219,7 @@ export class TokenDetailComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (token) => {
           this.token = token;
-          this.currentPrice = token.current_price;
+          this.currentPrice = token.currentPrice;
           this.calculateDerivedData();
           this.loading = false;
 
@@ -301,9 +301,9 @@ export class TokenDetailComponent implements OnInit, OnDestroy {
 
     // Update token object
     if (this.token) {
-      this.token.current_price = update.price;
-      if (update.marketCap) this.token.market_cap = update.marketCap;
-      if (update.volume24h) this.token.volume_24h = update.volume24h;
+      this.token.currentPrice = update.price;
+      if (update.marketCap) this.token.marketCap = update.marketCap;
+      if (update.volume24h) this.token.volume24h = update.volume24h;
     }
 
     // Update chart
@@ -355,7 +355,7 @@ export class TokenDetailComponent implements OnInit, OnDestroy {
     if (!this.token.graduated) {
       // DBC progress = (market_cap / graduation_threshold) * 100
       const graduationThreshold = 50000; // $50k market cap
-      this.dbcProgress = Math.min((this.token.market_cap / graduationThreshold) * 100, 100);
+      this.dbcProgress = Math.min((this.token.marketCap / graduationThreshold) * 100, 100);
     }
   }
 
@@ -398,7 +398,7 @@ export class TokenDetailComponent implements OnInit, OnDestroy {
     const totalSupply = 1_000_000_000; // 1 billion tokens
     
     // If we have actual total supply, use it
-    const actualSupply = this.token.total_supply || totalSupply;
+    const actualSupply = this.token.totalSupply ? parseFloat(this.token.totalSupply) : totalSupply;
     
     // Calculate graduation price in SOL
     // Assuming SOL = $150 (should be fetched from price oracle in production)

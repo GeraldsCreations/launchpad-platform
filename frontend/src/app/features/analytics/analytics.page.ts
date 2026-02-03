@@ -105,8 +105,8 @@ export class AnalyticsPage implements OnInit, OnDestroy {
     let totalVolume = 0;
     
     this.tokens.forEach(token => {
-      totalValue += token.market_cap || 0;
-      totalVolume += token.volume_24h || 0;
+      totalValue += token.marketCap || 0;
+      totalVolume += token.volume24h || 0;
     });
     
     const avgMarketCap = this.tokens.length > 0 ? totalValue / this.tokens.length : 0;
@@ -122,13 +122,13 @@ export class AnalyticsPage implements OnInit, OnDestroy {
   calculateTopPerformers() {
     // Sort by market cap (since price_change_24h is not available yet)
     this.topPerformers = [...this.tokens]
-      .filter(token => token.market_cap > 0)
-      .sort((a, b) => b.market_cap - a.market_cap)
+      .filter(token => token.marketCap > 0)
+      .sort((a, b) => b.marketCap - a.marketCap)
       .slice(0, 5);
   }
 
   calculateHoldingsDistribution() {
-    const total = this.tokens.reduce((sum, token) => sum + (token.market_cap || 0), 0);
+    const total = this.tokens.reduce((sum, token) => sum + (token.marketCap || 0), 0);
     
     const colors = [
       '#8b5cf6', // purple
@@ -142,10 +142,10 @@ export class AnalyticsPage implements OnInit, OnDestroy {
     ];
     
     this.holdings = this.tokens
-      .filter(token => token.market_cap && token.market_cap > 0)
+      .filter(token => token.marketCap && token.marketCap > 0)
       .map((token, idx) => ({
         token,
-        percentage: ((token.market_cap || 0) / total) * 100,
+        percentage: ((token.marketCap || 0) / total) * 100,
         color: colors[idx % colors.length]
       }))
       .sort((a, b) => b.percentage - a.percentage)

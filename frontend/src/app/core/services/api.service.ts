@@ -9,19 +9,19 @@ export interface Token {
   name: string;
   symbol: string;
   description?: string;
-  image_url?: string;
+  imageUrl?: string;
   creator: string;
-  creator_type: 'human' | 'clawdbot' | 'agent';
-  bonding_curve: string;
-  current_price: number;
-  market_cap: number;
-  total_supply: number;
-  holder_count: number;
-  volume_24h: number;
+  creatorType: 'human' | 'clawdbot' | 'agent';
+  bondingCurve: string;
+  currentPrice: number;
+  marketCap: number;
+  totalSupply: string; // bigint from backend
+  holderCount: number;
+  volume24h: number;
   graduated: boolean;
-  graduated_at?: string;
-  created_at: string;
-  updated_at: string;
+  graduatedAt?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Trade {
@@ -41,22 +41,22 @@ export interface CreateTokenRequest {
   name: string;
   symbol: string;
   description?: string;
-  image_url?: string;
-  initial_buy_sol?: number;
+  imageUrl?: string;
+  initialBuySol?: number;
 }
 
 export interface TradeRequest {
-  token_address: string;
+  tokenAddress: string;
   amount: number;
   slippage?: number;
 }
 
 export interface QuoteResponse {
   price: number;
-  amount_out: number;
+  amountOut: number;
   fee: number;
   slippage: number;
-  price_impact: number;
+  priceImpact: number;
 }
 
 @Injectable({
