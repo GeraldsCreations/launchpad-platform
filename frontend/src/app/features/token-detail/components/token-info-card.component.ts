@@ -243,15 +243,16 @@ export class TokenInfoCardComponent {
     return volume.toFixed(2);
   }
 
-  formatSupply(supply: number): string {
-    if (supply >= 1000000000) {
-      return `${(supply / 1000000000).toFixed(2)}B`;
-    } else if (supply >= 1000000) {
-      return `${(supply / 1000000).toFixed(2)}M`;
-    } else if (supply >= 1000) {
-      return `${(supply / 1000).toFixed(2)}K`;
+  formatSupply(supply: number | string): string {
+    const num = typeof supply === 'string' ? parseFloat(supply) : supply;
+    if (num >= 1000000000) {
+      return `${(num / 1000000000).toFixed(2)}B`;
+    } else if (num >= 1000000) {
+      return `${(num / 1000000).toFixed(2)}M`;
+    } else if (num >= 1000) {
+      return `${(num / 1000).toFixed(2)}K`;
     }
-    return supply.toLocaleString();
+    return num.toLocaleString();
   }
 
   truncateAddress(address: string): string {

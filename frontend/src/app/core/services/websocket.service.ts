@@ -10,13 +10,13 @@ export interface WebSocketMessage {
 
 export interface PriceUpdateEvent {
   event: 'price_update';
+  token_address: string;
   tokenAddress?: string;
-  token_address?: string; // Support both formats
   price: number;
+  market_cap: number;
   marketCap?: number;
-  market_cap?: number; // Support both formats
+  volume_24h: number;
   volume24h?: number;
-  volume_24h?: number; // Support both formats
   timestamp: number;
 }
 

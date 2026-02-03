@@ -153,7 +153,7 @@ export class WatchlistPage implements OnInit, OnDestroy {
    * Handle incoming price updates
    */
   private handlePriceUpdate(update: PriceUpdateEvent): void {
-    const tokenIndex = this.tokens.findIndex(t => t.address === (update.token_address || update.tokenAddress));
+    const tokenIndex = this.tokens.findIndex(t => t.address === update.token_address);
     
     if (tokenIndex !== -1) {
       const token = this.tokens[tokenIndex];
@@ -161,8 +161,8 @@ export class WatchlistPage implements OnInit, OnDestroy {
       
       // Update price
       token.currentPrice = update.price;
-      if (update.marketCap || update.market_cap) token.marketCap = update.marketCap || update.market_cap;
-      if (update.volume24h || update.volume_24h) token.volume24h = update.volume24h || update.volume_24h;
+      token.marketCap = update.market_cap;
+      token.volume24h = update.volume_24h;
       
       // Calculate price change
       if (previousPrice > 0) {

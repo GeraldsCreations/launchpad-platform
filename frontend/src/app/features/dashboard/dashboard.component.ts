@@ -170,7 +170,7 @@ interface PortfolioToken {
                         </div>
                         <div>
                           <div class="font-semibold">
-                            {{ trade.side === 'buy' ? 'Bought' : 'Sold' }} {{ trade.amount_tokens.toLocaleString() }} tokens
+                            {{ trade.side === 'buy' ? 'Bought' : 'Sold' }} {{ trade.amountTokens.toLocaleString() }} tokens
                           </div>
                           <div class="text-sm text-gray-400">
                             {{ formatDate(trade.timestamp) }}
@@ -178,7 +178,7 @@ interface PortfolioToken {
                         </div>
                       </div>
                       <div class="text-right">
-                        <div class="font-semibold">{{ trade.amount_sol.toFixed(4) }} SOL</div>
+                        <div class="font-semibold">{{ trade.amountSol.toFixed(4) }} SOL</div>
                         <div class="text-sm text-gray-400">
                           @ {{ trade.price.toFixed(8) }}
                         </div>

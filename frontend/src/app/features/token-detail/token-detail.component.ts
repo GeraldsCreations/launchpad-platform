@@ -247,13 +247,16 @@ export class TokenDetailComponent implements OnInit, OnDestroy {
         next: (trades) => {
           if (this.activityFeed) {
             const formattedTrades: Trade[] = trades.map(t => ({
-              id: t.id.toString(),
+              id: t.id ? parseInt(t.id) : 0,
+              transactionSignature: '',
+              tokenAddress: this.token?.address || '',
               trader: t.trader,
               side: t.side,
-              amount_sol: t.amount_sol,
-              amount_tokens: t.amount_tokens,
+              amountSol: t.amountSol,
+              amountTokens: t.amountTokens,
               price: t.price,
-              timestamp: t.timestamp
+              fee: 0,
+              timestamp: typeof t.timestamp === 'number' ? t.timestamp.toString() : t.timestamp
             }));
             this.activityFeed.setTrades(formattedTrades);
           }
@@ -333,10 +336,10 @@ export class TokenDetailComponent implements OnInit, OnDestroy {
     }
 
     // Show notification for large trades (>1 SOL)
-    if (trade.amount_sol >= 1) {
+    if (trade.amountSol >= 1) {
       const emoji = trade.side === 'buy' ? '🟢' : '🔴';
       this.notificationService.info(
-        `${emoji} Large ${trade.side.toUpperCase()}: ${trade.amount_sol.toFixed(2)} SOL`
+        `${emoji} Large ${trade.side.toUpperCase()}: ${trade.amountSol.toFixed(2)} SOL`
       );
     }
   }

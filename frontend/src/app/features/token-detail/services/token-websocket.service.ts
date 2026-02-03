@@ -14,8 +14,8 @@ export interface NewTrade {
   id: string;
   trader: string;
   side: 'buy' | 'sell';
-  amount_sol: number;
-  amount_tokens: number;
+  amountSol: number;
+  amountTokens: number;
   price: number;
   timestamp: number;
 }
@@ -110,8 +110,8 @@ export class TokenWebSocketService implements OnDestroy {
   private handlePriceUpdate(event: PriceUpdateEvent): void {
     const update: TokenUpdate = {
       price: event.price,
-      marketCap: event.market_cap || event.marketCap, // Backend sends market_cap
-      volume24h: event.volume_24h || event.volume24h, // Backend sends volume_24h
+      marketCap: event.market_cap || 0,
+      volume24h: event.volume_24h || 0,
     };
 
     this.priceUpdateSubject.next(update);
@@ -125,8 +125,8 @@ export class TokenWebSocketService implements OnDestroy {
       id: `${event.trader}-${event.timestamp}`,
       trader: event.trader,
       side: event.side,
-      amount_sol: event.amount_sol,
-      amount_tokens: parseFloat(event.amount_tokens),
+      amountSol: event.amount_sol || 0,
+      amountTokens: parseFloat(event.amount_tokens || "0"),
       price: event.price,
       timestamp: event.timestamp,
     };
