@@ -61,6 +61,17 @@ export class TokenRepository {
     });
   }
 
+  async findBotCreated(limit: number = 50): Promise<Token[]> {
+    return this.repository
+      .createQueryBuilder('token')
+      .where('token.creatorType IN (:...types)', {
+        types: ['clawdbot', 'agent'],
+      })
+      .orderBy('token.createdAt', 'DESC')
+      .take(limit)
+      .getMany();
+  }
+
   async updatePrice(address: string, price: number, marketCap: number): Promise<void> {
     await this.repository.update(address, {
       currentPrice: price,

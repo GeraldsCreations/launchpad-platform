@@ -4,11 +4,12 @@ import { ButtonModule } from 'primeng/button';
 import { BadgeModule } from 'primeng/badge';
 import { tokenDetailAnimations, getPriceFlashState } from '../token-detail.animations';
 import { WatchlistButtonComponent } from '../../../shared/components/watchlist-button/watchlist-button.component';
+import { BotBadgeComponent } from '../../../shared/components/bot-badge/bot-badge.component';
 
 @Component({
   selector: 'app-token-header',
   standalone: true,
-  imports: [CommonModule, ButtonModule, BadgeModule, WatchlistButtonComponent],
+  imports: [CommonModule, ButtonModule, BadgeModule, WatchlistButtonComponent, BotBadgeComponent],
   animations: tokenDetailAnimations,
   template: `
     <div class="token-header fixed top-0 left-0 right-0 z-50 backdrop-blur-lg bg-gray-900/80 border-b border-gray-800">
@@ -29,6 +30,12 @@ import { WatchlistButtonComponent } from '../../../shared/components/watchlist-b
                 <p-badge [value]="tokenSymbol" styleClass="bg-primary-500"></p-badge>
                 @if (graduated) {
                   <p-badge value="GRADUATED" severity="success"></p-badge>
+                }
+                @if (creatorType && (creatorType === 'clawdbot' || creatorType === 'agent')) {
+                  <app-bot-badge 
+                    [creatorType]="creatorType" 
+                    [compact]="true">
+                  </app-bot-badge>
                 }
                 <app-watchlist-button
                   [tokenAddress]="tokenAddress"
@@ -132,6 +139,7 @@ export class TokenHeaderComponent implements OnChanges {
   @Input() graduated: boolean = false;
   @Input() canTrade: boolean = true;
   @Input() isLive: boolean = true;
+  @Input() creatorType?: string;
 
   @Output() buyClicked = new EventEmitter<void>();
   @Output() sellClicked = new EventEmitter<void>();

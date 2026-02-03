@@ -5,11 +5,12 @@ import { CardModule } from 'primeng/card';
 import { BadgeModule } from 'primeng/badge';
 import { ChipModule } from 'primeng/chip';
 import { Token } from '../../core/services/api.service';
+import { BotBadgeComponent } from './bot-badge/bot-badge.component';
 
 @Component({
   selector: 'app-token-card',
   standalone: true,
-  imports: [CommonModule, RouterModule, CardModule, BadgeModule, ChipModule],
+  imports: [CommonModule, RouterModule, CardModule, BadgeModule, ChipModule, BotBadgeComponent],
   template: `
     <p-card 
       [routerLink]="['/token', token.address]"
@@ -49,10 +50,15 @@ import { Token } from '../../core/services/api.service';
 
         @if (token.creator_type) {
           <div class="flex items-center gap-2">
-            <i [class]="getCreatorIcon()"></i>
-            <span class="text-sm text-gray-400">
-              {{ getCreatorLabel() }}
-            </span>
+            <app-bot-badge 
+              [creatorType]="token.creator_type" 
+              [compact]="true">
+            </app-bot-badge>
+            @if (token.creator_type === 'human') {
+              <span class="text-sm text-gray-400">
+                {{ getCreatorLabel() }}
+              </span>
+            }
           </div>
         }
 

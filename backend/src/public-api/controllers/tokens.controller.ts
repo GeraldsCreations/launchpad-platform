@@ -80,6 +80,14 @@ export class TokensController {
     return this.tokenService.getGraduatedTokens(limit || 10);
   }
 
+  @Get('bot-created')
+  @ApiOperation({ summary: 'Get tokens created by bots' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 50 })
+  @ApiResponse({ status: 200, description: 'List of bot-created tokens' })
+  async getBotCreated(@Query('limit') limit?: number): Promise<Token[]> {
+    return this.tokenService.getBotCreatedTokens(limit || 50);
+  }
+
   // Wildcard route MUST be last!
   @Get(':address')
   @ApiOperation({ summary: 'Get token details by address' })

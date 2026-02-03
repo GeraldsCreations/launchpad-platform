@@ -74,6 +74,7 @@ import { tokenDetailAnimations } from './token-detail.animations';
           [graduated]="token.graduated"
           [canTrade]="true"
           [isLive]="isLive"
+          [creatorType]="token.creator_type"
           (buyClicked)="scrollToTrade('buy')"
           (sellClicked)="scrollToTrade('sell')">
         </app-token-header>

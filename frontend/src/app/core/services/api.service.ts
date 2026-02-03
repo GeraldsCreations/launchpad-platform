@@ -103,6 +103,12 @@ export class ApiService {
     }).pipe(catchError(this.handleError));
   }
 
+  getBotCreatedTokens(limit: number = 50): Observable<Token[]> {
+    return this.http.get<Token[]>(`${this.baseUrl}/tokens/bot-created`, {
+      params: new HttpParams().set('limit', limit.toString())
+    }).pipe(catchError(this.handleError));
+  }
+
   createToken(request: CreateTokenRequest): Observable<{ token_address: string; transaction_signature: string }> {
     return this.http.post<{ token_address: string; transaction_signature: string }>(
       `${this.baseUrl}/tokens/create`,

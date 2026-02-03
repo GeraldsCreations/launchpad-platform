@@ -99,6 +99,13 @@ export class TokenService {
   }
 
   /**
+   * Get bot-created tokens
+   */
+  async getBotCreatedTokens(limit: number = 50): Promise<Token[]> {
+    return this.tokenRepository.findBotCreated(limit);
+  }
+
+  /**
    * Update token price and market cap
    */
   async updateTokenPrice(address: string, price: number, marketCap: number): Promise<void> {
