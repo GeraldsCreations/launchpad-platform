@@ -178,35 +178,42 @@ export class DbcService {
       // Generate config keypair
       const configKeypair = Keypair.generate();
 
-      // Create Anchor Wallet wrapper for the platform wallet
-      // This provides the Provider interface that Anchor expects
-      const wallet = new Wallet(platformWallet);
-
       // Log what we're about to pass
       this.logger.log('Creating partner config with params:');
       this.logger.log(`  config: ${configKeypair.publicKey.toBase58()}`);
       this.logger.log(`  feeClaimer: ${platformWallet.publicKey.toBase58()}`);
       this.logger.log(`  quoteMint: So11111111111111111111111111111111111111112`);
-      this.logger.log(`  payer (wallet): ${wallet.publicKey.toBase58()}`);
+      this.logger.log(`  payer: ${platformWallet.publicKey.toBase58()}`);
       
       try {
-        // Pass Anchor Wallet object for payer (has publicKey + signer interface)
+        // Anchor expects PublicKeys for accounts, not Wallet/Keypair objects
+        // Pass ONLY PublicKeys for all account parameters
         const configTx = await this.client.partner.createConfig({
           ...curveConfig,
-          config: configKeypair,
+          config: configKeypair.publicKey, // PublicKey, not Keypair!
           feeClaimer: platformWallet.publicKey,
           leftoverReceiver: platformWallet.publicKey,
           quoteMint: new PublicKey('So11111111111111111111111111111111111111112'),
-          payer: wallet, // Anchor Wallet wrapper provides Provider interface
+          payer: platformWallet.publicKey, // PublicKey, not Wallet!
         });
         
-        this.logger.log('✅ createConfig() succeeded!');
+        this.logger.log('✅ createConfig() transaction built!');
+        
+        // Add recent blockhash to transaction
+        const { blockhash } = await this.connection.getLatestBlockhash('confirmed');
+        configTx.recentBlockhash = blockhash;
+        configTx.feePayer = platformWallet.publicKey;
+        
+        // Sign with config keypair (needs to sign as it's a new account)
+        configTx.partialSign(configKeypair);
+        
+        this.logger.log('✅ Transaction signed with config keypair');
         
         // Store config key for future use
         // TODO: Save this to database
         this.platformConfigKey = configKeypair.publicKey;
 
-        this.logger.log(`✅ Config created: ${this.platformConfigKey.toBase58()}`);
+        this.logger.log(`✅ Config ready: ${this.platformConfigKey.toBase58()}`);
 
         return {
           configKey: this.platformConfigKey,
