@@ -347,14 +347,25 @@ export class TradeInterfaceComponent implements OnInit, OnDestroy {
   async executeTrade(): Promise<void> {
     if (!this.canTrade()) return;
 
+    // Get wallet address
+    const walletAddress = this.walletService.getAddress();
+    if (!walletAddress) {
+      this.validationMessage = 'Wallet not connected';
+      return;
+    }
+
     this.loading = true;
     this.validationMessage = '';
 
     try {
+      // Calculate minimum tokens with 1% slippage
+      const minTokensOut = this.estimatedTokens * 0.99;
+
       const tradeRequest = {
         tokenAddress: this.tokenAddress,
-        amount: this.amountSOL,
-        slippage: 1 // 1% slippage tolerance
+        amountSol: this.amountSOL,
+        buyer: walletAddress,
+        minTokensOut: minTokensOut
       };
 
       const observable = this.tradeType === 'buy' 

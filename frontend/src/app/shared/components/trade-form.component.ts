@@ -233,12 +233,23 @@ export class TradeFormComponent implements OnInit, OnDestroy {
   async buy(): Promise<void> {
     if (!this.canBuy()) return;
 
+    // Get wallet address
+    const walletAddress = this.walletService.getPublicKeyString();
+    if (!walletAddress) {
+      this.notificationService.transactionFailed('Wallet not connected');
+      return;
+    }
+
     this.buying = true;
     try {
+      // Calculate minimum tokens with 1% slippage
+      const minTokensOut = this.buyQuote ? this.buyQuote.amountOut * 0.99 : 0;
+
       const result = await this.apiService.buyToken({
         tokenAddress: this.tokenAddress,
-        amount: this.buyAmount,
-        slippage: 1
+        amountSol: this.buyAmount,
+        buyer: walletAddress,
+        minTokensOut: minTokensOut
       }).toPromise();
 
       if (result && result.success) {
@@ -260,12 +271,23 @@ export class TradeFormComponent implements OnInit, OnDestroy {
   async sell(): Promise<void> {
     if (!this.canSell()) return;
 
+    // Get wallet address
+    const walletAddress = this.walletService.getPublicKeyString();
+    if (!walletAddress) {
+      this.notificationService.transactionFailed('Wallet not connected');
+      return;
+    }
+
     this.selling = true;
     try {
+      // Calculate minimum SOL with 1% slippage
+      const minSolOut = this.sellQuote ? this.sellQuote.amountOut * 0.99 : 0;
+
       const result = await this.apiService.sellToken({
         tokenAddress: this.tokenAddress,
-        amount: this.sellAmount,
-        slippage: 1
+        amountSol: this.sellAmount,
+        buyer: walletAddress,
+        minTokensOut: minSolOut
       }).toPromise();
 
       if (result && result.success) {

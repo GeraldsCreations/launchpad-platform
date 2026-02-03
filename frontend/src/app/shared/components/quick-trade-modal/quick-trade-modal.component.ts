@@ -668,12 +668,23 @@ export class QuickTradeModalComponent implements OnInit, OnDestroy {
   private async executeBuy(): Promise<void> {
     if (!this.selectedToken || !this.canTrade()) return;
 
+    // Get wallet address
+    const walletAddress = this.walletService.getPublicKeyString();
+    if (!walletAddress) {
+      this.notificationService.transactionFailed('Wallet not connected');
+      return;
+    }
+
     this.trading = true;
     try {
+      // Calculate minimum tokens with slippage protection
+      const minTokensOut = this.buyQuote ? this.buyQuote.amountOut * (1 - this.slippage / 100) : 0;
+
       const result = await this.apiService.buyToken({
         tokenAddress: this.selectedToken.address,
-        amount: this.buyAmount,
-        slippage: this.slippage
+        amountSol: this.buyAmount,
+        buyer: walletAddress,
+        minTokensOut: minTokensOut
       }).toPromise();
 
       if (result) {
@@ -694,12 +705,23 @@ export class QuickTradeModalComponent implements OnInit, OnDestroy {
   private async executeSell(): Promise<void> {
     if (!this.selectedToken || !this.canTrade()) return;
 
+    // Get wallet address
+    const walletAddress = this.walletService.getPublicKeyString();
+    if (!walletAddress) {
+      this.notificationService.transactionFailed('Wallet not connected');
+      return;
+    }
+
     this.trading = true;
     try {
+      // Calculate minimum SOL with slippage protection
+      const minSolOut = this.sellQuote ? this.sellQuote.amountOut * (1 - this.slippage / 100) : 0;
+
       const result = await this.apiService.sellToken({
         tokenAddress: this.selectedToken.address,
-        amount: this.sellAmount,
-        slippage: this.slippage
+        amountSol: this.sellAmount,
+        buyer: walletAddress,
+        minTokensOut: minSolOut
       }).toPromise();
 
       if (result) {

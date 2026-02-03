@@ -16,38 +16,18 @@ export class TokenService {
 
   /**
    * Create a new token
+   * 
+   * IMPORTANT: This method should ONLY be called by the indexer after on-chain confirmation.
+   * Frontend should directly call Solana programs and let the indexer pick up the event.
+   * 
+   * @deprecated Use Solana program directly + indexer instead
    */
   async createToken(createTokenDto: CreateTokenDto): Promise<Token> {
-    this.logger.log(`Creating token: ${createTokenDto.symbol}`);
-
-    // In production, this would:
-    // 1. Call Solana program to create token mint
-    // 2. Initialize bonding curve
-    // 3. Set metadata
-    // For now, we'll simulate with a mock address
-
-    const tokenAddress = PublicKey.unique().toBase58();
-    const bondingCurve = PublicKey.unique().toBase58();
-
-    const token = await this.tokenRepository.create({
-      address: tokenAddress,
-      name: createTokenDto.name,
-      symbol: createTokenDto.symbol,
-      description: createTokenDto.description,
-      imageUrl: createTokenDto.imageUrl,
-      creator: createTokenDto.creator,
-      creatorType: createTokenDto.creatorType || 'human',
-      bondingCurve: bondingCurve,
-      currentPrice: 0.0001, // Base price
-      marketCap: 0,
-      totalSupply: '0',
-      holderCount: 0,
-      volume24h: 0,
-      graduated: false,
-    });
-
-    this.logger.log(`Token created: ${token.address}`);
-    return token;
+    throw new Error(
+      'Direct token creation is disabled. ' +
+      'Tokens must be created on-chain first. ' +
+      'Use Meteora DBC API or Solana program, then the indexer will automatically pick it up.'
+    );
   }
 
   /**

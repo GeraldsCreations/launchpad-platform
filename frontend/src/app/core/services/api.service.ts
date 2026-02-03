@@ -56,8 +56,9 @@ export interface CreateTokenRequest {
 
 export interface TradeRequest {
   tokenAddress: string;
-  amount: number;
-  slippage?: number;
+  amountSol: number;
+  buyer: string;
+  minTokensOut?: number;
 }
 
 export interface QuoteResponse {
