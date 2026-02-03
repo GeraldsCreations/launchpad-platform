@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
+import { WebsocketModule } from '../websocket/websocket.module';
 
 // Entities
 import { MeteoraPool } from './entities/meteora-pool.entity';
@@ -16,6 +17,7 @@ import { MeteoraService } from './services/meteora.service';
 import { PoolCreationService } from './services/pool-creation.service';
 import { TradingService } from './services/trading.service';
 import { PriceOracleService } from './services/price-oracle.service';
+import { SolPriceService } from './services/sol-price.service';
 import { FeeCollectionService } from './services/fee-collection.service';
 import { FeeCollectionScheduler } from './services/fee-collection.scheduler';
 import { TransactionBuilderService } from './services/transaction-builder.service';
@@ -28,6 +30,7 @@ import { TokensController } from './controllers/tokens.controller';
 import { TradingController } from './controllers/trading.controller';
 import { PoolsController } from './controllers/pools.controller';
 import { RewardsController } from './controllers/rewards.controller';
+import { SolPriceController } from './controllers/sol-price.controller';
 import { TransactionBuilderController } from './controllers/transaction-builder.controller';
 import { LpManagementController } from './controllers/lp-management.controller';
 import { DbcController } from './controllers/dbc.controller';
@@ -36,6 +39,7 @@ import { DbcController } from './controllers/dbc.controller';
   imports: [
     ConfigModule,
     ScheduleModule.forRoot(),
+    WebsocketModule, // Import WebSocket for SOL price broadcasting
     TypeOrmModule.forFeature([
       MeteoraPool,
       MeteoraTransaction,
@@ -50,6 +54,7 @@ import { DbcController } from './controllers/dbc.controller';
     TradingController,
     PoolsController,
     RewardsController,
+    SolPriceController,
     TransactionBuilderController,
     LpManagementController,
     DbcController,
@@ -59,6 +64,7 @@ import { DbcController } from './controllers/dbc.controller';
     PoolCreationService,
     TradingService,
     PriceOracleService,
+    SolPriceService,
     FeeCollectionService,
     FeeCollectionScheduler,
     TransactionBuilderService,
@@ -71,6 +77,7 @@ import { DbcController } from './controllers/dbc.controller';
     PoolCreationService,
     TradingService,
     PriceOracleService,
+    SolPriceService,
     FeeCollectionService,
   ],
 })

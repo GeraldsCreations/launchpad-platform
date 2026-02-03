@@ -35,6 +35,13 @@ export interface Trade {
   price: number;
   fee: number;
   timestamp: string;
+  signature?: string; // Alias for transactionSignature
+}
+
+export interface Holder {
+  address: string;
+  balance: number;
+  percentage: number;
 }
 
 export interface CreateTokenRequest {
@@ -164,6 +171,22 @@ export class ApiService {
     return this.http.get<Trade[]>(`${this.baseUrl}/trade/user/${walletAddress}`, {
       params: new HttpParams().set('limit', limit.toString())
     }).pipe(catchError(this.handleError));
+  }
+
+  // Alias for getTradeHistory (used by trades-holders-tabs component)
+  getTokenTrades(tokenAddress: string, limit: number = 500): Observable<Trade[]> {
+    return this.getTradeHistory(tokenAddress, limit).pipe(
+      map(trades => trades.map(trade => ({
+        ...trade,
+        signature: trade.transactionSignature // Add signature alias
+      })))
+    );
+  }
+
+  // Get token holders
+  getTokenHolders(tokenAddress: string): Observable<Holder[]> {
+    return this.http.get<Holder[]>(`${this.baseUrl}/tokens/${tokenAddress}/holders`)
+      .pipe(catchError(this.handleError));
   }
 
   private handleError(error: any) {

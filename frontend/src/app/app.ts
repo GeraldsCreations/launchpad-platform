@@ -6,7 +6,6 @@ import { ToastModule } from 'primeng/toast';
 import { MenuItem } from 'primeng/api';
 import { WalletButtonComponent } from './shared/components/wallet-button.component';
 import { SearchBarComponent } from './shared/components/search-bar/search-bar.component';
-import { GlobalChatComponent } from './components/global-chat/global-chat.component';
 import { MobileBottomNavComponent } from './components/mobile-bottom-nav/mobile-bottom-nav.component';
 import { PwaInstallPromptComponent } from './components/pwa-install-prompt/pwa-install-prompt.component';
 
@@ -22,7 +21,6 @@ import { PwaInstallPromptComponent } from './components/pwa-install-prompt/pwa-i
     ToastModule,
     WalletButtonComponent,
     SearchBarComponent,
-    GlobalChatComponent,
     MobileBottomNavComponent,
     PwaInstallPromptComponent
   ],

@@ -13,11 +13,7 @@ import { NotificationService } from '../../core/services/notification.service';
 import { LiveChartComponent } from './components/live-chart.component';
 import { TradeInterfaceComponent } from './components/trade-interface.component';
 import { BondingCurveProgressComponent } from './components/bonding-curve-progress.component';
-import { ActivityTabsComponent } from './components/activity-tabs.component';
-import { AIInsightsCardComponent } from './components/ai-insights-card.component';
-import { RecentTradesTableComponent } from './components/recent-trades-table.component';
-// Import Trade type from activity-feed for backward compatibility
-import { Trade } from './components/activity-feed.component';
+import { TradesHoldersTabsComponent } from './components/trades-holders-tabs.component';
 
 // Animations
 import { tokenDetailAnimations } from './token-detail.animations';
@@ -31,9 +27,7 @@ import { tokenDetailAnimations } from './token-detail.animations';
     LiveChartComponent,
     TradeInterfaceComponent,
     BondingCurveProgressComponent,
-    ActivityTabsComponent,
-    AIInsightsCardComponent,
-    RecentTradesTableComponent
+    TradesHoldersTabsComponent
   ],
   animations: tokenDetailAnimations,
   template: `
@@ -103,10 +97,10 @@ import { tokenDetailAnimations } from './token-detail.animations';
           </div>
         </div>
 
-        <!-- 2-Column Layout: Chart/Trades + Trading -->
+        <!-- 2-Column Layout: Chart/Tabs + Trading -->
         <div class="main-content-grid max-w-7xl mx-auto px-4 py-6">
           
-          <!-- Left Panel: Chart + Trades Table (70%) -->
+          <!-- Left Panel: Chart + Trades/Holders Tabs (70%) -->
           <div class="left-panel">
             <!-- Live Chart -->
             <div class="chart-section">
@@ -119,12 +113,11 @@ import { tokenDetailAnimations } from './token-detail.animations';
               </app-live-chart>
             </div>
 
-            <!-- Recent Trades Table -->
-            <div class="trades-section">
-              <app-recent-trades-table
-                [tokenAddress]="token.address"
-                [maxTrades]="30">
-              </app-recent-trades-table>
+            <!-- Trades & Holders Tabs -->
+            <div class="tabs-section">
+              <app-trades-holders-tabs
+                [tokenAddress]="token.address">
+              </app-trades-holders-tabs>
             </div>
           </div>
 
@@ -137,15 +130,6 @@ import { tokenDetailAnimations } from './token-detail.animations';
               #tradeInterface>
             </app-trade-interface>
 
-            <!-- AI Insights Card -->
-            <app-ai-insights-card
-              [recentActivity]="'Optimized trading algorithm.'"
-              [recentTimestamp]="'2 minutes ago'"
-              [nextAction]="'Community engagement initiative.'"
-              [statusText]="'AI Agent Active'"
-              [statusClass]="'active'">
-            </app-ai-insights-card>
-
             <!-- Bonding Curve Progress -->
             <app-bonding-curve-progress
               [progressPercent]="dbcProgress || 0"
@@ -155,18 +139,6 @@ import { tokenDetailAnimations } from './token-detail.animations';
             </app-bonding-curve-progress>
           </div>
 
-        </div>
-
-        <!-- Bottom Tabs: Thread, Holders, AI Logs -->
-        <div class="bottom-tabs-section max-w-7xl mx-auto px-4 pb-6">
-          <app-activity-tabs
-            [tokenAddress]="token.address"
-            [tokenSymbol]="token.symbol"
-            [canSendMessages]="false"
-            [isLive]="isLive"
-            [threadCount]="5"
-            [holderCount]="token.holderCount || 0">
-          </app-activity-tabs>
         </div>
 
       </div>
@@ -306,10 +278,9 @@ import { tokenDetailAnimations } from './token-detail.animations';
       display: block;
     }
 
-    .trades-section {
+    .tabs-section {
       background: var(--bg-secondary, #1a1a2e);
       border-radius: 12px;
-      height: 350px;
       overflow: hidden;
     }
 
@@ -322,15 +293,6 @@ import { tokenDetailAnimations } from './token-detail.animations';
       height: fit-content;
     }
 
-    /* Bottom Tabs Section */
-    .bottom-tabs-section {
-      margin-top: 2rem;
-      background: var(--bg-secondary, #1a1a2e);
-      border-radius: 12px;
-      padding: 1rem;
-      min-height: 400px;
-    }
-
     /* Responsive: Mobile/Tablet */
     @media (max-width: 1024px) {
       .main-content-grid {
@@ -341,17 +303,13 @@ import { tokenDetailAnimations } from './token-detail.animations';
         height: 350px;
       }
 
-      .trades-section {
-        height: 300px;
+      .tabs-section {
+        /* Full height on mobile */
       }
 
       .right-panel {
         position: relative;
         top: 0;
-      }
-
-      .bottom-tabs-section {
-        margin-top: 1rem;
       }
     }
 

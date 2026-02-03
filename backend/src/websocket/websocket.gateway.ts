@@ -46,6 +46,13 @@ interface TradeEvent {
   timestamp: number;
 }
 
+interface SolPriceUpdateEvent {
+  event: 'sol_price_update';
+  price: number;
+  source: string;
+  timestamp: number;
+}
+
 @WebSocketGateway({
   cors: {
     origin: '*',
@@ -189,6 +196,26 @@ export class WebsocketGateway implements OnGatewayConnection, OnGatewayDisconnec
 
     // Also emit to trades channel
     this.emitToChannel('trades', event);
+  }
+
+  /**
+   * Emit SOL price update to ALL connected clients
+   * (No subscription needed - global broadcast)
+   */
+  emitSolPriceUpdate(price: number, source: string): void {
+    const event: SolPriceUpdateEvent = {
+      event: 'sol_price_update',
+      price,
+      source,
+      timestamp: Date.now(),
+    };
+
+    // Broadcast to ALL connected clients
+    this.server.emit('message', event);
+
+    this.logger.debug(
+      `Broadcasted SOL price update ($${price.toFixed(2)}) to ${this.server.sockets.sockets.size} clients`
+    );
   }
 
   /**
