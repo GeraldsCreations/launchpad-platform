@@ -40,10 +40,26 @@ export class Token {
   @Column({ length: 44 })
   bondingCurve: string;
 
-  @Column('decimal', { precision: 18, scale: 9, nullable: true })
+  @Column('decimal', { 
+    precision: 18, 
+    scale: 9, 
+    nullable: true,
+    transformer: {
+      from: (value: string | null) => value ? parseFloat(value) : null,
+      to: (value: number | null) => value,
+    }
+  })
   currentPrice: number;
 
-  @Column('decimal', { precision: 18, scale: 9, nullable: true })
+  @Column('decimal', { 
+    precision: 18, 
+    scale: 9, 
+    nullable: true,
+    transformer: {
+      from: (value: string | null) => value ? parseFloat(value) : null,
+      to: (value: number | null) => value,
+    }
+  })
   marketCap: number;
 
   @Column('bigint', { nullable: true })
@@ -52,7 +68,15 @@ export class Token {
   @Column('int', { default: 0 })
   holderCount: number;
 
-  @Column('decimal', { precision: 18, scale: 9, default: 0 })
+  @Column('decimal', { 
+    precision: 18, 
+    scale: 9, 
+    default: 0,
+    transformer: {
+      from: (value: string) => parseFloat(value),
+      to: (value: number) => value,
+    }
+  })
   volume24h: number;
 
   @Column('boolean', { default: false })

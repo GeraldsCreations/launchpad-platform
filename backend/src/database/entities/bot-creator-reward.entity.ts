@@ -28,16 +28,48 @@ export class BotCreatorReward {
   @Column({ length: 44 })
   tokenAddress: string;
 
-  @Column('decimal', { precision: 18, scale: 9, default: 0 })
+  @Column('decimal', { 
+    precision: 18, 
+    scale: 9, 
+    default: 0,
+    transformer: {
+      from: (value: string) => parseFloat(value),
+      to: (value: number) => value,
+    }
+  })
   totalFeesEarned: number; // Cumulative SOL earned
 
-  @Column('decimal', { precision: 18, scale: 9, default: 0 })
+  @Column('decimal', { 
+    precision: 18, 
+    scale: 9, 
+    default: 0,
+    transformer: {
+      from: (value: string) => parseFloat(value),
+      to: (value: number) => value,
+    }
+  })
   claimedAmount: number; // Already paid out
 
-  @Column('decimal', { precision: 18, scale: 9, default: 0 })
+  @Column('decimal', { 
+    precision: 18, 
+    scale: 9, 
+    default: 0,
+    transformer: {
+      from: (value: string) => parseFloat(value),
+      to: (value: number) => value,
+    }
+  })
   unclaimedAmount: number; // Pending payout
 
-  @Column('decimal', { precision: 5, scale: 2, default: 50 })
+  @Column('decimal', { 
+    precision: 5, 
+    scale: 2, 
+    default: 50,
+    transformer: {
+      from: (value: string) => parseFloat(value),
+      to: (value: number) => value,
+    }
+  })
   revenueSharePercent: number; // Default 50%
 
   @Column('boolean', { default: false })

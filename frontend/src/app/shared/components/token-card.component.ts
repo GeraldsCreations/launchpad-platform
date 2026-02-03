@@ -144,36 +144,43 @@ export class TokenCardComponent {
     }
   }
 
-  formatPrice(price: number | null | undefined): string {
-    if (price === null || price === undefined || price === 0) {
+  formatPrice(price: number | string | null | undefined): string {
+    // Convert to number if it's a string (common with PostgreSQL decimal types)
+    const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+    
+    if (numPrice === null || numPrice === undefined || isNaN(numPrice) || numPrice === 0) {
       return '0.000000';
     }
-    if (price < 0.000001) {
-      return price.toExponential(2);
+    if (numPrice < 0.000001) {
+      return numPrice.toExponential(2);
     }
-    return price.toFixed(6);
+    return numPrice.toFixed(6);
   }
 
-  formatMarketCap(marketCap: number | null | undefined): string {
-    if (marketCap === null || marketCap === undefined || marketCap === 0) {
+  formatMarketCap(marketCap: number | string | null | undefined): string {
+    const numMarketCap = typeof marketCap === 'string' ? parseFloat(marketCap) : marketCap;
+    
+    if (numMarketCap === null || numMarketCap === undefined || isNaN(numMarketCap) || numMarketCap === 0) {
       return '$0.00';
     }
-    if (marketCap >= 1000000) {
-      return `$${(marketCap / 1000000).toFixed(2)}M`;
-    } else if (marketCap >= 1000) {
-      return `$${(marketCap / 1000).toFixed(2)}K`;
+    if (numMarketCap >= 1000000) {
+      return `$${(numMarketCap / 1000000).toFixed(2)}M`;
+    } else if (numMarketCap >= 1000) {
+      return `$${(numMarketCap / 1000).toFixed(2)}K`;
     }
-    return `$${marketCap.toFixed(2)}`;
+    return `$${numMarketCap.toFixed(2)}`;
   }
 
-  formatVolume(volume: number | null | undefined): string {
-    if (volume === null || volume === undefined || volume === 0) {
+  formatVolume(volume: number | string | null | undefined): string {
+    const numVolume = typeof volume === 'string' ? parseFloat(volume) : volume;
+    
+    if (numVolume === null || numVolume === undefined || isNaN(numVolume) || numVolume === 0) {
       return '0.00 SOL';
     }
-    if (volume >= 1000) {
-      return `${(volume / 1000).toFixed(2)}K SOL`;
+    if (numVolume >= 1000) {
+      return `${(numVolume / 1000).toFixed(2)}K SOL`;
     }
-    return `${volume.toFixed(2)} SOL`;
+    return `${numVolume.toFixed(2)} SOL`;
   }
 
   onImageError(event: any): void {

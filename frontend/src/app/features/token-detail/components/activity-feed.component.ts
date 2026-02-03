@@ -278,20 +278,25 @@ export class ActivityFeedComponent implements OnInit, OnDestroy {
     return 'just now';
   }
 
-  formatTokenAmount(amount: number): string {
-    if (amount >= 1000000) {
-      return `${(amount / 1000000).toFixed(2)}M`;
-    } else if (amount >= 1000) {
-      return `${(amount / 1000).toFixed(2)}K`;
+  formatTokenAmount(amount: number | string): string {
+    const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+    
+    if (isNaN(numAmount)) return '0';
+    if (numAmount >= 1000000) {
+      return `${(numAmount / 1000000).toFixed(2)}M`;
+    } else if (numAmount >= 1000) {
+      return `${(numAmount / 1000).toFixed(2)}K`;
     }
-    return amount.toLocaleString(undefined, { maximumFractionDigits: 2 });
+    return numAmount.toLocaleString(undefined, { maximumFractionDigits: 2 });
   }
 
-  formatPrice(price: number | null | undefined): string {
-    if (price === null || price === undefined || price === 0) return '0.00';
-    if (price < 0.0001) return price.toFixed(8);
-    if (price < 1) return price.toFixed(6);
-    return price.toFixed(4);
+  formatPrice(price: number | string | null | undefined): string {
+    const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+    
+    if (numPrice === null || numPrice === undefined || isNaN(numPrice) || numPrice === 0) return '0.00';
+    if (numPrice < 0.0001) return numPrice.toFixed(8);
+    if (numPrice < 1) return numPrice.toFixed(6);
+    return numPrice.toFixed(4);
   }
 
   truncateAddress(address: string): string {

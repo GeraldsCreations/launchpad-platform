@@ -16,10 +16,26 @@ export class PlatformStats {
   @Column('int', { default: 0 })
   totalTrades: number;
 
-  @Column('decimal', { precision: 18, scale: 9, default: 0 })
+  @Column('decimal', { 
+    precision: 18, 
+    scale: 9, 
+    default: 0,
+    transformer: {
+      from: (value: string) => parseFloat(value),
+      to: (value: number) => value,
+    }
+  })
   totalVolume: number;
 
-  @Column('decimal', { precision: 18, scale: 9, default: 0 })
+  @Column('decimal', { 
+    precision: 18, 
+    scale: 9, 
+    default: 0,
+    transformer: {
+      from: (value: string) => parseFloat(value),
+      to: (value: number) => value,
+    }
+  })
   totalFees: number;
 
   @Column('int', { default: 0 })

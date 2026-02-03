@@ -27,13 +27,37 @@ export class FeeClaimerVault {
   @Column({ length: 44 })
   feeClaimerPubkey: string; // On-chain vault address
 
-  @Column('decimal', { precision: 18, scale: 9, default: 0 })
+  @Column('decimal', { 
+    precision: 18, 
+    scale: 9, 
+    default: 0,
+    transformer: {
+      from: (value: string) => parseFloat(value),
+      to: (value: number) => value,
+    }
+  })
   totalFeesCollected: number; // Lifetime fees in SOL
 
-  @Column('decimal', { precision: 18, scale: 9, default: 0 })
+  @Column('decimal', { 
+    precision: 18, 
+    scale: 9, 
+    default: 0,
+    transformer: {
+      from: (value: string) => parseFloat(value),
+      to: (value: number) => value,
+    }
+  })
   claimedFees: number; // Already claimed
 
-  @Column('decimal', { precision: 18, scale: 9, default: 0 })
+  @Column('decimal', { 
+    precision: 18, 
+    scale: 9, 
+    default: 0,
+    transformer: {
+      from: (value: string) => parseFloat(value),
+      to: (value: number) => value,
+    }
+  })
   unclaimedFees: number; // Available to claim
 
   @Column({ nullable: true })

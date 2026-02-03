@@ -29,16 +29,37 @@ export class Trade {
   @Column({ length: 4 })
   side: string; // 'buy' or 'sell'
 
-  @Column('decimal', { precision: 18, scale: 9 })
+  @Column('decimal', { 
+    precision: 18, 
+    scale: 9,
+    transformer: {
+      from: (value: string) => parseFloat(value),
+      to: (value: number) => value,
+    }
+  })
   amountSol: number;
 
   @Column('bigint')
   amountTokens: string;
 
-  @Column('decimal', { precision: 18, scale: 9 })
+  @Column('decimal', { 
+    precision: 18, 
+    scale: 9,
+    transformer: {
+      from: (value: string) => parseFloat(value),
+      to: (value: number) => value,
+    }
+  })
   price: number;
 
-  @Column('decimal', { precision: 18, scale: 9 })
+  @Column('decimal', { 
+    precision: 18, 
+    scale: 9,
+    transformer: {
+      from: (value: string) => parseFloat(value),
+      to: (value: number) => value,
+    }
+  })
   fee: number;
 
   @CreateDateColumn()
