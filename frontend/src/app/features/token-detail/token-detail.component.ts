@@ -10,11 +10,13 @@ import { TokenWebSocketService } from './services/token-websocket.service';
 import { NotificationService } from '../../core/services/notification.service';
 
 // Components
-import { TokenHeaderComponent } from './components/token-header.component';
-import { TokenInfoCardComponent } from './components/token-info-card.component';
 import { LiveChartComponent } from './components/live-chart.component';
 import { TradeInterfaceComponent } from './components/trade-interface.component';
-import { ActivityFeedComponent, Trade } from './components/activity-feed.component';
+import { BondingCurveProgressComponent } from './components/bonding-curve-progress.component';
+import { ActivityTabsComponent } from './components/activity-tabs.component';
+import { AIInsightsCardComponent } from './components/ai-insights-card.component';
+// Import Trade type from activity-feed for backward compatibility
+import { Trade } from './components/activity-feed.component';
 
 // Animations
 import { tokenDetailAnimations } from './token-detail.animations';
@@ -25,11 +27,11 @@ import { tokenDetailAnimations } from './token-detail.animations';
   imports: [
     CommonModule,
     ProgressSpinnerModule,
-    TokenHeaderComponent,
-    TokenInfoCardComponent,
     LiveChartComponent,
     TradeInterfaceComponent,
-    ActivityFeedComponent
+    BondingCurveProgressComponent,
+    ActivityTabsComponent,
+    AIInsightsCardComponent
   ],
   animations: tokenDetailAnimations,
   template: `
@@ -61,83 +63,97 @@ import { tokenDetailAnimations } from './token-detail.animations';
     
     <!-- Main Content -->
     @else if (token) {
-      <div class="token-detail-page min-h-screen bg-gray-900">
+      <div class="token-detail-page min-h-screen">
         
-        <!-- Fixed Header -->
-        <app-token-header
-          [tokenName]="token.name"
-          [tokenSymbol]="token.symbol"
-          [tokenAddress]="token.address"
-          [tokenImage]="token.imageUrl || ''"
-          [currentPrice]="currentPrice"
-          [priceChange24h]="priceChange24h"
-          [graduated]="token.graduated"
-          [canTrade]="true"
-          [isLive]="isLive"
-          [creatorType]="token.creatorType"
-          (buyClicked)="scrollToTrade('buy')"
-          (sellClicked)="scrollToTrade('sell')">
-        </app-token-header>
-
-        <!-- Main Content Grid -->
-        <div class="max-w-7xl mx-auto px-4 py-6">
-          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            
-            <!-- Left Column: Token Info Card (Sticky) -->
-            <div class="lg:col-span-3">
-              <app-token-info-card
-                [tokenName]="token.name"
-                [tokenSymbol]="token.symbol"
-                [tokenAddress]="token.address"
-                [tokenImage]="token.imageUrl || ''"
-                [currentPrice]="currentPrice"
-                [marketCap]="token.marketCap"
-                [volume24h]="token.volume24h"
-                [holderCount]="token.holderCount"
-                [totalSupply]="token.totalSupply"
-                [dbcProgress]="dbcProgress"
-                [graduated]="token.graduated"
-                [description]="token.description || ''"
-                [creatorAddress]="token.creator"
-                [createdAt]="token.createdAt"
-                [dlmmAddress]="''">
-              </app-token-info-card>
-            </div>
-
-            <!-- Middle Column: Chart & Activity Feed -->
-            <div class="lg:col-span-6 space-y-6">
-              
-              <!-- Live Chart -->
-              <app-live-chart
-                [tokenAddress]="token.address"
-                [currentPrice]="currentPrice"
-                [graduationPrice]="getGraduationPrice()"
-                [graduated]="token.graduated"
-                #liveChart>
-              </app-live-chart>
-
-              <!-- Activity Feed -->
-              <app-activity-feed
-                [tokenSymbol]="token.symbol"
-                [tokenAddress]="token.address"
-                #activityFeed>
-              </app-activity-feed>
-
-            </div>
-
-            <!-- Right Column: Trade Interface (Sticky) -->
-            <div class="lg:col-span-3">
-              <div class="sticky top-28">
-                <app-trade-interface
-                  [tokenAddress]="token.address"
-                  [tokenSymbol]="token.symbol"
-                  [currentPrice]="currentPrice"
-                  #tradeInterface>
-                </app-trade-interface>
+        <!-- Token Header -->
+        <div class="token-header-section">
+          <div class="max-w-7xl mx-auto px-4 py-6">
+            <div class="header-content">
+              <div class="token-title-section">
+                <img 
+                  [src]="token.imageUrl || 'assets/placeholder-token.png'" 
+                  [alt]="token.name"
+                  class="token-logo"
+                  onerror="this.src='assets/placeholder-token.png'">
+                <div class="token-info">
+                  <div class="token-name-row">
+                    <i class="pi pi-bolt neural-icon"></i>
+                    <span class="token-name">{{ token.name }}</span>
+                    <span class="token-symbol">({{ token.symbol }})</span>
+                  </div>
+                  <div class="price-section">
+                    <span class="current-price">\${{ currentPrice | number:'1.2-5' }}</span>
+                    <span 
+                      *ngIf="priceChange24h !== null"
+                      class="price-change"
+                      [class.price-up]="priceChange24h > 0"
+                      [class.price-down]="priceChange24h < 0">
+                      {{ priceChange24h > 0 ? '+' : '' }}{{ priceChange24h | number:'1.2-2' }}%
+                    </span>
+                    <span class="market-cap">MC \${{ token.marketCap | number:'1.0-0' }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="header-actions">
+                <button class="btn-connect-wallet">Connect Wallet</button>
               </div>
             </div>
-
           </div>
+        </div>
+
+        <!-- 3-Column Layout -->
+        <div class="main-content-grid max-w-7xl mx-auto px-4 py-6">
+          
+          <!-- Column 1: Chart (60%) -->
+          <div class="chart-column">
+            <app-live-chart
+              [tokenAddress]="token.address"
+              [currentPrice]="currentPrice"
+              [graduationPrice]="getGraduationPrice()"
+              [graduated]="token.graduated"
+              #liveChart>
+            </app-live-chart>
+
+            <!-- Bonding Curve Progress -->
+            <app-bonding-curve-progress
+              [progressPercent]="dbcProgress || 0"
+              [currentMarketCap]="token.marketCap"
+              [graduationThreshold]="50000"
+              [showDetails]="false">
+            </app-bonding-curve-progress>
+          </div>
+
+          <!-- Column 2: Activity Tabs (20%) -->
+          <div class="activity-column">
+            <app-activity-tabs
+              [tokenAddress]="token.address"
+              [tokenSymbol]="token.symbol"
+              [canSendMessages]="false"
+              [isLive]="isLive"
+              [threadCount]="5"
+              [holderCount]="token.holderCount || 0">
+            </app-activity-tabs>
+          </div>
+
+          <!-- Column 3: Trading Panel (20%) -->
+          <div class="trading-column">
+            <app-trade-interface
+              [tokenAddress]="token.address"
+              [tokenSymbol]="token.symbol"
+              [currentPrice]="currentPrice"
+              #tradeInterface>
+            </app-trade-interface>
+
+            <!-- AI Insights Card -->
+            <app-ai-insights-card
+              [recentActivity]="'Optimized trading algorithm.'"
+              [recentTimestamp]="'2 minutes ago'"
+              [nextAction]="'Community engagement initiative.'"
+              [statusText]="'AI Agent Active'"
+              [statusClass]="'active'">
+            </app-ai-insights-card>
+          </div>
+
         </div>
 
       </div>
@@ -146,13 +162,170 @@ import { tokenDetailAnimations } from './token-detail.animations';
   styles: [`
     .token-detail-page {
       min-height: 100vh;
-      background: linear-gradient(180deg, #0a0a0f 0%, #111118 100%);
+      background: linear-gradient(135deg, #1a1b1f 0%, #252730 100%);
     }
 
-    /* Mobile: Stack layout */
-    @media (max-width: 1024px) {
-      .grid {
-        grid-template-columns: 1fr !important;
+    /* Token Header Section */
+    .token-header-section {
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-default);
+      padding: 20px 0;
+    }
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .token-title-section {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .token-logo {
+      width: 64px;
+      height: 64px;
+      border-radius: 12px;
+      object-fit: cover;
+      border: 2px solid var(--border-default);
+    }
+
+    .token-info {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .token-name-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .neural-icon {
+      color: var(--accent-purple);
+      font-size: 20px;
+    }
+
+    .token-name {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .token-symbol {
+      font-size: 18px;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .price-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .current-price {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .price-change {
+      font-size: 18px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 6px;
+    }
+
+    .market-cap {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .btn-connect-wallet {
+      background: var(--gradient-purple);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-connect-wallet:hover {
+      background: var(--gradient-purple-hover);
+      transform: scale(1.02);
+    }
+
+    /* 3-Column Grid Layout */
+    .main-content-grid {
+      display: grid;
+      grid-template-columns: 60% 20% 20%;
+      gap: 20px;
+    }
+
+    .chart-column {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .activity-column {
+      min-height: 600px;
+    }
+
+    .trading-column {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: sticky;
+      top: 20px;
+      height: fit-content;
+    }
+
+    /* Responsive: Mobile/Tablet */
+    @media (max-width: 1200px) {
+      .main-content-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .trading-column {
+        position: relative;
+        top: 0;
+      }
+
+      .activity-column {
+        min-height: 400px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .header-content {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .token-logo {
+        width: 48px;
+        height: 48px;
+      }
+
+      .token-name {
+        font-size: 20px;
+      }
+
+      .current-price {
+        font-size: 24px;
+      }
+
+      .price-section {
+        flex-wrap: wrap;
       }
     }
 
@@ -164,7 +337,6 @@ import { tokenDetailAnimations } from './token-detail.animations';
 })
 export class TokenDetailComponent implements OnInit, OnDestroy {
   @ViewChild('liveChart') liveChart?: LiveChartComponent;
-  @ViewChild('activityFeed') activityFeed?: ActivityFeedComponent;
   @ViewChild('tradeInterface') tradeInterface?: TradeInterfaceComponent;
 
   token: Token | null = null;
@@ -223,9 +395,6 @@ export class TokenDetailComponent implements OnInit, OnDestroy {
           this.calculateDerivedData();
           this.loading = false;
 
-          // Load trades history
-          this.loadTradesHistory();
-
           // Subscribe to real-time updates
           this.subscribeToWebSocket();
         },
@@ -239,32 +408,11 @@ export class TokenDetailComponent implements OnInit, OnDestroy {
 
   /**
    * Load initial trades history
+   * NOTE: Trades are now handled by ActivityTabsComponent
    */
   private loadTradesHistory(): void {
-    this.apiService.getTradeHistory(this.tokenAddress, 50)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (trades) => {
-          if (this.activityFeed) {
-            const formattedTrades: Trade[] = trades.map(t => ({
-              id: typeof t.id === 'string' ? parseInt(t.id, 10) : Number(t.id) || 0,
-              transactionSignature: '',
-              tokenAddress: this.token?.address || '',
-              trader: t.trader,
-              side: t.side,
-              amountSol: t.amountSol,
-              amountTokens: t.amountTokens,
-              price: t.price,
-              fee: 0,
-              timestamp: t.timestamp.toString()
-            }));
-            this.activityFeed.setTrades(formattedTrades);
-          }
-        },
-        error: (err) => {
-          console.error('Failed to load trades:', err);
-        }
-      });
+    // Trades history is now loaded within the ActivityTabsComponent
+    // This method is kept for potential future use
   }
 
   /**
@@ -330,11 +478,9 @@ export class TokenDetailComponent implements OnInit, OnDestroy {
    * Handle new trade events
    */
   private handleNewTrade(trade: any): void {
-    // Add to activity feed
-    if (this.activityFeed) {
-      this.activityFeed.addTrade(trade);
-    }
-
+    // Activity feed is now handled by ActivityTabsComponent
+    // TODO: Add event emitter or service to notify activity tabs of new trades
+    
     // Show notification for large trades (>1 SOL)
     if (trade.amountSol >= 1) {
       const emoji = trade.side === 'buy' ? '🟢' : '🔴';

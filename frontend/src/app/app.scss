@@ -1,11 +1,20 @@
-/* Navigation Link Styles */
+/* Navigation Link Styles - Pump Bots Theme */
 .nav-link {
-  @apply flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-400 
-         transition-all duration-200 hover:text-white hover:bg-white/5;
+  @apply flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
+         transition-all duration-200;
+  color: var(--text-secondary);
+}
+
+.nav-link:hover {
+  color: var(--text-primary);
+  background: rgba(139, 92, 246, 0.1);
 }
 
 .nav-link-active {
-  @apply text-white bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-500/30;
+  color: var(--accent-purple) !important;
+  background: rgba(139, 92, 246, 0.15);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  font-weight: 600;
 }
 
 /* Logo Float Animation */
