@@ -194,11 +194,29 @@ export class CreateTokenComponent {
   async createToken(): Promise<void> {
     if (!this.canCreate()) return;
 
+    // Get creator wallet address
+    const creatorAddress = this.walletService.getPublicKeyString();
+    if (!creatorAddress) {
+      this.notificationService.error('Wallet Error', 'Could not get wallet address');
+      return;
+    }
+
     this.creating = true;
     this.notificationService.info('Creating token...', 'Please confirm the transaction in your wallet');
     
     try {
-      const result = await this.apiService.createToken(this.formData).toPromise();
+      // Transform form data to match backend DTO
+      const requestData = {
+        name: this.formData.name,
+        symbol: this.formData.symbol,
+        description: this.formData.description || undefined,
+        imageUrl: this.formData.imageUrl || undefined,
+        creator: creatorAddress,
+        creatorType: 'human',
+        initialBuy: this.formData.initialBuySol > 0 ? this.formData.initialBuySol : undefined
+      };
+
+      const result = await this.apiService.createToken(requestData).toPromise();
       if (result) {
         this.notificationService.success('Token Created!', `${this.formData.name} has been created successfully`);
         this.notificationService.tokenCreated(this.formData.name, result.address);
@@ -210,7 +228,9 @@ export class CreateTokenComponent {
       }
     } catch (error: any) {
       console.error('Failed to create token:', error);
-      this.notificationService.transactionFailed(error.message || 'Failed to create token');
+      const errorMsg = error.error?.message || error.message || 'Failed to create token';
+      const errorDetail = Array.isArray(errorMsg) ? errorMsg.join(', ') : errorMsg;
+      this.notificationService.transactionFailed(errorDetail);
     } finally {
       this.creating = false;
     }

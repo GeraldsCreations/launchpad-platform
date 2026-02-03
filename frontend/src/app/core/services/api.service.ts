@@ -49,7 +49,9 @@ export interface CreateTokenRequest {
   symbol: string;
   description?: string;
   imageUrl?: string;
-  initialBuySol?: number;
+  creator: string;
+  creatorType?: string;
+  initialBuy?: number;
 }
 
 export interface TradeRequest {
