@@ -25,6 +25,7 @@ import { TransactionBuilderService } from './services/transaction-builder.servic
 import { LpManagementService } from './services/lp-management.service';
 import { AutoPoolCreationService } from './services/auto-pool-creation.service';
 import { DbcService } from './services/dbc.service';
+import { MetadataUploadService } from './services/metadata-upload.service';
 
 // Controllers (removed duplicates and unused endpoints)
 // Removed: TokensController (duplicate - use /v1/tokens in public-api)
@@ -69,6 +70,7 @@ import { DbcController } from './controllers/dbc.controller';
     LpManagementService,
     AutoPoolCreationService,
     DbcService,
+    MetadataUploadService,
   ],
   exports: [
     MeteoraService,

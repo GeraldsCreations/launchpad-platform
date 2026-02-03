@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Connection, PublicKey, Keypair, Transaction } from '@solana/web3.js';
 import { PlatformConfig } from '../../database/entities/platform-config.entity';
+import { MetadataUploadService } from './metadata-upload.service';
 import { AnchorProvider, Wallet } from '@coral-xyz/anchor';
 import {
   DynamicBondingCurveClient,
@@ -43,6 +44,7 @@ export class DbcService implements OnModuleInit {
     private configService: ConfigService,
     @InjectRepository(PlatformConfig)
     private platformConfigRepository: Repository<PlatformConfig>,
+    private metadataUploadService: MetadataUploadService,
   ) {
     const rpcUrl = this.configService.get('SOLANA_RPC_URL');
     this.connection = new Connection(rpcUrl, 'confirmed');
@@ -492,7 +494,7 @@ export class DbcService implements OnModuleInit {
   }
 
   /**
-   * Create metadata URI (simplified - use IPFS/Arweave in production)
+   * Create metadata URI by uploading to IPFS
    */
   private async createMetadataUri(metadata: {
     name: string;
@@ -500,22 +502,13 @@ export class DbcService implements OnModuleInit {
     description: string;
     image: string;
   }): Promise<string> {
-    // TODO: Upload to IPFS/Arweave
-    // For now, return a placeholder
-    const metadataJson = {
-      name: metadata.name,
-      symbol: metadata.symbol,
-      description: metadata.description,
-      image: metadata.image,
-      external_url: 'https://launchpad.example.com',
-      attributes: [],
-    };
-
-    this.logger.log('TODO: Upload metadata to IPFS/Arweave');
-    this.logger.log(`Metadata: ${JSON.stringify(metadataJson)}`);
-
-    // Return placeholder for now
-    return `https://arweave.net/placeholder-${metadata.symbol}`;
+    this.logger.log('📤 Uploading token metadata to IPFS...');
+    
+    const uri = await this.metadataUploadService.uploadMetadata(metadata);
+    
+    this.logger.log(`✅ Metadata URI: ${uri}`);
+    
+    return uri;
   }
 
   /**
