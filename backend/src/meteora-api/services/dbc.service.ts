@@ -81,7 +81,7 @@ export class DbcService {
     website: string;
     logo: string;
     migrationThreshold: number; // In SOL (e.g., 10)
-    poolCreationFee: number; // In lamports (e.g., 0.05 SOL)
+    poolCreationFee: number; // In SOL (e.g., 0.05) - SDK will convert to lamports
     tradingFeeBps: number; // In basis points (e.g., 100 = 1%)
     creatorFeeBps: number; // Percentage of trading fee to creator (e.g., 50 = 50%)
   }): Promise<{
@@ -143,11 +143,13 @@ export class DbcService {
           poolFeeBps: 25, // 0.25% pool fee
         },
         
-        // Liquidity distribution after migration (50/50 split)
-        partnerPermanentLockedLiquidityPercentage: 0,
-        partnerLiquidityPercentage: 50,
-        creatorPermanentLockedLiquidityPercentage: 0,
-        creatorLiquidityPercentage: 50,
+        // Liquidity distribution after migration
+        // SDK requires min 10% locked. We lock 10% permanently, split remaining 90% (45/45)
+        partnerPermanentLockedLiquidityPercentage: 5, // 5% locked forever
+        partnerLiquidityPercentage: 45, // 45% tradeable
+        creatorPermanentLockedLiquidityPercentage: 5, // 5% locked forever
+        creatorLiquidityPercentage: 45, // 45% tradeable
+        // Total: 10% locked, 90% tradeable (45% partner, 45% creator)
         
         // Market cap curve (pump.fun style)
         initialMarketCap: 1000, // $1k market cap at start
@@ -156,41 +158,75 @@ export class DbcService {
         // Additional config
         collectFeeMode: 0, // CollectFeeMode.QuoteToken
         creatorTradingFeePercentage: params.creatorFeeBps,
-        poolCreationFee: Math.floor(params.poolCreationFee), // Keep as number - SDK will convert
+        poolCreationFee: params.poolCreationFee, // SDK expects SOL, converts to lamports internally (multiplies by 1e9)
         migrationOption: MigrationOption.MET_DAMM_V2,
         migrationFeeOption: MigrationFeeOption.FixedBps25, // 0.25% after migration
       });
 
       this.logger.log(`✅ Bonding curve built with ${curveConfig.curve?.length || 0} points`);
-      this.logger.log(`poolCreationFee TYPE: ${typeof curveConfig.poolCreationFee}`);
-      this.logger.log(`poolCreationFee VALUE: ${curveConfig.poolCreationFee}`);
+      this.logger.log(`poolCreationFee INPUT: ${params.poolCreationFee}`);
+      this.logger.log(`poolCreationFee OUTPUT TYPE: ${typeof curveConfig.poolCreationFee}`);
+      this.logger.log(`poolCreationFee OUTPUT VALUE: ${curveConfig.poolCreationFee}`);
       this.logger.log(`poolCreationFee IS BN: ${curveConfig.poolCreationFee instanceof BN}`);
       this.logger.log(`poolCreationFee toString: ${curveConfig.poolCreationFee?.toString?.()}`);
       this.logger.log(`Has poolFees? ${!!curveConfig.poolFees}`);
+      if (curveConfig.poolFees) {
+        this.logger.log(`poolFees.baseFee:`, JSON.stringify(curveConfig.poolFees.baseFee));
+      }
 
       // Generate config keypair
       const configKeypair = Keypair.generate();
 
-      // Create config transaction (spread curveConfig directly!)
-      const configTx = await this.partnerService.createConfig({
-        ...curveConfig, // Spread the curve config at the top level
-        config: configKeypair,
-        feeClaimer: platformWallet.publicKey,
-        leftoverReceiver: platformWallet.publicKey,
-        quoteMint: new PublicKey('So11111111111111111111111111111111111111112'), // Native SOL
-        payer: platformWallet.publicKey,
-      });
-
-      // Store config key for future use
-      // TODO: Save this to database
-      this.platformConfigKey = configKeypair.publicKey;
-
-      this.logger.log(`✅ Config created: ${this.platformConfigKey.toBase58()}`);
-
-      return {
-        configKey: this.platformConfigKey,
-        transaction: configTx, // createConfig returns Transaction directly
+      // Create config transaction using DBC client directly
+      // Create a simple wallet adapter for the keypair
+      const wallet = {
+        publicKey: platformWallet.publicKey,
+        signTransaction: async (tx: Transaction) => {
+          tx.partialSign(platformWallet);
+          return tx;
+        },
+        signAllTransactions: async (txs: Transaction[]) => {
+          return txs.map(tx => {
+            tx.partialSign(platformWallet);
+            return tx;
+          });
+        },
       };
+
+      // Log what we're about to pass
+      this.logger.log('Creating partner config with params:');
+      this.logger.log(`  config: ${configKeypair.publicKey.toBase58()}`);
+      this.logger.log(`  feeClaimer: ${platformWallet.publicKey.toBase58()}`);
+      this.logger.log(`  quoteMint: So11111111111111111111111111111111111111112`);
+      this.logger.log(`  payer: ${wallet.publicKey.toBase58()}`);
+      
+      try {
+        const configTx = await this.partnerService.createConfig({
+          ...curveConfig,
+          config: configKeypair,
+          feeClaimer: platformWallet.publicKey,
+          leftoverReceiver: platformWallet.publicKey,
+          quoteMint: new PublicKey('So11111111111111111111111111111111111111112'),
+          payer: wallet, // Pass wallet adapter with publicKey field
+        });
+        
+        this.logger.log('✅ createConfig() succeeded!');
+        
+        // Store config key for future use
+        // TODO: Save this to database
+        this.platformConfigKey = configKeypair.publicKey;
+
+        this.logger.log(`✅ Config created: ${this.platformConfigKey.toBase58()}`);
+
+        return {
+          configKey: this.platformConfigKey,
+          transaction: configTx,
+        };
+      } catch (sdkError: any) {
+        this.logger.error('SDK createConfig() error:', sdkError.message);
+        this.logger.error('Error details:', JSON.stringify(sdkError, null, 2));
+        throw sdkError;
+      }
     } catch (error) {
       this.logger.error('Failed to create partner config:', error.message);
       this.logger.error('Error stack:', error.stack);

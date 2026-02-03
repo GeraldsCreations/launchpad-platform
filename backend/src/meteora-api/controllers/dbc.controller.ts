@@ -37,7 +37,7 @@ export class DbcController {
         website: dto.website,
         logo: dto.logo,
         migrationThreshold: dto.migrationThreshold,
-        poolCreationFee: dto.poolCreationFee * 1e9, // Convert SOL to lamports
+        poolCreationFee: dto.poolCreationFee, // SDK expects SOL, will convert to lamports internally
         tradingFeeBps: dto.tradingFeeBps,
         creatorFeeBps: dto.creatorFeeBps,
       });
