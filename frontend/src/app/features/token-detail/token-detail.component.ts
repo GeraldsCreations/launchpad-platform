@@ -294,15 +294,16 @@ import { tokenDetailAnimations } from './token-detail.animations';
       border-radius: 12px;
       overflow: hidden;
       height: 450px;
-      display: flex;
-      flex-direction: column;
+      width: 100%;
+      position: relative;
     }
 
-    .chart-section app-live-chart {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
+    .chart-section ::ng-deep app-live-chart,
+    .chart-section ::ng-deep .live-chart-container,
+    .chart-section ::ng-deep .chart-wrapper {
+      height: 100%;
+      width: 100%;
+      display: block;
     }
 
     .trades-section {

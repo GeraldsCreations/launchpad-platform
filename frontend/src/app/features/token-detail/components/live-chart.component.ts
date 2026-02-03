@@ -60,12 +60,17 @@ interface ChartStats {
     </div>
   `,
   styles: [`
+    :host {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
     .live-chart-container {
       display: flex;
       flex-direction: column;
       width: 100%;
       height: 100%;
-      min-height: 400px;
       background: #0a0a0f;
     }
 
@@ -131,7 +136,9 @@ interface ChartStats {
     .chart-wrapper {
       position: relative;
       flex: 1;
-      min-height: 350px;
+      width: 100%;
+      height: 100%;
+      min-height: 0;
     }
 
     .chart-wrapper.fullscreen {
@@ -149,12 +156,12 @@ interface ChartStats {
     .chart-container {
       width: 100%;
       height: 100%;
-      min-height: 350px;
+      flex: 1;
+      position: relative;
     }
 
     .chart-container.hidden {
       visibility: hidden;
-      position: absolute;
     }
 
     .fullscreen .chart-container {
@@ -267,36 +274,53 @@ export class LiveChartComponent implements OnInit, AfterViewInit, OnDestroy {
     const containerWidth = container.clientWidth;
     const containerHeight = container.clientHeight;
     
+    // Log dimensions
+    console.log('📐 Container dimensions:', {
+      containerWidth,
+      containerHeight,
+      parentHeight: container.parentElement?.clientHeight,
+      parentWidth: container.parentElement?.clientWidth,
+      computedStyle: window.getComputedStyle(container).height
+    });
+    
     // If dimensions are still zero, retry after a bit
     if (containerWidth === 0 || containerHeight === 0) {
       this.initRetryCount++;
       
       if (this.initRetryCount <= this.MAX_INIT_RETRIES) {
-        console.warn(`⚠️ Container dimensions are zero, retry ${this.initRetryCount}/${this.MAX_INIT_RETRIES} in 150ms...`, {
-          containerWidth,
-          containerHeight,
-          parentHeight: container.parentElement?.clientHeight,
-          parentWidth: container.parentElement?.clientWidth
-        });
+        console.warn(`⚠️ Container dimensions are zero, retry ${this.initRetryCount}/${this.MAX_INIT_RETRIES} in 150ms...`);
         setTimeout(() => this.initChart(), 150);
         return;
       } else {
-        console.error('❌ Chart initialization failed after max retries. Container still has zero dimensions.');
-        this.loading = false;
+        // After max retries, use fixed dimensions as fallback
+        console.warn('⚠️ Max retries reached, using fallback dimensions: 450px height');
+        const width = 800; // Reasonable default width
+        const height = 450; // Match chart-section height
+        this.createChartWithDimensions(width, height);
         return;
       }
     }
     
-    const height = containerHeight > 0 ? containerHeight : 400;
+    const height = containerHeight > 0 ? containerHeight : 450;
+    const width = containerWidth > 0 ? containerWidth : 800;
     
     console.log('✅ Initializing chart:', {
       containerHeight,
       containerWidth,
-      finalHeight: height
+      finalHeight: height,
+      finalWidth: width
     });
     
+    this.createChartWithDimensions(width, height);
+  }
+
+  private createChartWithDimensions(width: number, height: number): void {
+    if (!this.chartContainer) return;
+    
+    const container = this.chartContainer.nativeElement;
+    
     this.chart = createChart(container, {
-      width: container.clientWidth,
+      width: width,
       height: height,
       layout: {
         background: { color: '#0a0a0f' },
