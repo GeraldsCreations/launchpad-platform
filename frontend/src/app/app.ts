@@ -28,36 +28,5 @@ import { PwaInstallPromptComponent } from './components/pwa-install-prompt/pwa-i
   styleUrl: './app.scss'
 })
 export class App {
-  menuItems: MenuItem[] = [
-    {
-      label: 'Home',
-      icon: 'pi pi-home',
-      routerLink: '/'
-    },
-    {
-      label: 'Explore',
-      icon: 'pi pi-compass',
-      routerLink: '/explore'
-    },
-    {
-      label: 'Portfolio',
-      icon: 'pi pi-wallet',
-      routerLink: '/portfolio'
-    },
-    {
-      label: 'Watchlist',
-      icon: 'pi pi-star',
-      routerLink: '/watchlist'
-    },
-    {
-      label: 'Create',
-      icon: 'pi pi-plus-circle',
-      routerLink: '/create'
-    },
-    {
-      label: 'Dashboard',
-      icon: 'pi pi-chart-line',
-      routerLink: '/dashboard'
-    }
-  ];
+  // Navigation links now in app.html template
 }
