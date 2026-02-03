@@ -233,91 +233,77 @@ export class LiveChartComponent implements OnInit, AfterViewInit, OnDestroy {
   private candlestickSeries: ISeriesApi<'Candlestick'> | null = null;
   private graduationLine: ISeriesApi<'Line'> | null = null;
   private destroy$ = new Subject<void>();
-  private initRetryCount: number = 0;
-  private readonly MAX_INIT_RETRIES: number = 10;
+  private resizeObserver: ResizeObserver | null = null;
 
   ngOnInit(): void {
     // Component initialized
   }
 
   ngAfterViewInit(): void {
-    // Delay to ensure DOM is fully rendered and container dimensions are set
-    // Increased delay to allow CSS flexbox layout to complete
-    setTimeout(() => {
-      console.log('📊 ngAfterViewInit delay complete, initializing chart...');
-      this.initChart();
-      if (this.chart) {
-        this.loadChartData();
-      }
-    }, 300);
+    // Use ResizeObserver to detect when container gets dimensions
+    // This is the standard solution for TradingView charts in Angular
+    console.log('📊 Setting up ResizeObserver for chart container...');
+    this.setupResizeObserver();
   }
 
   ngOnDestroy(): void {
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+      this.resizeObserver = null;
+    }
     this.destroyChart();
     this.destroy$.next();
     this.destroy$.complete();
   }
 
-  private initChart(): void {
+  /**
+   * Setup ResizeObserver to watch container size changes
+   * Standard solution for TradingView charts in Angular
+   */
+  private setupResizeObserver(): void {
     if (!this.chartContainer) {
-      console.error('❌ Chart container ViewChild not available. Check template.');
+      console.error('❌ Chart container not available');
       return;
     }
 
     const container = this.chartContainer.nativeElement;
-    
-    if (!container) {
-      console.error('❌ Chart container element is null');
-      return;
-    }
 
-    const containerWidth = container.clientWidth;
-    const containerHeight = container.clientHeight;
-    
-    // Log dimensions
-    console.log('📐 Container dimensions:', {
-      containerWidth,
-      containerHeight,
-      parentHeight: container.parentElement?.clientHeight,
-      parentWidth: container.parentElement?.clientWidth,
-      computedStyle: window.getComputedStyle(container).height
-    });
-    
-    // If dimensions are still zero, retry after a bit
-    if (containerWidth === 0 || containerHeight === 0) {
-      this.initRetryCount++;
-      
-      if (this.initRetryCount <= this.MAX_INIT_RETRIES) {
-        console.warn(`⚠️ Container dimensions are zero, retry ${this.initRetryCount}/${this.MAX_INIT_RETRIES} in 150ms...`);
-        setTimeout(() => this.initChart(), 150);
-        return;
-      } else {
-        // After max retries, use fixed dimensions as fallback
-        console.warn('⚠️ Max retries reached, using fallback dimensions: 450px height');
-        const width = 800; // Reasonable default width
-        const height = 450; // Match chart-section height
-        this.createChartWithDimensions(width, height);
-        return;
+    this.resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        
+        console.log('📐 ResizeObserver detected:', { width, height });
+
+        // Only initialize if we have valid dimensions
+        if (width > 0 && height > 0) {
+          if (!this.chart) {
+            console.log('✅ Container has dimensions, initializing chart...');
+            this.initChart(width, height);
+            this.loadChartData();
+          } else {
+            // Update existing chart size
+            this.chart.applyOptions({ width, height });
+          }
+        }
       }
-    }
-    
-    const height = containerHeight > 0 ? containerHeight : 450;
-    const width = containerWidth > 0 ? containerWidth : 800;
-    
-    console.log('✅ Initializing chart:', {
-      containerHeight,
-      containerWidth,
-      finalHeight: height,
-      finalWidth: width
     });
-    
-    this.createChartWithDimensions(width, height);
+
+    this.resizeObserver.observe(container);
   }
 
-  private createChartWithDimensions(width: number, height: number): void {
-    if (!this.chartContainer) return;
-    
+  /**
+   * Initialize chart with explicit dimensions
+   * TradingView Lightweight Charts requires explicit width/height
+   */
+  private initChart(width: number, height: number): void {
+    if (!this.chartContainer) {
+      console.error('❌ Chart container not available');
+      return;
+    }
+
     const container = this.chartContainer.nativeElement;
+    
+    console.log('✅ Initializing chart with dimensions:', { width, height });
     
     this.chart = createChart(container, {
       width: width,
@@ -364,8 +350,7 @@ export class LiveChartComponent implements OnInit, AfterViewInit, OnDestroy {
       });
     }
 
-    // Handle window resize
-    window.addEventListener('resize', this.handleResize.bind(this));
+    // ResizeObserver handles resizing automatically, no manual listener needed
   }
 
   private loadChartData(): void {
@@ -469,25 +454,7 @@ export class LiveChartComponent implements OnInit, AfterViewInit, OnDestroy {
 
   toggleFullscreen(): void {
     this.isFullscreen = !this.isFullscreen;
-    
-    // Resize chart after fullscreen toggle
-    setTimeout(() => {
-      this.handleResize();
-    }, 100);
-  }
-
-  private handleResize(): void {
-    if (!this.chart || !this.chartContainer) return;
-    
-    const container = this.chartContainer.nativeElement;
-    const height = this.isFullscreen 
-      ? window.innerHeight - 120 
-      : container.clientHeight || 400;
-    
-    this.chart.applyOptions({
-      width: container.clientWidth,
-      height: height,
-    });
+    // ResizeObserver will automatically handle the resize
   }
 
   private destroyChart(): void {
@@ -495,7 +462,6 @@ export class LiveChartComponent implements OnInit, AfterViewInit, OnDestroy {
       this.chart.remove();
       this.chart = null;
     }
-    window.removeEventListener('resize', this.handleResize.bind(this));
   }
 
   formatPrice(price: number | string | null | undefined): string {
