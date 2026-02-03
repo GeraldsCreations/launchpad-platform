@@ -40,6 +40,7 @@ export class IndexerService implements OnModuleInit, OnModuleDestroy {
   private subscriptionId: number | null = null;
   private isRunning: boolean = false;
   private bondingCurveProgramId: PublicKey;
+  private platformConfigKey: PublicKey;
   private lastProcessedSlot: number = 0;
 
   constructor(
@@ -58,6 +59,15 @@ export class IndexerService implements OnModuleInit, OnModuleDestroy {
     this.bondingCurveProgramId = new PublicKey(
       this.configService.get<string>('BONDING_CURVE_PROGRAM_ID') || 'BondCurve11111111111111111111111111111111',
     );
+    
+    // Our platform config - ONLY index tokens created with this config
+    const configKey = this.configService.get<string>('DBC_PLATFORM_CONFIG_KEY');
+    if (!configKey) {
+      throw new Error('DBC_PLATFORM_CONFIG_KEY not set in environment variables');
+    }
+    this.platformConfigKey = new PublicKey(configKey);
+    
+    this.logger.log(`🔒 Indexer will ONLY track tokens from config: ${this.platformConfigKey.toBase58()}`);
   }
 
   async onModuleInit() {
@@ -91,8 +101,9 @@ export class IndexerService implements OnModuleInit, OnModuleDestroy {
         'confirmed',
       );
 
-      this.logger.log(`Subscribed to program logs: ${this.bondingCurveProgramId.toBase58()}`);
-      this.logger.log('Indexer started successfully');
+      this.logger.log(`📡 Subscribed to DBC program: ${this.bondingCurveProgramId.toBase58()}`);
+      this.logger.log(`🔒 Filtering for platform config: ${this.platformConfigKey.toBase58()}`);
+      this.logger.log('✅ Indexer started - ONLY tracking our platform tokens');
 
       // Start periodic sync check
       this.startSyncMonitor();
@@ -121,10 +132,21 @@ export class IndexerService implements OnModuleInit, OnModuleDestroy {
 
   /**
    * Process transaction logs
+   * ONLY processes transactions that involve our platform config
    */
   private async processLogs(logs: Logs): Promise<void> {
     try {
       this.lastProcessedSlot = (logs as any).context?.slot || this.lastProcessedSlot;
+
+      // FILTER: Only process transactions involving our platform config
+      const isOurTransaction = await this.isOurPlatformTransaction(logs.signature);
+      
+      if (!isOurTransaction) {
+        this.logger.debug(`⏭️  Skipping transaction ${logs.signature} - not from our platform config`);
+        return;
+      }
+
+      this.logger.log(`✅ Processing OUR transaction: ${logs.signature}`);
 
       // Parse logs to extract events
       const events = this.parseLogMessages(logs.logs, logs.signature);
@@ -135,6 +157,41 @@ export class IndexerService implements OnModuleInit, OnModuleDestroy {
       }
     } catch (error) {
       this.logger.error(`Error processing logs for ${logs.signature}:`, error);
+    }
+  }
+
+  /**
+   * Check if transaction involves our platform config
+   * Returns true only if the transaction was created using our DBC config
+   */
+  private async isOurPlatformTransaction(signature: string): Promise<boolean> {
+    try {
+      // Fetch the full transaction to inspect accounts
+      const tx = await this.connection.getParsedTransaction(signature, {
+        maxSupportedTransactionVersion: 0,
+        commitment: 'confirmed',
+      });
+
+      if (!tx || !tx.transaction) {
+        return false;
+      }
+
+      // Check if our platform config key is mentioned in the transaction accounts
+      const accountKeys = tx.transaction.message.accountKeys.map(key => 
+        typeof key === 'string' ? key : key.pubkey.toBase58()
+      );
+
+      const platformConfigAddress = this.platformConfigKey.toBase58();
+      const isOurs = accountKeys.includes(platformConfigAddress);
+
+      if (isOurs) {
+        this.logger.log(`🎯 Found transaction using our config: ${platformConfigAddress}`);
+      }
+
+      return isOurs;
+    } catch (error) {
+      this.logger.error(`Error checking transaction ${signature}:`, error);
+      return false; // Skip on error to be safe
     }
   }
 
