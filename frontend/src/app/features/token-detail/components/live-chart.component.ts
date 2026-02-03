@@ -409,14 +409,17 @@ export class LiveChartComponent implements OnInit, AfterViewInit, OnDestroy {
     window.removeEventListener('resize', this.handleResize.bind(this));
   }
 
-  formatPrice(price: number): string {
-    if (price === 0) return '0.00';
+  formatPrice(price: number | null | undefined): string {
+    if (price === null || price === undefined || price === 0) return '0.00';
     if (price < 0.0001) return price.toFixed(8);
     if (price < 1) return price.toFixed(6);
     return price.toFixed(4);
   }
 
-  formatVolume(volume: number): string {
+  formatVolume(volume: number | null | undefined): string {
+    if (volume === null || volume === undefined || volume === 0) {
+      return '0.00';
+    }
     if (volume >= 1000000) {
       return `${(volume / 1000000).toFixed(2)}M`;
     } else if (volume >= 1000) {

@@ -284,8 +284,8 @@ export class ActivityFeedComponent implements OnInit, OnDestroy {
     return amount.toLocaleString(undefined, { maximumFractionDigits: 2 });
   }
 
-  formatPrice(price: number): string {
-    if (price === 0) return '0.00';
+  formatPrice(price: number | null | undefined): string {
+    if (price === null || price === undefined || price === 0) return '0.00';
     if (price < 0.0001) return price.toFixed(8);
     if (price < 1) return price.toFixed(6);
     return price.toFixed(4);

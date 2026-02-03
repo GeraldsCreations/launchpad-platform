@@ -144,14 +144,20 @@ export class TokenCardComponent {
     }
   }
 
-  formatPrice(price: number): string {
+  formatPrice(price: number | null | undefined): string {
+    if (price === null || price === undefined || price === 0) {
+      return '0.000000';
+    }
     if (price < 0.000001) {
       return price.toExponential(2);
     }
     return price.toFixed(6);
   }
 
-  formatMarketCap(marketCap: number): string {
+  formatMarketCap(marketCap: number | null | undefined): string {
+    if (marketCap === null || marketCap === undefined || marketCap === 0) {
+      return '$0.00';
+    }
     if (marketCap >= 1000000) {
       return `$${(marketCap / 1000000).toFixed(2)}M`;
     } else if (marketCap >= 1000) {
@@ -160,7 +166,10 @@ export class TokenCardComponent {
     return `$${marketCap.toFixed(2)}`;
   }
 
-  formatVolume(volume: number): string {
+  formatVolume(volume: number | null | undefined): string {
+    if (volume === null || volume === undefined || volume === 0) {
+      return '0.00 SOL';
+    }
     if (volume >= 1000) {
       return `${(volume / 1000).toFixed(2)}K SOL`;
     }

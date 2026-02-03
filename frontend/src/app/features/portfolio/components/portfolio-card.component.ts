@@ -30,7 +30,10 @@ export class PortfolioCardComponent {
     });
   }
 
-  formatPrice(price: number): string {
+  formatPrice(price: number | null | undefined): string {
+    if (price === null || price === undefined || price === 0) {
+      return '0.00';
+    }
     if (price < 0.01) {
       return price.toFixed(8);
     }
