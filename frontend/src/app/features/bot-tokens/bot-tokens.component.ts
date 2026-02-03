@@ -441,21 +441,25 @@ export class BotTokensComponent implements OnInit {
     this.loadingMore = false;
   }
 
-  formatVolume(volume: number): string {
-    if (volume >= 1000000) {
-      return `${(volume / 1000000).toFixed(2)}M SOL`;
-    } else if (volume >= 1000) {
-      return `${(volume / 1000).toFixed(2)}K SOL`;
+  formatVolume(volume: number | string): string {
+    const num = typeof volume === 'string' ? parseFloat(volume) : volume;
+    if (isNaN(num)) return '0.00 SOL';
+    if (num >= 1000000) {
+      return `${(num / 1000000).toFixed(2)}M SOL`;
+    } else if (num >= 1000) {
+      return `${(num / 1000).toFixed(2)}K SOL`;
     }
-    return `${volume.toFixed(2)} SOL`;
+    return `${num.toFixed(2)} SOL`;
   }
 
-  formatMarketCap(marketCap: number): string {
-    if (marketCap >= 1000000) {
-      return `$${(marketCap / 1000000).toFixed(2)}M`;
-    } else if (marketCap >= 1000) {
-      return `$${(marketCap / 1000).toFixed(2)}K`;
+  formatMarketCap(marketCap: number | string): string {
+    const num = typeof marketCap === 'string' ? parseFloat(marketCap) : marketCap;
+    if (isNaN(num)) return '$0.00';
+    if (num >= 1000000) {
+      return `$${(num / 1000000).toFixed(2)}M`;
+    } else if (num >= 1000) {
+      return `$${(num / 1000).toFixed(2)}K`;
     }
-    return `$${marketCap.toFixed(2)}`;
+    return `$${num.toFixed(2)}`;
   }
 }
