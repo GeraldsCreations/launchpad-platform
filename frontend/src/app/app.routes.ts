@@ -6,6 +6,7 @@ import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { ExploreComponent } from './features/explore/explore.component';
 import { PortfolioPage } from './features/portfolio/portfolio.page';
 import { WatchlistPage } from './features/watchlist/watchlist.page';
+import { AnalyticsPage } from './features/analytics/analytics.page';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -13,6 +14,7 @@ export const routes: Routes = [
   { path: 'create', component: CreateTokenComponent },
   { path: 'portfolio', component: PortfolioPage },
   { path: 'watchlist', component: WatchlistPage },
+  { path: 'analytics', component: AnalyticsPage },
   { path: 'dashboard', component: DashboardComponent },
   { path: 'explore', component: ExploreComponent },
   { path: '**', redirectTo: '' }
