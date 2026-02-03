@@ -48,14 +48,14 @@ interface ChartStats {
 
       <!-- Chart Container -->
       <div class="chart-wrapper" [class.fullscreen]="isFullscreen">
-        @if (loading) {
-          <div class="loading-skeleton">
-            <i class="pi pi-spin pi-spinner"></i>
-            <div class="loading-text">Loading chart...</div>
-          </div>
-        } @else {
-          <div #chartContainer class="chart-container"></div>
-        }
+        <!-- Loading overlay -->
+        <div class="loading-skeleton" *ngIf="loading">
+          <i class="pi pi-spin pi-spinner"></i>
+          <div class="loading-text">Loading chart...</div>
+        </div>
+        
+        <!-- Chart always rendered, but hidden when loading -->
+        <div #chartContainer class="chart-container" [class.hidden]="loading"></div>
       </div>
     </div>
   `,
@@ -150,6 +150,11 @@ interface ChartStats {
       min-height: 350px;
     }
 
+    .chart-container.hidden {
+      visibility: hidden;
+      position: absolute;
+    }
+
     .fullscreen .chart-container {
       height: calc(100vh - 120px);
     }
@@ -159,11 +164,15 @@ interface ChartStats {
     }
 
     .loading-skeleton {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      height: 100%;
       min-height: 350px;
       color: rgba(255, 255, 255, 0.6);
       background: linear-gradient(
@@ -174,6 +183,7 @@ interface ChartStats {
       );
       background-size: 200% 100%;
       animation: shimmer 2s infinite;
+      z-index: 10;
     }
 
     .loading-skeleton i {
@@ -220,11 +230,11 @@ export class LiveChartComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    // Small delay to ensure DOM is fully rendered
+    // Small delay to ensure DOM is fully rendered and container dimensions are set
     setTimeout(() => {
       this.initChart();
       this.loadChartData();
-    }, 100);
+    }, 50);
   }
 
   ngOnDestroy(): void {
@@ -235,17 +245,23 @@ export class LiveChartComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private initChart(): void {
     if (!this.chartContainer) {
-      console.error('Chart container not found');
+      console.error('❌ Chart container ViewChild not available. Check template.');
       return;
     }
 
     const container = this.chartContainer.nativeElement;
+    
+    if (!container) {
+      console.error('❌ Chart container element is null');
+      return;
+    }
+
     const containerHeight = container.clientHeight;
     const height = containerHeight > 0 ? containerHeight : 400;
     
-    console.log('Initializing chart:', {
+    console.log('✅ Initializing chart:', {
       containerHeight,
-      width: container.clientWidth,
+      containerWidth: container.clientWidth,
       finalHeight: height
     });
     
