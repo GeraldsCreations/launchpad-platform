@@ -75,35 +75,72 @@ interface PriceImpact {
 
         <!-- Amount Input -->
         <div class="space-y-4">
-          <div>
-            <label class="block text-sm text-gray-400 mb-2">
-              You {{ tradeType === 'buy' ? 'pay' : 'sell' }}
-            </label>
-            <div class="input-wrapper relative">
-              <input
-                type="number"
-                [(ngModel)]="amountSOL"
-                (ngModelChange)="onAmountChange()"
-                [placeholder]="'0.00'"
-                class="trade-input w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white text-lg focus:outline-none focus:border-primary-500 transition-colors"
-                [disabled]="!walletConnected || loading">
-              <span class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 font-semibold">
-                SOL
-              </span>
+          <!-- BUY: SOL Input -->
+          @if (tradeType === 'buy') {
+            <div>
+              <label class="block text-sm text-gray-400 mb-2">You pay</label>
+              <div class="input-wrapper relative">
+                <input
+                  type="number"
+                  [(ngModel)]="amountSOL"
+                  (ngModelChange)="onAmountChange()"
+                  [placeholder]="'0.00'"
+                  class="trade-input w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white text-lg focus:outline-none focus:border-primary-500 transition-colors"
+                  [disabled]="!walletConnected || loading">
+                <span class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 font-semibold">
+                  SOL
+                </span>
+              </div>
             </div>
-          </div>
 
-          <!-- Quick Amount Buttons -->
-          <div class="grid grid-cols-4 gap-2">
-            @for (amount of quickAmounts; track amount) {
-              <button
-                (click)="setQuickAmount(amount)"
-                class="quick-amount-btn px-3 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded text-sm font-medium text-gray-300 transition-colors"
-                [disabled]="!walletConnected">
-                {{ amount }}
-              </button>
-            }
-          </div>
+            <!-- Quick SOL Amount Buttons -->
+            <div class="grid grid-cols-4 gap-2">
+              @for (amount of quickAmounts; track amount) {
+                <button
+                  (click)="setQuickAmount(amount)"
+                  class="quick-amount-btn px-3 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded text-sm font-medium text-gray-300 transition-colors"
+                  [disabled]="!walletConnected">
+                  {{ amount }} SOL
+                </button>
+              }
+            </div>
+          }
+
+          <!-- SELL: Token Input -->
+          @if (tradeType === 'sell') {
+            <div>
+              <label class="block text-sm text-gray-400 mb-2">
+                You sell
+                @if (tokenBalance > 0) {
+                  <span class="text-xs ml-2">(Balance: {{ formatTokenAmount(tokenBalance) }} {{ tokenSymbol }})</span>
+                }
+              </label>
+              <div class="input-wrapper relative">
+                <input
+                  type="number"
+                  [(ngModel)]="amountTokens"
+                  (ngModelChange)="onAmountChange()"
+                  [placeholder]="'0.00'"
+                  class="trade-input w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white text-lg focus:outline-none focus:border-primary-500 transition-colors"
+                  [disabled]="!walletConnected || loading">
+                <span class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 font-semibold">
+                  {{ tokenSymbol }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Percentage Buttons -->
+            <div class="grid grid-cols-4 gap-2">
+              @for (percentage of sellPercentages; track percentage) {
+                <button
+                  (click)="setSellPercentage(percentage)"
+                  class="quick-amount-btn px-3 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded text-sm font-medium text-gray-300 transition-colors"
+                  [disabled]="!walletConnected || tokenBalance === 0">
+                  {{ percentage }}%
+                </button>
+              }
+            </div>
+          }
 
           <!-- Output Amount -->
           <div>
@@ -111,12 +148,22 @@ interface PriceImpact {
               You {{ tradeType === 'buy' ? 'receive' : 'get' }}
             </label>
             <div class="output-display px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg">
-              <div class="flex items-center justify-between">
-                <span class="text-white text-lg font-semibold">
-                  {{ formatTokenAmount(estimatedTokens) }}
-                </span>
-                <span class="text-gray-400 font-semibold">{{ tokenSymbol }}</span>
-              </div>
+              @if (tradeType === 'buy') {
+                <div class="flex items-center justify-between">
+                  <span class="text-white text-lg font-semibold">
+                    {{ formatTokenAmount(estimatedTokens) }}
+                  </span>
+                  <span class="text-gray-400 font-semibold">{{ tokenSymbol }}</span>
+                </div>
+              }
+              @if (tradeType === 'sell') {
+                <div class="flex items-center justify-between">
+                  <span class="text-white text-lg font-semibold">
+                    {{ estimatedSOL.toFixed(4) }}
+                  </span>
+                  <span class="text-gray-400 font-semibold">SOL</span>
+                </div>
+              }
             </div>
           </div>
 
@@ -233,15 +280,19 @@ export class TradeInterfaceComponent implements OnInit, OnDestroy {
 
   tradeType: TradeType = 'buy';
   amountSOL: number = 0;
+  amountTokens: number = 0;
   estimatedTokens: number = 0;
+  estimatedSOL: number = 0;
   tradingFee: number = 0;
   walletBalance: number = 0;
+  tokenBalance: number = 0;
   walletConnected: boolean = false;
   loading: boolean = false;
   validationMessage: string = '';
   priceImpact: PriceImpact | null = null;
 
   quickAmounts: number[] = [0.1, 0.5, 1, 5];
+  sellPercentages: number[] = [25, 50, 75, 100];
 
   private destroy$ = new Subject<void>();
   private amountChange$ = new Subject<void>();
@@ -255,6 +306,11 @@ export class TradeInterfaceComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     // Check wallet connection
     this.checkWalletConnection();
+
+    // Load token balance if wallet connected
+    if (this.walletConnected) {
+      this.loadTokenBalance();
+    }
 
     // Debounce amount changes for calculation
     this.amountChange$
@@ -277,13 +333,32 @@ export class TradeInterfaceComponent implements OnInit, OnDestroy {
         next: (state: WalletState) => {
           this.walletConnected = state.connected;
           this.walletBalance = state.balance || 0;
+          
+          // Load token balance when wallet connects
+          if (state.connected) {
+            this.loadTokenBalance();
+          }
         }
       });
   }
 
-  private loadWalletBalance(): void {
-    // Balance is automatically updated via wallet state subscription
-    // No need for separate method, but keeping for compatibility
+  private async loadTokenBalance(): Promise<void> {
+    // TODO: Implement token balance fetching from Solana
+    // For now, mock with 0
+    // In production: fetch token account balance using SPL Token program
+    this.tokenBalance = 0;
+    
+    // Example implementation:
+    // const walletAddress = this.walletService.getPublicKey();
+    // if (walletAddress) {
+    //   const tokenAccounts = await connection.getParsedTokenAccountsByOwner(
+    //     walletAddress,
+    //     { mint: new PublicKey(this.tokenAddress) }
+    //   );
+    //   if (tokenAccounts.value.length > 0) {
+    //     this.tokenBalance = tokenAccounts.value[0].account.data.parsed.info.tokenAmount.uiAmount;
+    //   }
+    // }
   }
 
   setTradeType(type: TradeType): void {
@@ -301,24 +376,57 @@ export class TradeInterfaceComponent implements OnInit, OnDestroy {
     this.onAmountChange();
   }
 
+  setSellPercentage(percentage: number): void {
+    if (!this.tokenBalance) return;
+    this.amountTokens = (this.tokenBalance * percentage) / 100;
+    this.onAmountChange();
+  }
+
   private calculateOutput(): void {
-    if (!this.amountSOL || this.amountSOL <= 0 || !this.currentPrice) {
+    if (!this.currentPrice) {
       this.estimatedTokens = 0;
+      this.estimatedSOL = 0;
       this.tradingFee = 0;
       this.priceImpact = null;
       return;
     }
 
-    // Calculate trading fee (1%)
-    this.tradingFee = this.amountSOL * 0.01;
+    if (this.tradeType === 'buy') {
+      if (!this.amountSOL || this.amountSOL <= 0) {
+        this.estimatedTokens = 0;
+        this.tradingFee = 0;
+        this.priceImpact = null;
+        return;
+      }
 
-    // Calculate estimated tokens
-    const amountAfterFee = this.amountSOL - this.tradingFee;
-    this.estimatedTokens = amountAfterFee / this.currentPrice;
+      // Calculate trading fee (1%)
+      this.tradingFee = this.amountSOL * 0.01;
 
-    // Calculate price impact (simplified)
-    const impactPercentage = (this.amountSOL / 100) * 2; // Mock calculation
-    this.priceImpact = this.calculatePriceImpact(impactPercentage);
+      // Calculate estimated tokens
+      const amountAfterFee = this.amountSOL - this.tradingFee;
+      this.estimatedTokens = amountAfterFee / this.currentPrice;
+
+      // Calculate price impact (simplified)
+      const impactPercentage = (this.amountSOL / 100) * 2; // Mock calculation
+      this.priceImpact = this.calculatePriceImpact(impactPercentage);
+    } else {
+      // Sell mode
+      if (!this.amountTokens || this.amountTokens <= 0) {
+        this.estimatedSOL = 0;
+        this.tradingFee = 0;
+        this.priceImpact = null;
+        return;
+      }
+
+      // Calculate SOL received
+      const solBeforeFee = this.amountTokens * this.currentPrice;
+      this.tradingFee = solBeforeFee * 0.01;
+      this.estimatedSOL = solBeforeFee - this.tradingFee;
+
+      // Calculate price impact (simplified)
+      const impactPercentage = (solBeforeFee / 100) * 2; // Mock calculation
+      this.priceImpact = this.calculatePriceImpact(impactPercentage);
+    }
   }
 
   private calculatePriceImpact(percentage: number): PriceImpact {
@@ -332,13 +440,27 @@ export class TradeInterfaceComponent implements OnInit, OnDestroy {
   }
 
   canTrade(): boolean {
-    if (!this.walletConnected || this.loading || !this.amountSOL || this.amountSOL <= 0) {
+    if (!this.walletConnected || this.loading) {
       return false;
     }
 
-    if (this.tradeType === 'buy' && this.amountSOL > this.walletBalance) {
-      this.validationMessage = 'Insufficient SOL balance';
-      return false;
+    if (this.tradeType === 'buy') {
+      if (!this.amountSOL || this.amountSOL <= 0) {
+        return false;
+      }
+      if (this.amountSOL > this.walletBalance) {
+        this.validationMessage = 'Insufficient SOL balance';
+        return false;
+      }
+    } else {
+      // Sell mode
+      if (!this.amountTokens || this.amountTokens <= 0) {
+        return false;
+      }
+      if (this.amountTokens > this.tokenBalance) {
+        this.validationMessage = 'Insufficient token balance';
+        return false;
+      }
     }
 
     return true;
@@ -358,31 +480,47 @@ export class TradeInterfaceComponent implements OnInit, OnDestroy {
     this.validationMessage = '';
 
     try {
-      // Calculate minimum tokens with 1% slippage
-      const minTokensOut = this.estimatedTokens * 0.99;
+      let result;
 
-      const tradeRequest = {
-        tokenAddress: this.tokenAddress,
-        amountSol: this.amountSOL,
-        buyer: walletAddress,
-        minTokensOut: minTokensOut
-      };
+      if (this.tradeType === 'buy') {
+        // Calculate minimum tokens with 1% slippage
+        const minTokensOut = this.estimatedTokens * 0.99;
 
-      const observable = this.tradeType === 'buy' 
-        ? this.apiService.buyToken(tradeRequest)
-        : this.apiService.sellToken(tradeRequest);
+        result = await this.apiService.buyToken({
+          tokenAddress: this.tokenAddress,
+          amountSol: this.amountSOL,
+          buyer: walletAddress,
+          minTokensOut: minTokensOut
+        }).toPromise();
 
-      const result = await observable.toPromise();
+        if (result?.success && result.signature) {
+          this.notificationService.success(
+            `Bought ${this.formatTokenAmount(this.estimatedTokens)} ${this.tokenSymbol}`
+          );
+          this.amountSOL = 0;
+        }
+      } else {
+        // Sell mode
+        // Calculate minimum SOL with 1% slippage
+        const minSolOut = this.estimatedSOL * 0.99;
 
-      if (result?.success && result.signature) {
-        this.notificationService.success(
-          `${this.tradeType === 'buy' ? 'Bought' : 'Sold'} ${this.formatTokenAmount(this.estimatedTokens)} ${this.tokenSymbol}`
-        );
+        result = await this.apiService.sellToken({
+          tokenAddress: this.tokenAddress,
+          amountTokens: this.amountTokens,
+          seller: walletAddress,
+          minSolOut: minSolOut
+        }).toPromise();
 
-        // Reset form
-        this.amountSOL = 0;
-        this.calculateOutput();
+        if (result?.success && result.signature) {
+          this.notificationService.success(
+            `Sold ${this.formatTokenAmount(this.amountTokens)} ${this.tokenSymbol}`
+          );
+          this.amountTokens = 0;
+        }
       }
+
+      // Reset calculations
+      this.calculateOutput();
 
     } catch (error: any) {
       console.error('Trade failed:', error);

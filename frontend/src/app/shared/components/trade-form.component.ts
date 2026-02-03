@@ -285,9 +285,9 @@ export class TradeFormComponent implements OnInit, OnDestroy {
 
       const result = await this.apiService.sellToken({
         tokenAddress: this.tokenAddress,
-        amountSol: this.sellAmount,
-        buyer: walletAddress,
-        minTokensOut: minSolOut
+        amountTokens: this.sellAmount,
+        seller: walletAddress,
+        minSolOut: minSolOut
       }).toPromise();
 
       if (result && result.success) {

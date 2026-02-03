@@ -719,9 +719,9 @@ export class QuickTradeModalComponent implements OnInit, OnDestroy {
 
       const result = await this.apiService.sellToken({
         tokenAddress: this.selectedToken.address,
-        amountSol: this.sellAmount,
-        buyer: walletAddress,
-        minTokensOut: minSolOut
+        amountTokens: this.sellAmount,
+        seller: walletAddress,
+        minSolOut: minSolOut
       }).toPromise();
 
       if (result) {

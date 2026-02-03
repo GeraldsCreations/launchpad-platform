@@ -54,11 +54,18 @@ export interface CreateTokenRequest {
   initialBuy?: number;
 }
 
-export interface TradeRequest {
+export interface BuyRequest {
   tokenAddress: string;
   amountSol: number;
   buyer: string;
   minTokensOut?: number;
+}
+
+export interface SellRequest {
+  tokenAddress: string;
+  amountTokens: number;
+  seller: string;
+  minSolOut?: number;
 }
 
 export interface QuoteResponse {
@@ -143,14 +150,14 @@ export class ApiService {
     }).pipe(catchError(this.handleError));
   }
 
-  buyToken(request: TradeRequest): Observable<{ success: boolean; signature: string; trade: Trade }> {
+  buyToken(request: BuyRequest): Observable<{ success: boolean; signature: string; trade: Trade }> {
     return this.http.post<{ success: boolean; signature: string; trade: Trade }>(
       `${this.baseUrl}/trade/buy`,
       request
     ).pipe(catchError(this.handleError));
   }
 
-  sellToken(request: TradeRequest): Observable<{ success: boolean; signature: string; trade: Trade }> {
+  sellToken(request: SellRequest): Observable<{ success: boolean; signature: string; trade: Trade }> {
     return this.http.post<{ success: boolean; signature: string; trade: Trade }>(
       `${this.baseUrl}/trade/sell`,
       request
