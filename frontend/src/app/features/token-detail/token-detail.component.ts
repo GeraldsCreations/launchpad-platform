@@ -97,6 +97,16 @@ import { tokenDetailAnimations } from './token-detail.animations';
           </div>
         </div>
 
+        <!-- Bonding Curve Progress (Full Width) -->
+        <div class="bonding-curve-section max-w-7xl mx-auto px-4 pt-6">
+          <app-bonding-curve-progress
+            [progressPercent]="dbcProgress || 0"
+            [currentMarketCap]="token.marketCap"
+            [graduationThreshold]="50000"
+            [showDetails]="true">
+          </app-bonding-curve-progress>
+        </div>
+
         <!-- 2-Column Layout: Chart/Tabs + Trading -->
         <div class="main-content-grid max-w-7xl mx-auto px-4 py-6">
           
@@ -129,14 +139,6 @@ import { tokenDetailAnimations } from './token-detail.animations';
               [currentPrice]="currentPrice"
               #tradeInterface>
             </app-trade-interface>
-
-            <!-- Bonding Curve Progress -->
-            <app-bonding-curve-progress
-              [progressPercent]="dbcProgress || 0"
-              [currentMarketCap]="token.marketCap"
-              [graduationThreshold]="50000"
-              [showDetails]="false">
-            </app-bonding-curve-progress>
           </div>
 
         </div>
@@ -246,6 +248,16 @@ import { tokenDetailAnimations } from './token-detail.animations';
     .btn-connect-wallet:hover {
       background: var(--gradient-purple-hover);
       transform: scale(1.02);
+    }
+
+    /* Bonding Curve Section (Full Width) */
+    .bonding-curve-section {
+      margin-bottom: 0;
+    }
+
+    .bonding-curve-section ::ng-deep app-bonding-curve-progress {
+      display: block;
+      width: 100%;
     }
 
     /* 2-Column Grid Layout: Chart/Trades + Trading */
