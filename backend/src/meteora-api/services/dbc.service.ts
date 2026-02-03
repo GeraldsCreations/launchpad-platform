@@ -229,10 +229,11 @@ export class DbcService implements OnModuleInit {
         dynamicFeeEnabled: false,
         activationType: ActivationType.Timestamp,
         
-        // Migration fee (no fee for migration itself)
+        // Migration fee (trading fees during bonding curve)
         migrationFee: {
-          feePercentage: 0,
-          creatorFeePercentage: 0,
+          feePercentage: 50,          // 0.5% platform fee (50 bps)
+          creatorFeePercentage: 50,   // 0.5% creator fee (50 bps)
+          // Total: 1% trading fee during bonding curve
         },
         
         // Migrated pool fee (after migration to DLMM)
