@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewChecked, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewChecked, inject, effect, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
@@ -21,36 +21,33 @@ export class GlobalChatComponent implements OnInit, OnDestroy, AfterViewChecked 
   messages: ChatMessage[] = [];
   messageText = '';
   isMinimized = false;
-  isAuthenticated = false;
   onlineCount = 0;
   typingUsers: string[] = [];
-  currentWallet: string | null = null;
+
+  // Use signals from AuthService
+  readonly isAuthenticated = this.authService.isAuthenticated;
+  readonly currentWallet = this.authService.wallet;
 
   private subscriptions: Subscription[] = [];
   private typingTimeout: any = null;
   private shouldScrollToBottom = false;
 
+  constructor() {
+    // React to authentication changes using effect
+    effect(() => {
+      const isAuth = this.isAuthenticated();
+      console.log('🔐 Auth state changed:', isAuth);
+      
+      if (isAuth) {
+        this.connectChat();
+      } else {
+        this.chatService.disconnect();
+      }
+    });
+  }
+
   ngOnInit(): void {
-    // Subscribe to auth state
-    this.subscriptions.push(
-      this.authService.isAuthenticated$.subscribe((isAuth) => {
-        this.isAuthenticated = isAuth;
-        if (isAuth) {
-          this.connectChat();
-        } else {
-          this.chatService.disconnect();
-        }
-      })
-    );
-
-    // Subscribe to wallet
-    this.subscriptions.push(
-      this.authService.wallet$.subscribe((wallet) => {
-        this.currentWallet = wallet;
-      })
-    );
-
-    // Subscribe to messages
+    // Subscribe to chat messages
     this.subscriptions.push(
       this.chatService.messages$.subscribe((messages) => {
         this.messages = messages;
@@ -101,7 +98,7 @@ export class GlobalChatComponent implements OnInit, OnDestroy, AfterViewChecked 
    * Send message
    */
   sendMessage(): void {
-    if (!this.messageText.trim() || !this.isAuthenticated) {
+    if (!this.messageText.trim() || !this.isAuthenticated()) {
       return;
     }
 
@@ -159,7 +156,7 @@ export class GlobalChatComponent implements OnInit, OnDestroy, AfterViewChecked 
    * Check if message is from current user
    */
   isOwnMessage(message: ChatMessage): boolean {
-    return message.walletAddress === this.currentWallet;
+    return message.walletAddress === this.currentWallet();
   }
 
   /**

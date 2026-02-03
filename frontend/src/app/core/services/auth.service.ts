@@ -1,6 +1,5 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { BehaviorSubject, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 interface LoginResponse {
@@ -25,13 +24,16 @@ interface VerifyResponse {
 export class AuthService {
   private http = inject(HttpClient);
   
-  private tokenSubject = new BehaviorSubject<string | null>(null);
-  private walletSubject = new BehaviorSubject<string | null>(null);
-  private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
+  // Angular signals for reactive state
+  private tokenSignal = signal<string | null>(null);
+  private walletSignal = signal<string | null>(null);
 
-  public token$ = this.tokenSubject.asObservable();
-  public wallet$ = this.walletSubject.asObservable();
-  public isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
+  // Public readonly signals
+  public readonly token = this.tokenSignal.asReadonly();
+  public readonly wallet = this.walletSignal.asReadonly();
+  public readonly isAuthenticated = computed(() => 
+    !!this.tokenSignal() && !!this.walletSignal()
+  );
 
   private apiUrl = environment.apiUrl || 'http://localhost:3000/v1';
 
@@ -39,7 +41,7 @@ export class AuthService {
     // Check for existing token on init
     const token = this.getStoredToken();
     if (token) {
-      this.tokenSubject.next(token);
+      this.tokenSignal.set(token);
       this.verifyToken(token);
     }
   }
@@ -83,9 +85,8 @@ export class AuthService {
 
       // 4. Store token
       this.storeToken(response.token);
-      this.tokenSubject.next(response.token);
-      this.walletSubject.next(walletAddress);
-      this.isAuthenticatedSubject.next(true);
+      this.tokenSignal.set(response.token);
+      this.walletSignal.set(walletAddress);
 
       console.log('✅ Authenticated successfully');
     } catch (error) {
@@ -99,16 +100,15 @@ export class AuthService {
    */
   logout(): void {
     this.clearToken();
-    this.tokenSubject.next(null);
-    this.walletSubject.next(null);
-    this.isAuthenticatedSubject.next(false);
+    this.tokenSignal.set(null);
+    this.walletSignal.set(null);
   }
 
   /**
    * Get current token
    */
   getToken(): string | null {
-    return this.tokenSubject.value || this.getStoredToken();
+    return this.tokenSignal() || this.getStoredToken();
   }
 
   /**
@@ -125,8 +125,7 @@ export class AuthService {
         .toPromise() as VerifyResponse;
 
       if (response.valid) {
-        this.walletSubject.next(response.walletAddress);
-        this.isAuthenticatedSubject.next(true);
+        this.walletSignal.set(response.walletAddress);
       } else {
         this.logout();
       }

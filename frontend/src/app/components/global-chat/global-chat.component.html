@@ -1,4 +1,4 @@
-<div class="chat-container" [class.minimized]="isMinimized" [class.unauthenticated]="!isAuthenticated">
+<div class="chat-container" [class.minimized]="isMinimized" [class.unauthenticated]="!isAuthenticated()">
   <!-- Header -->
   <div class="chat-header" (click)="toggleMinimize()">
     <div class="flex items-center gap-2">
@@ -14,7 +14,7 @@
   <!-- Content (hidden when minimized) -->
   @if (!isMinimized) {
     <!-- Not authenticated message -->
-    @if (!isAuthenticated) {
+    @if (!isAuthenticated()) {
       <div class="auth-required">
         <div class="auth-message">
           <svg class="lock-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -26,7 +26,7 @@
     }
 
     <!-- Messages -->
-    @if (isAuthenticated) {
+    @if (isAuthenticated()) {
       <div class="chat-messages" #messagesContainer>
         @for (msg of messages; track msg.id) {
           <div class="message" [class.own-message]="isOwnMessage(msg)" [class.bot-message]="msg.isBot">
@@ -59,12 +59,12 @@
           (keydown.enter)="sendMessage()"
           (input)="onTyping()"
           placeholder="Type a message..."
-          [disabled]="!isAuthenticated"
+          [disabled]="!isAuthenticated()"
           maxlength="500"
         />
         <button 
           (click)="sendMessage()" 
-          [disabled]="!messageText.trim() || !isAuthenticated"
+          [disabled]="!messageText.trim() || !isAuthenticated()"
           class="send-btn"
         >
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
