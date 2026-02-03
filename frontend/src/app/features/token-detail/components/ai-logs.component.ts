@@ -32,8 +32,7 @@ interface AILog {
         <div 
           class="log-item" 
           *ngFor="let log of logs"
-          [ngClass]="'log-' + log.type"
-          [@slideIn]>
+          [ngClass]="'log-' + log.type">
           <div class="log-icon">{{ log.icon }}</div>
           <div class="log-content">
             <p class="log-message">{{ log.message }}</p>

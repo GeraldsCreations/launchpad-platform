@@ -27,8 +27,7 @@ interface Message {
       <div class="messages-container" #messagesContainer>
         <div 
           class="message" 
-          *ngFor="let msg of messages"
-          [@slideIn]>
+          *ngFor="let msg of messages">
           <div class="avatar" [style.background]="msg.avatar">
             {{ msg.emoji || getInitial(msg.username) }}
           </div>
