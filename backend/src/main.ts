@@ -46,9 +46,9 @@ async function bootstrap() {
   }));
   app.use(compression());
   
-  // Body size limits (DDoS protection)
-  app.use(express.json({ limit: '10kb' }));
-  app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+  // Body size limits (allow images up to 5MB for token creation)
+  app.use(express.json({ limit: '5mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 
   // Enable CORS
   app.enableCors({
