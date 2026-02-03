@@ -98,14 +98,14 @@ export class DbcController {
   }
 
   @Post('admin/set-config')
-  @ApiOperation({ summary: 'Set platform config key (load from database)' })
+  @ApiOperation({ summary: 'Set platform config key and save to database' })
   async setPlatformConfig(@Body() body: { configKey: string }) {
     try {
-      this.dbcService.setPlatformConfigKey(body.configKey);
+      await this.dbcService.setPlatformConfigKey(body.configKey);
       
       return {
         success: true,
-        message: 'Platform config set successfully',
+        message: 'Platform config set and saved to database',
       };
     } catch (error) {
       throw new HttpException(

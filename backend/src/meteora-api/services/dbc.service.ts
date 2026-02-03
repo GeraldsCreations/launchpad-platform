@@ -1,6 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { Connection, PublicKey, Keypair, Transaction } from '@solana/web3.js';
+import { PlatformConfig } from '../../database/entities/platform-config.entity';
 import { AnchorProvider, Wallet } from '@coral-xyz/anchor';
 import {
   DynamicBondingCurveClient,
@@ -25,7 +28,7 @@ import * as BN from 'bn.js';
  * Handles Meteora DBC integration for pump.fun style token launches
  */
 @Injectable()
-export class DbcService {
+export class DbcService implements OnModuleInit {
   private readonly logger = new Logger(DbcService.name);
   private connection: Connection;
   private client: DynamicBondingCurveClient;
@@ -36,7 +39,11 @@ export class DbcService {
   // Platform config (will be created once)
   private platformConfigKey: PublicKey | null = null;
 
-  constructor(private configService: ConfigService) {
+  constructor(
+    private configService: ConfigService,
+    @InjectRepository(PlatformConfig)
+    private platformConfigRepository: Repository<PlatformConfig>,
+  ) {
     const rpcUrl = this.configService.get('SOLANA_RPC_URL');
     this.connection = new Connection(rpcUrl, 'confirmed');
 
@@ -50,18 +57,42 @@ export class DbcService {
     this.partnerService = new PartnerService(this.connection, 'confirmed');
     this.creatorService = new CreatorService(this.connection, 'confirmed');
 
-    // Load platform config from environment if available
-    const configKeyEnv = this.configService.get('DBC_PLATFORM_CONFIG_KEY');
-    if (configKeyEnv) {
-      try {
-        this.platformConfigKey = new PublicKey(configKeyEnv);
-        this.logger.log(`✅ Platform config loaded from env: ${this.platformConfigKey.toBase58()}`);
-      } catch (error) {
-        this.logger.warn(`Failed to load config key from env: ${error.message}`);
-      }
-    }
+    this.logger.log('✅ DBC Service initialized (config will load from DB on module init)');
+  }
 
-    this.logger.log('✅ DBC Service initialized');
+  /**
+   * Load platform config from database on module initialization
+   */
+  async onModuleInit() {
+    try {
+      const config = await this.platformConfigRepository.findOne({
+        where: { key: 'dbc_platform_config' },
+      });
+
+      if (config) {
+        this.platformConfigKey = new PublicKey(config.value);
+        this.logger.log(`✅ Platform config loaded from DB: ${this.platformConfigKey.toBase58()}`);
+      } else {
+        // Try environment variable as fallback
+        const configKeyEnv = this.configService.get('DBC_PLATFORM_CONFIG_KEY');
+        if (configKeyEnv) {
+          this.platformConfigKey = new PublicKey(configKeyEnv);
+          this.logger.log(`✅ Platform config loaded from ENV: ${this.platformConfigKey.toBase58()}`);
+          
+          // Save to DB for future use
+          await this.platformConfigRepository.save({
+            key: 'dbc_platform_config',
+            value: configKeyEnv,
+            description: 'DBC platform configuration public key',
+          });
+          this.logger.log('💾 Config saved to database');
+        } else {
+          this.logger.warn('⚠️  No platform config found in DB or ENV. Create one via /v1/dbc/admin/init-config');
+        }
+      }
+    } catch (error) {
+      this.logger.error('Failed to load platform config:', error.message);
+    }
   }
 
   /**
@@ -122,8 +153,14 @@ export class DbcService {
     
     this.logger.log(`✅ Config submitted! Signature: ${signature}`);
     
-    // Set it as the platform config
+    // Set it as the platform config and save to database
     this.platformConfigKey = result.configKey;
+    await this.platformConfigRepository.save({
+      key: 'dbc_platform_config',
+      value: result.configKey.toBase58(),
+      description: 'DBC platform configuration public key',
+    });
+    this.logger.log('💾 Config saved to database');
     
     return {
       configKey: result.configKey,
@@ -514,10 +551,18 @@ export class DbcService {
   }
 
   /**
-   * Set platform config key (load from database)
+   * Set platform config key and save to database
    */
-  setPlatformConfigKey(configKey: string) {
+  async setPlatformConfigKey(configKey: string): Promise<void> {
     this.platformConfigKey = new PublicKey(configKey);
     this.logger.log(`Platform config set: ${configKey}`);
+    
+    // Save to database
+    await this.platformConfigRepository.save({
+      key: 'dbc_platform_config',
+      value: configKey,
+      description: 'DBC platform configuration public key',
+    });
+    this.logger.log('💾 Config saved to database');
   }
 }

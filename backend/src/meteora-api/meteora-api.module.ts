@@ -11,6 +11,7 @@ import { FeeClaimerVault } from '../database/entities/fee-claimer-vault.entity';
 import { BotCreatorReward } from '../database/entities/bot-creator-reward.entity';
 import { LpPosition } from './entities/lp-position.entity';
 import { LpWithdrawal } from './entities/lp-withdrawal.entity';
+import { PlatformConfig } from '../database/entities/platform-config.entity';
 
 // Services
 import { MeteoraService } from './services/meteora.service';
@@ -47,6 +48,7 @@ import { DbcController } from './controllers/dbc.controller';
       BotCreatorReward,
       LpPosition,
       LpWithdrawal,
+      PlatformConfig,
     ]),
   ],
   controllers: [
