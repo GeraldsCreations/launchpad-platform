@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import FormData from 'form-data';
+import * as FormData from 'form-data';
 import axios from 'axios';
 
 /**
@@ -165,10 +165,10 @@ export class MetadataUploadService {
       
       return `ipfs://${response.data.value.cid}`;
     } catch (error: any) {
-      this.logger.error('Upload error:', error.message);
+      this.logger.error('Image upload error:', error.message);
       if (error.response) {
-        this.logger.error(`Response status: ${error.response.status}`);
-        this.logger.error(`Response data:`, error.response.data);
+        this.logger.error(`Image upload response status: ${error.response.status}`);
+        this.logger.error(`Image upload response data: ${JSON.stringify(error.response.data)}`);
       }
       throw error;
     }
@@ -203,10 +203,10 @@ export class MetadataUploadService {
       
       return `ipfs://${response.data.value.cid}`;
     } catch (error: any) {
-      this.logger.error('Upload error:', error.message);
+      this.logger.error('Metadata JSON upload error:', error.message);
       if (error.response) {
-        this.logger.error(`Response status: ${error.response.status}`);
-        this.logger.error(`Response data:`, error.response.data);
+        this.logger.error(`Metadata upload response status: ${error.response.status}`);
+        this.logger.error(`Metadata upload response data: ${JSON.stringify(error.response.data)}`);
       }
       throw error;
     }
