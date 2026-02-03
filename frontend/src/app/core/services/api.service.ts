@@ -126,8 +126,8 @@ export class ApiService {
     }).pipe(catchError(this.handleError));
   }
 
-  createToken(request: CreateTokenRequest): Observable<Token> {
-    return this.http.post<Token>(
+  createToken(request: CreateTokenRequest): Observable<{ transaction: string; poolAddress: string; tokenMint: string; message: string }> {
+    return this.http.post<{ transaction: string; poolAddress: string; tokenMint: string; message: string }>(
       `${this.baseUrl}/tokens/create`,
       request
     ).pipe(catchError(this.handleError));

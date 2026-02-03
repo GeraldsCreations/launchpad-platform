@@ -11,6 +11,7 @@ import { FileUploadModule } from 'primeng/fileupload';
 import { ApiService } from '../../core/services/api.service';
 import { WalletService } from '../../core/services/wallet.service';
 import { NotificationService } from '../../core/services/notification.service';
+import { Transaction } from '@solana/web3.js';
 
 @Component({
   selector: 'app-create-token',
@@ -162,14 +163,18 @@ import { NotificationService } from '../../core/services/notification.service';
             </div>
           }
 
-          <p-button 
+          <button 
             type="submit"
-            label="Create Token"
-            icon="pi pi-plus"
-            [loading]="creating"
             [disabled]="!canCreate()"
-            styleClass="w-full p-button-lg p-button-success">
-          </p-button>
+            class="create-token-btn">
+            @if (creating) {
+              <i class="pi pi-spin pi-spinner mr-2"></i>
+              <span>Creating Token...</span>
+            } @else {
+              <i class="pi pi-rocket mr-2"></i>
+              <span>Create Token</span>
+            }
+          </button>
         </form>
       </p-card>
     </div>
@@ -238,6 +243,45 @@ import { NotificationService } from '../../core/services/notification.service';
 
     .hidden {
       display: none;
+    }
+
+    .create-token-btn {
+      width: 100%;
+      padding: 1rem 2rem;
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: white;
+      background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+    }
+
+    .create-token-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(139, 92, 246, 0.6);
+      background: linear-gradient(135deg, #9D6EFF 0%, #FF5FAA 100%);
+    }
+
+    .create-token-btn:active:not(:disabled) {
+      transform: translateY(0);
+      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+    }
+
+    .create-token-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .create-token-btn i {
+      font-size: 1.25rem;
     }
   `]
 })
@@ -316,10 +360,10 @@ export class CreateTokenComponent {
     }
 
     this.creating = true;
-    this.notificationService.info('Creating token...', 'Please confirm the transaction in your wallet');
+    this.notificationService.info('Building transaction...', 'Please wait');
     
     try {
-      // Transform form data to match backend DTO
+      // Step 1: Get unsigned transaction from backend
       const requestData = {
         name: this.formData.name,
         symbol: this.formData.symbol,
@@ -331,20 +375,55 @@ export class CreateTokenComponent {
       };
 
       const result = await this.apiService.createToken(requestData).toPromise();
-      if (result) {
-        this.notificationService.success('Token Created!', `${this.formData.name} has been created successfully`);
-        this.notificationService.tokenCreated(this.formData.name, result.address);
-        
-        // Navigate after a short delay to allow user to see the success message
-        setTimeout(() => {
-          this.router.navigate(['/token', result.address]);
-        }, 1500);
+      
+      if (!result || !result.transaction) {
+        throw new Error('No transaction returned from backend');
       }
+
+      console.log('📦 Transaction received:', {
+        poolAddress: result.poolAddress,
+        tokenMint: result.tokenMint,
+        txSize: result.transaction.length
+      });
+
+      // Step 2: Decode transaction from base64
+      const txBuffer = Buffer.from(result.transaction, 'base64');
+      const transaction = Transaction.from(txBuffer);
+      
+      console.log('✅ Transaction decoded successfully');
+
+      // Step 3: Ask user to sign and send transaction
+      this.notificationService.info('Sign Transaction', 'Please approve in your wallet');
+      
+      const signature = await this.walletService.signAndSendTransaction(transaction);
+      
+      console.log('✅ Transaction signed and sent:', signature);
+
+      // Step 4: Show success and navigate
+      this.notificationService.success('Token Created!', `${this.formData.name} is now on-chain!`);
+      this.notificationService.tokenCreated(this.formData.name, result.tokenMint);
+      
+      // Navigate to token page
+      setTimeout(() => {
+        this.router.navigate(['/token', result.tokenMint]);
+      }, 1500);
+
     } catch (error: any) {
       console.error('Failed to create token:', error);
-      const errorMsg = error.error?.message || error.message || 'Failed to create token';
-      const errorDetail = Array.isArray(errorMsg) ? errorMsg.join(', ') : errorMsg;
-      this.notificationService.transactionFailed(errorDetail);
+      
+      // Handle different error types
+      let errorMsg = 'Failed to create token';
+      if (error.message?.includes('User rejected')) {
+        errorMsg = 'Transaction cancelled by user';
+      } else if (error.error?.message) {
+        errorMsg = Array.isArray(error.error.message) 
+          ? error.error.message.join(', ') 
+          : error.error.message;
+      } else if (error.message) {
+        errorMsg = error.message;
+      }
+      
+      this.notificationService.transactionFailed(errorMsg);
     } finally {
       this.creating = false;
     }
