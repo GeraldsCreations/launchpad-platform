@@ -43,9 +43,6 @@ import { BotBadgeComponent } from './bot-badge/bot-badge.component';
             <div class="market-cap-progress">
               <div class="progress-bar" [style.width.%]="getBondingProgress()"></div>
             </div>
-            <span class="market-cap-change" [class.positive]="getPriceChange() > 0" [class.negative]="getPriceChange() < 0">
-              {{ getPriceChange() > 0 ? '↑' : '↓' }} {{ Math.abs(getPriceChange()).toFixed(2) }}%
-            </span>
           </div>
         </div>
 
@@ -165,21 +162,6 @@ import { BotBadgeComponent } from './bot-badge/bot-badge.component';
       transition: width 0.3s ease;
     }
 
-    .market-cap-change {
-      font-size: 12px;
-      font-weight: 600;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-
-    .market-cap-change.positive {
-      color: #10b981;
-    }
-
-    .market-cap-change.negative {
-      color: #ef4444;
-    }
-
     .token-description {
       font-size: 12px;
       color: #9ca3af;
@@ -217,7 +199,6 @@ import { BotBadgeComponent } from './bot-badge/bot-badge.component';
 })
 export class TokenCardComponent {
   @Input() token!: Token;
-  Math = Math; // Expose Math to template
 
   constructor(private router: Router) {}
 
@@ -254,12 +235,6 @@ export class TokenCardComponent {
     
     const progress = (numMarketCap / graduationThreshold) * 100;
     return Math.min(progress, 100);
-  }
-
-  getPriceChange(): number {
-    // Mock price change for now (would come from API with historical data)
-    // Random between -10% and +10% for demonstration
-    return (Math.random() * 20) - 10;
   }
 
   getCreatorIcon(): string {

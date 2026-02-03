@@ -69,7 +69,7 @@ import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
         @if (searchQuery && searchResults.length > 0) {
           <div class="mb-12">
             <h2 class="text-2xl font-bold mb-6 text-white">Search Results</h2>
-            <div class="grid grid-cols-1 md:grid-cols-4 xl:grid-cols-6 gap-3">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
               @for (token of searchResults; track token.address) {
                 <app-token-card [token]="token"></app-token-card>
               }
@@ -114,7 +114,7 @@ import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
               <p-progressSpinner></p-progressSpinner>
             </div>
           } @else if (trendingTokens.length > 0) {
-            <div class="grid grid-cols-1 md:grid-cols-4 xl:grid-cols-6 gap-3">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
               @for (token of trendingTokens; track token.address) {
                 <app-token-card [token]="token"></app-token-card>
               }
@@ -134,7 +134,7 @@ import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
               <p-progressSpinner></p-progressSpinner>
             </div>
           } @else if (newTokens.length > 0) {
-            <div class="grid grid-cols-1 md:grid-cols-4 xl:grid-cols-6 gap-3">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
               @for (token of newTokens; track token.address) {
                 <app-token-card [token]="token"></app-token-card>
               }
@@ -154,7 +154,7 @@ import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
               <p-progressSpinner></p-progressSpinner>
             </div>
           } @else if (graduatedTokens.length > 0) {
-            <div class="grid grid-cols-1 md:grid-cols-4 xl:grid-cols-6 gap-3">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
               @for (token of graduatedTokens; track token.address) {
                 <app-token-card [token]="token"></app-token-card>
               }
