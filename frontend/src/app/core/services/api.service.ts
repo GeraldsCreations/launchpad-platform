@@ -26,12 +26,12 @@ export interface Token {
 
 export interface Trade {
   id: number;
-  transaction_signature: string;
-  token_address: string;
+  transactionSignature: string;
+  tokenAddress: string;
   trader: string;
   side: 'buy' | 'sell';
-  amount_sol: number;
-  amount_tokens: number;
+  amountSol: number;
+  amountTokens: number;
   price: number;
   fee: number;
   timestamp: string;

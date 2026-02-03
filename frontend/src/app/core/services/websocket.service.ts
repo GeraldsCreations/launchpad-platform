@@ -10,29 +10,37 @@ export interface WebSocketMessage {
 
 export interface PriceUpdateEvent {
   event: 'price_update';
-  token_address: string;
+  tokenAddress?: string;
+  token_address?: string; // Support both formats
   price: number;
-  market_cap: number;
-  volume_24h: number;
+  marketCap?: number;
+  market_cap?: number; // Support both formats
+  volume24h?: number;
+  volume_24h?: number; // Support both formats
   timestamp: number;
 }
 
 export interface TokenCreatedEvent {
   event: 'token_created';
-  token_address: string;
+  tokenAddress?: string;
+  token_address?: string; // Support both formats
   name: string;
   symbol: string;
   creator: string;
-  creator_type: string;
+  creatorType?: string;
+  creator_type?: string; // Support both formats
   timestamp: number;
 }
 
 export interface TradeEvent {
   event: 'trade';
-  token_address: string;
+  tokenAddress?: string;
+  token_address?: string; // Support both formats
   side: 'buy' | 'sell';
-  amount_sol: number;
-  amount_tokens: string;
+  amountSol?: number;
+  amount_sol?: number; // Support both formats
+  amountTokens?: string;
+  amount_tokens?: string; // Support both formats
   trader: string;
   price: number;
   timestamp: number;

@@ -677,7 +677,7 @@ export class QuickTradeModalComponent implements OnInit, OnDestroy {
       }).toPromise();
 
       if (result) {
-        this.notificationService.transactionSuccess(result.transaction_signature);
+        this.notificationService.transactionSuccess(result.signature);
         this.tradeComplete.emit(result);
         this.resetForm();
         this.closePreview();
@@ -703,7 +703,7 @@ export class QuickTradeModalComponent implements OnInit, OnDestroy {
       }).toPromise();
 
       if (result) {
-        this.notificationService.transactionSuccess(result.transaction_signature);
+        this.notificationService.transactionSuccess(result.signature);
         this.tradeComplete.emit(result);
         this.resetForm();
         this.closePreview();

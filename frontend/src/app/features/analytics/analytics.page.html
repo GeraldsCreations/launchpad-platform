@@ -114,8 +114,8 @@
             <div class="performer-subtitle">{{ token.name }}</div>
           </div>
           <div class="performer-metrics">
-            <div class="performer-price">{{ formatCurrency(token.current_price) }}</div>
-            <div class="performer-mcap">{{ formatCurrency(token.market_cap) }}</div>
+            <div class="performer-price">{{ formatCurrency(token.currentPrice) }}</div>
+            <div class="performer-mcap">{{ formatCurrency(token.marketCap) }}</div>
           </div>
         </div>
         
@@ -146,7 +146,7 @@
           <div class="legend-color" [style.background-color]="holding.color"></div>
           <div class="legend-info">
             <span class="legend-symbol">{{ holding.token.symbol }}</span>
-            <span class="legend-value">{{ formatCurrency(holding.token.market_cap || 0) }}</span>
+            <span class="legend-value">{{ formatCurrency(holding.token.marketCap || 0) }}</span>
           </div>
           <span class="legend-percent">{{ holding.percentage.toFixed(1) }}%</span>
         </div>
@@ -174,9 +174,9 @@
             <div class="token-symbol">{{ token.symbol }}</div>
             <div class="token-name">{{ token.name }}</div>
           </div>
-          <div class="col-price">{{ formatCurrency(token.current_price) }}</div>
-          <div class="col-volume">{{ formatCurrency(token.volume_24h) }}</div>
-          <div class="col-mcap">{{ formatCurrency(token.market_cap || 0) }}</div>
+          <div class="col-price">{{ formatCurrency(token.currentPrice) }}</div>
+          <div class="col-volume">{{ formatCurrency(token.volume24h) }}</div>
+          <div class="col-mcap">{{ formatCurrency(token.marketCap || 0) }}</div>
         </div>
         
         <div *ngIf="tokens.length === 0" class="empty-state">

@@ -83,7 +83,7 @@
             <!-- Token Image & Info -->
             <div class="flex items-start gap-4 mb-4">
               <img 
-                [src]="token.image_url || 'assets/default-token.svg'"
+                [src]="token.imageUrl || 'assets/default-token.svg'"
                 [alt]="token.name"
                 class="w-16 h-16 rounded-full object-cover ring-2 ring-primary-500/30"
                 (error)="$any($event.target).src = 'assets/default-token.svg'">
@@ -105,7 +105,7 @@
             <div class="space-y-3 mb-4">
               <div class="flex justify-between items-center">
                 <span class="text-sm text-gray-400">Price</span>
-                <span class="text-lg font-bold text-white">{{ formatPrice(token.current_price) }} SOL</span>
+                <span class="text-lg font-bold text-white">{{ formatPrice(token.currentPrice) }} SOL</span>
               </div>
 
               <!-- Price Change -->
@@ -120,12 +120,12 @@
 
               <div class="flex justify-between items-center">
                 <span class="text-sm text-gray-400">Market Cap</span>
-                <span class="text-sm font-semibold text-white">{{ formatNumber(token.market_cap) }}</span>
+                <span class="text-sm font-semibold text-white">{{ formatNumber(token.marketCap) }}</span>
               </div>
 
               <div class="flex justify-between items-center">
                 <span class="text-sm text-gray-400">24h Volume</span>
-                <span class="text-sm font-semibold text-white">{{ formatNumber(token.volume_24h) }}</span>
+                <span class="text-sm font-semibold text-white">{{ formatNumber(token.volume24h) }}</span>
               </div>
             </div>
 
