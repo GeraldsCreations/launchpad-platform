@@ -23,10 +23,45 @@ export class DbcController {
     private poolRepository: Repository<MeteoraPool>,
   ) {}
 
+  @Post('admin/init-config')
+  @ApiOperation({
+    summary: 'Initialize platform config (auto-submit)',
+    description: 'Creates and submits the LaunchPad partner config - one-time setup',
+  })
+  async initPlatformConfig(@Body() dto: CreatePartnerConfigDto) {
+    try {
+      this.logger.log('Initializing platform config (will auto-submit)...');
+
+      const result = await this.dbcService.createAndSubmitPartnerConfig({
+        name: dto.name,
+        website: dto.website,
+        logo: dto.logo,
+        migrationThreshold: dto.migrationThreshold,
+        poolCreationFee: dto.poolCreationFee,
+        tradingFeeBps: dto.tradingFeeBps,
+        creatorFeeBps: dto.creatorFeeBps,
+      });
+
+      return {
+        success: true,
+        configKey: result.configKey.toBase58(),
+        signature: result.signature,
+        message: 'Platform config initialized! You can now create tokens.',
+        explorerUrl: `https://solscan.io/tx/${result.signature}?cluster=devnet`,
+      };
+    } catch (error) {
+      this.logger.error('Failed to initialize platform config:', error);
+      throw new HttpException(
+        `Config initialization failed: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
   @Post('admin/create-config')
   @ApiOperation({
-    summary: 'Create partner config (one-time setup)',
-    description: 'Creates the LaunchPad partner config that defines bonding curve parameters for all tokens',
+    summary: 'Create partner config (returns unsigned transaction)',
+    description: 'Creates the LaunchPad partner config - you must sign and submit manually',
   })
   async createPartnerConfig(@Body() dto: CreatePartnerConfigDto) {
     try {
@@ -37,13 +72,11 @@ export class DbcController {
         website: dto.website,
         logo: dto.logo,
         migrationThreshold: dto.migrationThreshold,
-        poolCreationFee: dto.poolCreationFee, // SDK expects SOL, will convert to lamports internally
+        poolCreationFee: dto.poolCreationFee,
         tradingFeeBps: dto.tradingFeeBps,
         creatorFeeBps: dto.creatorFeeBps,
       });
 
-      // TODO: Sign and submit transaction
-      // For now, return unsigned transaction
       const serialized = result.transaction.serialize({
         requireAllSignatures: false,
         verifySignatures: false,

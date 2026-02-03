@@ -74,8 +74,56 @@ export class DbcService {
   }
 
   /**
+   * Create AND submit partner config (one-time setup for LaunchPad)
+   * This defines the bonding curve parameters for all tokens launched on LaunchPad
+   * Automatically signs and submits the transaction to the blockchain
+   */
+  async createAndSubmitPartnerConfig(params: {
+    name: string;
+    website: string;
+    logo: string;
+    migrationThreshold: number; // In SOL (e.g., 10)
+    poolCreationFee: number; // In SOL (e.g., 0.05) - SDK will convert to lamports
+    tradingFeeBps: number; // In basis points (e.g., 100 = 1%)
+    creatorFeeBps: number; // Percentage of trading fee to creator (e.g., 50 = 50%)
+  }): Promise<{
+    configKey: PublicKey;
+    signature: string;
+  }> {
+    const result = await this.createPartnerConfig(params);
+    
+    // Sign with platform wallet
+    const platformWallet = this.getPlatformWalletKeypair();
+    result.transaction.partialSign(platformWallet);
+    
+    this.logger.log('📡 Submitting config to blockchain...');
+    
+    // Submit transaction
+    const rawTx = result.transaction.serialize();
+    const signature = await this.connection.sendRawTransaction(rawTx, {
+      skipPreflight: false,
+      preflightCommitment: 'confirmed',
+      maxRetries: 3,
+    });
+    
+    // Wait for confirmation
+    await this.connection.confirmTransaction(signature, 'confirmed');
+    
+    this.logger.log(`✅ Config submitted! Signature: ${signature}`);
+    
+    // Set it as the platform config
+    this.platformConfigKey = result.configKey;
+    
+    return {
+      configKey: result.configKey,
+      signature,
+    };
+  }
+
+  /**
    * Create partner config (one-time setup for LaunchPad)
    * This defines the bonding curve parameters for all tokens launched on LaunchPad
+   * Returns unsigned transaction
    */
   async createPartnerConfig(params: {
     name: string;
