@@ -94,6 +94,54 @@ interface ChartStats {
           </div>
         }
 
+        <!-- Graduation Progress -->
+        @if (!graduated && graduationPrice && currentPrice > 0) {
+          <div class="graduation-progress p-4 bg-gradient-to-r from-purple-900/30 to-blue-900/30 rounded-lg mt-4 border border-purple-500/30">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <i class="pi pi-chart-line text-purple-400"></i>
+                <span class="text-sm font-semibold text-white">Bonding Curve Progress</span>
+              </div>
+              <span class="text-xs text-gray-400">{{ getGraduationProgress() }}% to graduation</span>
+            </div>
+            
+            <!-- Progress Bar -->
+            <div class="relative w-full h-2 bg-gray-800 rounded-full overflow-hidden">
+              <div 
+                class="absolute top-0 left-0 h-full bg-gradient-to-r from-purple-500 to-blue-500 transition-all duration-300"
+                [style.width.%]="getGraduationProgress()">
+              </div>
+            </div>
+            
+            <div class="flex items-center justify-between mt-2 text-xs">
+              <span class="text-gray-400">
+                Current: <span class="text-white font-semibold">{{ formatPrice(currentPrice) }} SOL</span>
+              </span>
+              <span class="text-gray-400">
+                Graduate at: <span class="text-purple-400 font-semibold">{{ formatPrice(graduationPrice) }} SOL</span>
+              </span>
+            </div>
+            
+            <div class="mt-2 text-xs text-gray-500">
+              <i class="pi pi-info-circle mr-1"></i>
+              Token will graduate to normal DEX pools when it reaches the graduation price
+            </div>
+          </div>
+        }
+
+        <!-- Graduated Badge -->
+        @if (graduated) {
+          <div class="graduated-badge p-4 bg-gradient-to-r from-green-900/30 to-emerald-900/30 rounded-lg mt-4 border border-green-500/30">
+            <div class="flex items-center gap-2">
+              <i class="pi pi-check-circle text-green-400 text-xl"></i>
+              <div>
+                <div class="text-sm font-semibold text-white">Token Graduated! 🎉</div>
+                <div class="text-xs text-gray-400 mt-1">Now trading on normal DEX pools</div>
+              </div>
+            </div>
+          </div>
+        }
+
       </p-card>
     </div>
   `,
@@ -158,6 +206,9 @@ interface ChartStats {
 export class LiveChartComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('chartContainer', { static: false }) chartContainer?: ElementRef;
   @Input() tokenAddress: string = '';
+  @Input() currentPrice: number = 0;
+  @Input() graduationPrice: number | null = null; // Price at which token graduates to normal pools
+  @Input() graduated: boolean = false;
 
   timeframes: Timeframe[] = ['5m', '15m', '1h', '4h', '1d'];
   selectedTimeframe: Timeframe = '1h';
@@ -167,6 +218,7 @@ export class LiveChartComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private chart: IChartApi | null = null;
   private candlestickSeries: ISeriesApi<'Candlestick'> | null = null;
+  private graduationLine: ISeriesApi<'Line'> | null = null;
   private destroy$ = new Subject<void>();
 
   ngOnInit(): void {
@@ -222,6 +274,18 @@ export class LiveChartComponent implements OnInit, AfterViewInit, OnDestroy {
       wickDownColor: '#ef4444',
     });
 
+    // Add graduation line if token hasn't graduated yet
+    if (!this.graduated && this.graduationPrice && this.graduationPrice > 0) {
+      this.graduationLine = this.chart.addLineSeries({
+        color: '#a855f7',
+        lineWidth: 2,
+        lineStyle: 2, // Dashed line
+        priceLineVisible: true,
+        lastValueVisible: true,
+        title: 'Graduation Price',
+      });
+    }
+
     // Handle window resize
     window.addEventListener('resize', this.handleResize.bind(this));
   }
@@ -235,6 +299,16 @@ export class LiveChartComponent implements OnInit, AfterViewInit, OnDestroy {
       
       if (this.candlestickSeries && data.length > 0) {
         this.candlestickSeries.setData(data);
+        
+        // Add graduation line if applicable
+        if (this.graduationLine && this.graduationPrice && data.length > 0) {
+          const graduationData: LineData[] = data.map(candle => ({
+            time: candle.time,
+            value: this.graduationPrice!,
+          }));
+          this.graduationLine.setData(graduationData);
+        }
+        
         this.chart?.timeScale().fitContent();
         
         // Calculate stats from latest candle
@@ -349,5 +423,13 @@ export class LiveChartComponent implements OnInit, AfterViewInit, OnDestroy {
       return `${(volume / 1000).toFixed(2)}K`;
     }
     return volume.toFixed(2);
+  }
+
+  getGraduationProgress(): number {
+    if (!this.graduationPrice || this.graduationPrice === 0 || this.currentPrice === 0) {
+      return 0;
+    }
+    const progress = (this.currentPrice / this.graduationPrice) * 100;
+    return Math.min(Math.round(progress), 100);
   }
 }

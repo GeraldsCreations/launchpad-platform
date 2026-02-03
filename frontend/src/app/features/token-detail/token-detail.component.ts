@@ -110,6 +110,9 @@ import { tokenDetailAnimations } from './token-detail.animations';
               <!-- Live Chart -->
               <app-live-chart
                 [tokenAddress]="token.address"
+                [currentPrice]="currentPrice"
+                [graduationPrice]="getGraduationPrice()"
+                [graduated]="token.graduated"
                 #liveChart>
               </app-live-chart>
 
@@ -376,5 +379,32 @@ export class TokenDetailComponent implements OnInit, OnDestroy {
    */
   goBack(): void {
     this.router.navigate(['/explore']);
+  }
+
+  /**
+   * Get graduation price (price at which token graduates to normal pools)
+   * For bonding curves, this is typically when market cap reaches a threshold
+   */
+  getGraduationPrice(): number | null {
+    if (!this.token || this.token.graduated) {
+      return null;
+    }
+
+    // Typical bonding curve graduation thresholds:
+    // - Market cap: $50,000 (50k USD)
+    // - Assuming 1 billion token supply
+    // - Price = market_cap / total_supply
+    const graduationMarketCap = 50000; // $50k
+    const totalSupply = 1_000_000_000; // 1 billion tokens
+    
+    // If we have actual total supply, use it
+    const actualSupply = this.token.total_supply ? parseFloat(this.token.total_supply) : totalSupply;
+    
+    // Calculate graduation price in SOL
+    // Assuming SOL = $150 (should be fetched from price oracle in production)
+    const solPriceUSD = 150;
+    const graduationPriceSOL = graduationMarketCap / actualSupply / solPriceUSD;
+    
+    return graduationPriceSOL;
   }
 }
