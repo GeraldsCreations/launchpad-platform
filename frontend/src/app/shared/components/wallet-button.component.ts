@@ -1,10 +1,11 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { MenuModule } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
 import { WalletService } from '../../core/services/wallet.service';
 import { NotificationService } from '../../core/services/notification.service';
+import { AuthService } from '../../core/services/auth.service';
 import { Subject, takeUntil, distinctUntilChanged } from 'rxjs';
 import { PublicKey } from '@solana/web3.js';
 
@@ -186,6 +187,8 @@ export class WalletButtonComponent implements OnInit, OnDestroy {
   menuItems: MenuItem[] = [];
   private destroy$ = new Subject<void>();
 
+  private authService = inject(AuthService);
+
   constructor(
     private walletService: WalletService,
     private notificationService: NotificationService
@@ -241,6 +244,18 @@ export class WalletButtonComponent implements OnInit, OnDestroy {
   async connect(): Promise<void> {
     try {
       await this.walletService.connect();
+      
+      // After successful wallet connection, authenticate for chat
+      const walletAdapter = this.walletService.getWalletAdapter();
+      if (walletAdapter) {
+        try {
+          await this.authService.login(walletAdapter);
+          this.notificationService.success('Authenticated', 'You can now use the chat!');
+        } catch (authError) {
+          console.error('Auth failed:', authError);
+          // Don't show error - wallet connection still succeeded
+        }
+      }
     } catch (error: any) {
       console.error('Failed to connect wallet:', error);
       alert(error.message || 'Failed to connect wallet');
@@ -250,6 +265,7 @@ export class WalletButtonComponent implements OnInit, OnDestroy {
   async disconnect(): Promise<void> {
     try {
       await this.walletService.disconnect();
+      this.authService.logout();
       this.walletAddress = '';
       this.balance = 0;
       this.notificationService.walletDisconnected();

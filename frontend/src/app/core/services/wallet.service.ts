@@ -137,4 +137,20 @@ export class WalletService {
   getWalletState(): Observable<WalletState> {
     return this.solanaWallet.getWalletState();
   }
+
+  /**
+   * Get wallet adapter for authentication
+   */
+  getWalletAdapter(): any {
+    const publicKey = this.getPublicKey();
+    if (!publicKey) {
+      return null;
+    }
+
+    // Return an object that mimics the wallet adapter interface
+    return {
+      publicKey,
+      signMessage: (message: Uint8Array) => this.signMessage(message)
+    };
+  }
 }

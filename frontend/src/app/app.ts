@@ -6,6 +6,7 @@ import { ToastModule } from 'primeng/toast';
 import { MenuItem } from 'primeng/api';
 import { WalletButtonComponent } from './shared/components/wallet-button.component';
 import { SearchBarComponent } from './shared/components/search-bar/search-bar.component';
+import { GlobalChatComponent } from './components/global-chat/global-chat.component';
 
 @Component({
   selector: 'app-root',
@@ -18,7 +19,8 @@ import { SearchBarComponent } from './shared/components/search-bar/search-bar.co
     MenubarModule,
     ToastModule,
     WalletButtonComponent,
-    SearchBarComponent
+    SearchBarComponent,
+    GlobalChatComponent
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss'

@@ -3,6 +3,9 @@ import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
+import * as helmet from 'helmet';
+import * as compression from 'compression';
+import * as express from 'express';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -35,6 +38,14 @@ async function bootstrap() {
   });
 
   const app = await NestFactory.create(AppModule, { logger });
+
+  // Security middleware
+  app.use(helmet.default());
+  app.use(compression());
+  
+  // Body size limits (DDoS protection)
+  app.use(express.json({ limit: '10kb' }));
+  app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
   // Enable CORS
   app.enableCors({

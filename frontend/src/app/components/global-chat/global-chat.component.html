@@ -1,0 +1,77 @@
+<div class="chat-container" [class.minimized]="isMinimized" [class.unauthenticated]="!isAuthenticated">
+  <!-- Header -->
+  <div class="chat-header" (click)="toggleMinimize()">
+    <div class="flex items-center gap-2">
+      <span class="online-dot"></span>
+      <span class="font-semibold">Global Chat</span>
+      <span class="online-count">({{ onlineCount }} online)</span>
+    </div>
+    <button class="minimize-btn" [attr.aria-label]="isMinimized ? 'Expand chat' : 'Minimize chat'">
+      {{ isMinimized ? '▲' : '▼' }}
+    </button>
+  </div>
+
+  <!-- Content (hidden when minimized) -->
+  @if (!isMinimized) {
+    <!-- Not authenticated message -->
+    @if (!isAuthenticated) {
+      <div class="auth-required">
+        <div class="auth-message">
+          <svg class="lock-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+          <p>Connect your wallet to join the chat</p>
+        </div>
+      </div>
+    }
+
+    <!-- Messages -->
+    @if (isAuthenticated) {
+      <div class="chat-messages" #messagesContainer>
+        @for (msg of messages; track msg.id) {
+          <div class="message" [class.own-message]="isOwnMessage(msg)" [class.bot-message]="msg.isBot">
+            <div class="message-header">
+              <span class="wallet" [class.own-wallet]="isOwnMessage(msg)">
+                {{ truncateWallet(msg.walletAddress) }}
+              </span>
+              @if (msg.isBot) {
+                <span class="bot-badge">BOT</span>
+              }
+              <span class="timestamp">{{ formatTime(msg.createdAt) }}</span>
+            </div>
+            <div class="message-content">{{ msg.message }}</div>
+          </div>
+        }
+
+        <!-- Typing indicator -->
+        @if (typingUsers.length > 0) {
+          <div class="typing-indicator">
+            <span>{{ truncateWallet(typingUsers[0]) }} is typing...</span>
+          </div>
+        }
+      </div>
+
+      <!-- Input -->
+      <div class="chat-input">
+        <input
+          type="text"
+          [(ngModel)]="messageText"
+          (keydown.enter)="sendMessage()"
+          (input)="onTyping()"
+          placeholder="Type a message..."
+          [disabled]="!isAuthenticated"
+          maxlength="500"
+        />
+        <button 
+          (click)="sendMessage()" 
+          [disabled]="!messageText.trim() || !isAuthenticated"
+          class="send-btn"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+          </svg>
+        </button>
+      </div>
+    }
+  }
+</div>

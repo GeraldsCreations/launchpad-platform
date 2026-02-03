@@ -9,6 +9,8 @@ import { PrivateApiModule } from './private-api/private-api.module';
 import { WebsocketModule } from './websocket/websocket.module';
 import { IndexerModule } from './indexer/indexer.module';
 import { MeteoraApiModule } from './meteora-api/meteora-api.module';
+import { AuthModule } from './auth/auth.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -38,6 +40,8 @@ import { MeteoraApiModule } from './meteora-api/meteora-api.module';
     WebsocketModule,
     IndexerModule,
     MeteoraApiModule,
+    AuthModule,
+    ChatModule,
   ],
 })
 export class AppModule {}
