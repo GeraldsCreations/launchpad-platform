@@ -63,7 +63,9 @@ interface ChartStats {
     .live-chart-container {
       display: flex;
       flex-direction: column;
+      width: 100%;
       height: 100%;
+      min-height: 400px;
       background: #0a0a0f;
     }
 
@@ -224,6 +226,8 @@ export class LiveChartComponent implements OnInit, AfterViewInit, OnDestroy {
   private candlestickSeries: ISeriesApi<'Candlestick'> | null = null;
   private graduationLine: ISeriesApi<'Line'> | null = null;
   private destroy$ = new Subject<void>();
+  private initRetryCount: number = 0;
+  private readonly MAX_INIT_RETRIES: number = 10;
 
   ngOnInit(): void {
     // Component initialized
@@ -231,11 +235,14 @@ export class LiveChartComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     // Delay to ensure DOM is fully rendered and container dimensions are set
-    // Increased delay to allow CSS layout to complete
+    // Increased delay to allow CSS flexbox layout to complete
     setTimeout(() => {
+      console.log('📊 ngAfterViewInit delay complete, initializing chart...');
       this.initChart();
-      this.loadChartData();
-    }, 200);
+      if (this.chart) {
+        this.loadChartData();
+      }
+    }, 300);
   }
 
   ngOnDestroy(): void {
@@ -262,12 +269,22 @@ export class LiveChartComponent implements OnInit, AfterViewInit, OnDestroy {
     
     // If dimensions are still zero, retry after a bit
     if (containerWidth === 0 || containerHeight === 0) {
-      console.warn('⚠️ Container dimensions are zero, retrying in 100ms...', {
-        containerWidth,
-        containerHeight
-      });
-      setTimeout(() => this.initChart(), 100);
-      return;
+      this.initRetryCount++;
+      
+      if (this.initRetryCount <= this.MAX_INIT_RETRIES) {
+        console.warn(`⚠️ Container dimensions are zero, retry ${this.initRetryCount}/${this.MAX_INIT_RETRIES} in 150ms...`, {
+          containerWidth,
+          containerHeight,
+          parentHeight: container.parentElement?.clientHeight,
+          parentWidth: container.parentElement?.clientWidth
+        });
+        setTimeout(() => this.initChart(), 150);
+        return;
+      } else {
+        console.error('❌ Chart initialization failed after max retries. Container still has zero dimensions.');
+        this.loading = false;
+        return;
+      }
     }
     
     const height = containerHeight > 0 ? containerHeight : 400;
