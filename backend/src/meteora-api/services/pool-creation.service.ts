@@ -23,7 +23,7 @@ import BN from 'bn.js';
 import { MeteoraService } from './meteora.service';
 import { MeteoraPool } from '../entities/meteora-pool.entity';
 import { MeteoraTransaction, TransactionType } from '../entities/meteora-transaction.entity';
-import { FeeClaimerVault } from '../../database/entities/fee-claimer-vault.entity';
+// FeeClaimerVault removed - DBC handles fee tracking on-chain
 import { CreateTokenDto } from '../dto/create-token.dto';
 
 @Injectable()
@@ -42,8 +42,6 @@ export class PoolCreationService {
     private poolRepository: Repository<MeteoraPool>,
     @InjectRepository(MeteoraTransaction)
     private transactionRepository: Repository<MeteoraTransaction>,
-    @InjectRepository(FeeClaimerVault)
-    private vaultRepository: Repository<FeeClaimerVault>,
   ) {}
 
   /**
@@ -105,24 +103,9 @@ export class PoolCreationService {
       this.logger.log(`Initial liquidity added: ${liquiditySig}`);
 
       // Step 4: Create fee claimer vault
-      const [feeClaimerPDA] = await PublicKey.findProgramAddress(
-        [Buffer.from('fee_claimer'), new PublicKey(poolAddress).toBuffer()],
-        this.DLMM_PROGRAM_ID,
-      );
-
-      const vault = this.vaultRepository.create({
-        poolAddress,
-        tokenAddress: tokenMint.toBase58(),
-        feeClaimerPubkey: feeClaimerPDA.toBase58(),
-        totalFeesCollected: 0,
-        claimedFees: 0,
-        unclaimedFees: 0,
-        claimCount: 0,
-      });
-
-      await this.vaultRepository.save(vault);
-
-      this.logger.log(`Fee claimer vault created: ${vault.feeClaimerPubkey}`);
+      // Fee claimer vault is now managed by DBC on-chain
+      // No need to track in database - use DBC SDK's getPoolFeeBreakdown() instead
+      this.logger.log(`Pool fees will be tracked on-chain by DBC`);
 
       // Step 5: Save pool to database
       const pool = new MeteoraPool();

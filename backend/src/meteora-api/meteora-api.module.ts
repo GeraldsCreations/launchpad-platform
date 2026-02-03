@@ -7,8 +7,6 @@ import { WebsocketModule } from '../websocket/websocket.module';
 // Entities
 import { MeteoraPool } from './entities/meteora-pool.entity';
 import { MeteoraTransaction } from './entities/meteora-transaction.entity';
-import { FeeClaimerVault } from '../database/entities/fee-claimer-vault.entity';
-import { BotCreatorReward } from '../database/entities/bot-creator-reward.entity';
 import { LpPosition } from './entities/lp-position.entity';
 import { LpWithdrawal } from './entities/lp-withdrawal.entity';
 import { PlatformConfig } from '../database/entities/platform-config.entity';
@@ -19,8 +17,6 @@ import { PoolCreationService } from './services/pool-creation.service';
 import { TradingService } from './services/trading.service';
 import { PriceOracleService } from './services/price-oracle.service';
 import { SolPriceService } from './services/sol-price.service';
-import { FeeCollectionService } from './services/fee-collection.service';
-import { FeeCollectionScheduler } from './services/fee-collection.scheduler';
 import { TransactionBuilderService } from './services/transaction-builder.service';
 import { LpManagementService } from './services/lp-management.service';
 import { AutoPoolCreationService } from './services/auto-pool-creation.service';
@@ -40,8 +36,6 @@ import { AdminDbcController } from './controllers/admin-dbc.controller';
     TypeOrmModule.forFeature([
       MeteoraPool,
       MeteoraTransaction,
-      FeeClaimerVault,
-      BotCreatorReward,
       LpPosition,
       LpWithdrawal,
       PlatformConfig,
@@ -57,8 +51,6 @@ import { AdminDbcController } from './controllers/admin-dbc.controller';
     TradingService,
     PriceOracleService,
     SolPriceService,
-    FeeCollectionService,
-    FeeCollectionScheduler,
     TransactionBuilderService,
     LpManagementService,
     AutoPoolCreationService,
@@ -71,7 +63,6 @@ import { AdminDbcController } from './controllers/admin-dbc.controller';
     TradingService,
     PriceOracleService,
     SolPriceService,
-    FeeCollectionService,
     DbcService, // Export for use in PublicApiModule
   ],
 })

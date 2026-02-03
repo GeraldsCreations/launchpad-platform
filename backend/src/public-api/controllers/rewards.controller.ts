@@ -8,14 +8,14 @@ export class RewardsController {
   constructor(private readonly rewardsService: RewardsService) {}
 
   /**
-   * Get all bot creator leaderboard
+   * Get leaderboard - Top earning bot creators
    * GET /v1/rewards/leaderboard?limit=10
    */
   @Get('leaderboard')
   async getLeaderboard(@Query('limit') limit?: string) {
     try {
       const topBots = await this.rewardsService.getTopEarners(
-        parseInt(limit || '10', 10)
+        parseInt(limit || '10', 10),
       );
 
       return {
@@ -32,20 +32,18 @@ export class RewardsController {
   }
 
   /**
-   * Get bot creator rewards
-   * GET /v1/rewards/:botWallet
+   * Get bot creator's claimable fees across all pools
+   * GET /v1/rewards/bot/:botWallet
    */
-  @Get(':botWallet')
+  @Get('bot/:botWallet')
   async getBotRewards(@Param('botWallet') botWallet: string) {
     try {
       const rewards = await this.rewardsService.getBotRewards(botWallet);
-      
+
       return {
         success: true,
         botWallet,
-        totalEarned: rewards.totalEarned,
-        claimed: rewards.claimed,
-        unclaimed: rewards.unclaimed,
+        totalClaimable: rewards.totalClaimable,
         pools: rewards.pools,
       };
     } catch (error) {
@@ -58,25 +56,41 @@ export class RewardsController {
   }
 
   /**
-   * Claim/withdraw bot creator fees
-   * POST /v1/rewards/:botWallet/claim
+   * Claim creator fees from a specific pool
+   * POST /v1/rewards/pool/:poolAddress/claim
    * 
-   * Returns unsigned transaction for bot to sign
+   * Body: { creatorWallet: "ABC123..." }
+   * 
+   * Returns unsigned transaction for creator to sign
+   * Uses DBC's native CreatorService.claimCreatorTradingFee()
    */
-  @Post(':botWallet/claim')
-  async claimBotRewards(@Param('botWallet') botWallet: string) {
+  @Post('pool/:poolAddress/claim')
+  async claimPoolFees(
+    @Param('poolAddress') poolAddress: string,
+    @Query('creatorWallet') creatorWallet: string,
+  ) {
     try {
-      this.logger.log(`Processing fee claim for bot: ${botWallet}`);
-      
-      const result = await this.rewardsService.buildClaimTransaction(botWallet);
+      if (!creatorWallet) {
+        return {
+          success: false,
+          error: 'creatorWallet query parameter required',
+        };
+      }
+
+      this.logger.log(`Processing fee claim for pool: ${poolAddress}, creator: ${creatorWallet}`);
+
+      const result = await this.rewardsService.buildClaimTransaction(
+        poolAddress,
+        creatorWallet,
+      );
 
       return {
         success: true,
-        botWallet,
-        amount: result.amount,
-        amountSol: result.amountSol,
+        poolAddress,
+        creatorWallet,
+        estimatedAmount: result.estimatedAmount,
         transaction: result.transaction,
-        message: 'Sign and submit this transaction to claim your fees.',
+        message: 'Sign and submit this transaction to claim your creator fees from DBC.',
       };
     } catch (error) {
       this.logger.error('Failed to build claim transaction:', error);
