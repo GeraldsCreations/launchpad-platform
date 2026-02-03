@@ -25,14 +25,14 @@ import { LpManagementService } from './services/lp-management.service';
 import { AutoPoolCreationService } from './services/auto-pool-creation.service';
 import { DbcService } from './services/dbc.service';
 
-// Controllers
-import { TokensController } from './controllers/tokens.controller';
-import { TradingController } from './controllers/trading.controller';
+// Controllers (removed duplicates and unused endpoints)
+// Removed: TokensController (duplicate - use /v1/tokens in public-api)
+// Removed: TradingController (duplicate - use /v1/trade in public-api)
+// Removed: TransactionBuilderController (unused)
+// Removed: LpManagementController (automated via services)
+// Removed: RewardsController (managed via services)
 import { PoolsController } from './controllers/pools.controller';
-import { RewardsController } from './controllers/rewards.controller';
 import { SolPriceController } from './controllers/sol-price.controller';
-import { TransactionBuilderController } from './controllers/transaction-builder.controller';
-import { LpManagementController } from './controllers/lp-management.controller';
 import { DbcController } from './controllers/dbc.controller';
 
 @Module({
@@ -50,14 +50,10 @@ import { DbcController } from './controllers/dbc.controller';
     ]),
   ],
   controllers: [
-    TokensController,
-    TradingController,
-    PoolsController,
-    RewardsController,
-    SolPriceController,
-    TransactionBuilderController,
-    LpManagementController,
-    DbcController,
+    // Keep only non-duplicate, actively used endpoints
+    PoolsController,      // Pool stats and info
+    SolPriceController,   // SOL price oracle
+    DbcController,        // DBC configuration for token launches
   ],
   providers: [
     MeteoraService,

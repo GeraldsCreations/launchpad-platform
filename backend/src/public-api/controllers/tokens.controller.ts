@@ -22,12 +22,20 @@ export class TokensController {
   constructor(private readonly tokenService: TokenService) {}
 
   @Post('create')
-  @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Create a new token' })
-  @ApiResponse({ status: 201, description: 'Token created successfully' })
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Build token creation transaction (unsigned)' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Transaction built successfully. Sign and submit to create token on-chain.' 
+  })
   @ApiResponse({ status: 400, description: 'Invalid request' })
   @ApiResponse({ status: 429, description: 'Rate limit exceeded' })
-  async createToken(@Body() createTokenDto: CreateTokenDto): Promise<Token> {
+  async createToken(@Body() createTokenDto: CreateTokenDto): Promise<{
+    transaction: string;
+    poolAddress: string;
+    tokenMint: string;
+    message: string;
+  }> {
     return this.tokenService.createToken(createTokenDto);
   }
 

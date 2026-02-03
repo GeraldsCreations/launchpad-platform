@@ -15,19 +15,41 @@ export class TokenService {
   ) {}
 
   /**
-   * Create a new token
+   * Create a new token transaction (unsigned)
    * 
-   * IMPORTANT: This method should ONLY be called by the indexer after on-chain confirmation.
-   * Frontend should directly call Solana programs and let the indexer pick up the event.
-   * 
-   * @deprecated Use Solana program directly + indexer instead
+   * Returns a partially-signed transaction for the user to sign and submit.
+   * The indexer will pick up the token once it's on-chain.
    */
-  async createToken(createTokenDto: CreateTokenDto): Promise<Token> {
+  async createToken(createTokenDto: CreateTokenDto): Promise<{
+    transaction: string;
+    poolAddress: string;
+    tokenMint: string;
+    message: string;
+  }> {
+    this.logger.log(`Building token creation transaction: ${createTokenDto.symbol}`);
+
+    // This would call the DBC service to build the transaction
+    // For now, throw error until DBC service is wired up
     throw new Error(
-      'Direct token creation is disabled. ' +
-      'Tokens must be created on-chain first. ' +
-      'Use Meteora DBC API or Solana program, then the indexer will automatically pick it up.'
+      'Token creation transaction building not implemented yet. ' +
+      'DBC service needs to be injected into TokenService.'
     );
+
+    // TODO: Once DBC service is available:
+    // const result = await this.dbcService.buildCreateTokenTransaction({
+    //   name: createTokenDto.name,
+    //   symbol: createTokenDto.symbol,
+    //   description: createTokenDto.description,
+    //   imageUrl: createTokenDto.imageUrl,
+    //   creatorWallet: createTokenDto.creator,
+    //   creatorBotId: 'human', // Or get from DTO
+    //   firstBuyAmount: createTokenDto.initialBuy,
+    // });
+    // 
+    // return {
+    //   ...result,
+    //   message: 'Sign and submit this transaction to create your token on-chain. The indexer will automatically detect it.',
+    // };
   }
 
   /**
