@@ -10,21 +10,21 @@ import axios from 'axios';
 @Injectable()
 export class MetadataUploadService {
   private readonly logger = new Logger(MetadataUploadService.name);
-  private readonly nftStorageApiKey: string;
+  private readonly pinataJwt: string;
 
   constructor(private configService: ConfigService) {
-    this.nftStorageApiKey = this.configService.get('NFT_STORAGE_API_KEY') || '';
+    this.pinataJwt = this.configService.get('PINATA_JWT') || '';
     
-    this.logger.log('🔍 Checking NFT.storage API key...');
-    this.logger.log(`   Raw value: ${this.nftStorageApiKey ? `${this.nftStorageApiKey.substring(0, 10)}...` : '(empty)'}`);
-    this.logger.log(`   Length: ${this.nftStorageApiKey.length} characters`);
+    this.logger.log('🔍 Checking Pinata JWT...');
+    this.logger.log(`   Raw value: ${this.pinataJwt ? `${this.pinataJwt.substring(0, 10)}...` : '(empty)'}`);
+    this.logger.log(`   Length: ${this.pinataJwt.length} characters`);
     
-    if (!this.nftStorageApiKey || this.nftStorageApiKey.trim() === '') {
-      this.logger.warn('⚠️  NFT_STORAGE_API_KEY not set. Using placeholder URIs.');
-      this.logger.warn('⚠️  Get a free key at: https://nft.storage');
+    if (!this.pinataJwt || this.pinataJwt.trim() === '') {
+      this.logger.warn('⚠️  PINATA_JWT not set. Using placeholder URIs.');
+      this.logger.warn('⚠️  Get a free key at: https://pinata.cloud');
     } else {
-      this.logger.log('✅ NFT.storage API key configured successfully!');
-      this.logger.log(`✅ Key starts with: ${this.nftStorageApiKey.substring(0, 15)}...`);
+      this.logger.log('✅ Pinata JWT configured successfully!');
+      this.logger.log(`✅ Key starts with: ${this.pinataJwt.substring(0, 15)}...`);
     }
   }
 
@@ -40,17 +40,17 @@ export class MetadataUploadService {
   }): Promise<string> {
     try {
       // Debug: Show API key status
-      this.logger.log(`🔑 API Key check: ${this.nftStorageApiKey ? 'SET' : 'NOT SET'}`);
-      if (this.nftStorageApiKey) {
-        this.logger.log(`🔑 Key length: ${this.nftStorageApiKey.length}`);
-        this.logger.log(`🔑 Key preview: ${this.nftStorageApiKey.substring(0, 15)}...`);
+      this.logger.log(`🔑 API Key check: ${this.pinataJwt ? 'SET' : 'NOT SET'}`);
+      if (this.pinataJwt) {
+        this.logger.log(`🔑 Key length: ${this.pinataJwt.length}`);
+        this.logger.log(`🔑 Key preview: ${this.pinataJwt.substring(0, 15)}...`);
       }
       
       // If no API key, return placeholder
-      if (!this.nftStorageApiKey || this.nftStorageApiKey.trim() === '') {
-        this.logger.warn('⚠️  No NFT.storage API key - using placeholder URI');
+      if (!this.pinataJwt || this.pinataJwt.trim() === '') {
+        this.logger.warn('⚠️  No Pinata JWT - using placeholder URI');
         this.logger.warn('⚠️  Token will work but image won\'t show in wallets');
-        this.logger.warn('⚠️  Get free key at: https://nft.storage');
+        this.logger.warn('⚠️  Get free key at: https://pinata.cloud');
         return this.createPlaceholderUri(metadata);
       }
 
@@ -148,12 +148,12 @@ export class MetadataUploadService {
       throw new Error(`FormData creation failed: ${error}`);
     }
 
-    this.logger.log('Sending request to NFT.storage (image)...');
+    this.logger.log('Sending request to Pinata (image)...');
 
     try {
-      const response = await axios.post('https://api.nft.storage/upload', formData, {
+      const response = await axios.post('https://api.pinata.cloud/pinning/pinFileToIPFS', formData, {
         headers: {
-          'Authorization': `Bearer ${this.nftStorageApiKey}`,
+          'Authorization': `Bearer ${this.pinataJwt}`,
           ...formData.getHeaders(),
         },
         maxBodyLength: Infinity,
@@ -163,7 +163,7 @@ export class MetadataUploadService {
       this.logger.log(`Response status: ${response.status} ${response.statusText}`);
       this.logger.log(`Upload result: ${JSON.stringify(response.data)}`);
       
-      return `ipfs://${response.data.value.cid}`;
+      return `ipfs://${response.data.IpfsHash}`;
     } catch (error: any) {
       this.logger.error('Image upload error:', error.message);
       if (error.response) {
@@ -186,12 +186,12 @@ export class MetadataUploadService {
       contentType: 'application/json',
     } as any);
 
-    this.logger.log('Sending request to NFT.storage (metadata JSON)...');
+    this.logger.log('Sending request to Pinata (metadata JSON)...');
 
     try {
-      const response = await axios.post('https://api.nft.storage/upload', formData, {
+      const response = await axios.post('https://api.pinata.cloud/pinning/pinFileToIPFS', formData, {
         headers: {
-          'Authorization': `Bearer ${this.nftStorageApiKey}`,
+          'Authorization': `Bearer ${this.pinataJwt}`,
           ...formData.getHeaders(),
         },
         maxBodyLength: Infinity,
@@ -201,7 +201,7 @@ export class MetadataUploadService {
       this.logger.log(`Response status: ${response.status} ${response.statusText}`);
       this.logger.log(`Metadata upload result: ${JSON.stringify(response.data)}`);
       
-      return `ipfs://${response.data.value.cid}`;
+      return `ipfs://${response.data.IpfsHash}`;
     } catch (error: any) {
       this.logger.error('Metadata JSON upload error:', error.message);
       if (error.response) {
