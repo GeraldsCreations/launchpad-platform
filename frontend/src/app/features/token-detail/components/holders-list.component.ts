@@ -25,8 +25,7 @@ interface Holder {
       <div class="holders-list">
         <div 
           class="holder-item" 
-          *ngFor="let holder of holders"
-          [@slideIn]>
+          *ngFor="let holder of holders">
           <div class="holder-info">
             <div class="wallet-icon" [style.background]="holder.avatar">
               <i class="pi pi-wallet"></i>
