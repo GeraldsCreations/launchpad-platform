@@ -209,7 +209,7 @@ export class TokenInfoCardComponent {
   @Input() marketCap: number = 0;
   @Input() volume24h: number = 0;
   @Input() holderCount: number = 0;
-  @Input() totalSupply: number = 0;
+  @Input() totalSupply: string | number = 0;
   @Input() dbcProgress: number | null = null;
   @Input() graduated: boolean = false;
   @Input() description: string = '';
