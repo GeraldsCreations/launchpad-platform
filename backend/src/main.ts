@@ -39,8 +39,11 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule, { logger });
 
-  // Security middleware
-  app.use(helmet.default());
+  // Security middleware (configure helmet to allow CORS in development)
+  app.use(helmet.default({
+    contentSecurityPolicy: false, // Disable CSP to allow cross-origin requests in development
+    crossOriginEmbedderPolicy: false,
+  }));
   app.use(compression());
   
   // Body size limits (DDoS protection)
