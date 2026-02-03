@@ -12,103 +12,212 @@ import { BotBadgeComponent } from './bot-badge/bot-badge.component';
   standalone: true,
   imports: [CommonModule, RouterModule, CardModule, BadgeModule, ChipModule, BotBadgeComponent],
   template: `
-    <p-card 
+    <div 
       [routerLink]="['/token', token.address]"
-      class="token-card cursor-pointer hover:shadow-lg transition-all">
-      <ng-template pTemplate="header">
-        <div class="relative">
-          <img 
-            [src]="token.imageUrl || 'assets/default-token.svg'" 
-            [alt]="token.name"
-            class="w-full h-48 object-cover"
-            (error)="onImageError($event)">
-          @if (token.graduated) {
-            <p-badge 
-              value="GRADUATED" 
-              severity="success"
-              styleClass="absolute top-2 right-2">
-            </p-badge>
-          }
-          @if (isNew) {
-            <p-badge 
-              value="NEW" 
-              severity="info"
-              styleClass="absolute top-2 left-2">
-            </p-badge>
-          }
-        </div>
-      </ng-template>
-      
-      <div class="space-y-3">
-        <div class="flex items-center justify-between">
-          <h3 class="text-xl font-bold truncate flex-1">{{ token.name }}</h3>
-          <p-chip 
-            [label]="token.symbol" 
-            styleClass="text-sm">
-          </p-chip>
-        </div>
-
-        @if (token.creatorType) {
-          <div class="flex items-center gap-2">
-            <app-bot-badge 
-              [creatorType]="token.creatorType" 
-              [compact]="true">
-            </app-bot-badge>
-            @if (token.creatorType === 'human') {
-              <span class="text-sm text-gray-400">
-                {{ getCreatorLabel() }}
-              </span>
-            }
-          </div>
-        }
-
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <div class="text-xs text-gray-500">Price</div>
-            <div class="font-semibold">{{ formatPrice(token.currentPrice) }} SOL</div>
-          </div>
-          <div>
-            <div class="text-xs text-gray-500">Market Cap</div>
-            <div class="font-semibold">{{ formatMarketCap(token.marketCap) }}</div>
-          </div>
-          <div>
-            <div class="text-xs text-gray-500">24h Volume</div>
-            <div class="font-semibold">{{ formatVolume(token.volume24h) }}</div>
-          </div>
-          <div>
-            <div class="text-xs text-gray-500">Holders</div>
-            <div class="font-semibold">{{ token.holderCount }}</div>
-          </div>
-        </div>
-
-        @if (token.description) {
-          <p class="text-sm text-gray-400 line-clamp-2">
-            {{ token.description }}
-          </p>
-        }
+      class="token-card-compact">
+      <!-- Token Image -->
+      <div class="token-image-wrapper">
+        <img 
+          [src]="token.imageUrl || 'assets/default-token.svg'" 
+          [alt]="token.name"
+          class="token-image"
+          (error)="onImageError($event)">
       </div>
-    </p-card>
+
+      <!-- Token Info -->
+      <div class="token-info">
+        <!-- Header: Name & Time -->
+        <div class="token-header">
+          <h3 class="token-name">{{ token.name }}</h3>
+          <span class="token-time">{{ getTimeAgo() }}</span>
+        </div>
+
+        <!-- Symbol -->
+        <div class="token-symbol">{{ token.symbol }}</div>
+
+        <!-- Market Cap & Progress Bar -->
+        <div class="market-cap-section">
+          <div class="market-cap-row">
+            <span class="market-cap-label">MC</span>
+            <span class="market-cap-value">{{ formatMarketCap(token.marketCap) }}</span>
+            <div class="market-cap-progress">
+              <div class="progress-bar" [style.width.%]="getBondingProgress()"></div>
+            </div>
+            <span class="market-cap-change" [class.positive]="getPriceChange() > 0" [class.negative]="getPriceChange() < 0">
+              {{ getPriceChange() > 0 ? '↑' : '↓' }} {{ Math.abs(getPriceChange()).toFixed(2) }}%
+            </span>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <p class="token-description">
+          {{ token.description || 'No description available.' }}
+        </p>
+      </div>
+    </div>
   `,
   styles: [`
-    .token-card {
+    .token-card-compact {
+      display: flex;
+      gap: 16px;
+      padding: 16px;
+      background: rgba(26, 27, 31, 0.8);
+      border: 1px solid rgba(55, 58, 68, 0.5);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .token-card-compact:hover {
+      background: rgba(30, 31, 35, 0.9);
+      border-color: rgba(139, 92, 246, 0.5);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .token-image-wrapper {
+      flex-shrink: 0;
+      width: 64px;
+      height: 64px;
+      border-radius: 10px;
+      overflow: hidden;
+      background: rgba(139, 92, 246, 0.1);
+    }
+
+    .token-image {
+      width: 100%;
       height: 100%;
-      transition: all 0.3s ease;
+      object-fit: cover;
     }
 
-    .token-card:hover {
-      transform: translateY(-4px);
+    .token-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 0;
     }
 
-    .line-clamp-2 {
+    .token-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .token-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .token-time {
+      font-size: 12px;
+      color: #6b7280;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .token-symbol {
+      font-size: 13px;
+      color: #9ca3af;
+      font-weight: 500;
+    }
+
+    .market-cap-section {
+      margin-top: 4px;
+    }
+
+    .market-cap-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+    }
+
+    .market-cap-label {
+      color: #6b7280;
+      font-weight: 500;
+    }
+
+    .market-cap-value {
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .market-cap-progress {
+      flex: 1;
+      height: 4px;
+      background: rgba(55, 58, 68, 0.5);
+      border-radius: 2px;
+      overflow: hidden;
+      min-width: 40px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
+      border-radius: 2px;
+      transition: width 0.3s ease;
+    }
+
+    .market-cap-change {
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .market-cap-change.positive {
+      color: #10b981;
+    }
+
+    .market-cap-change.negative {
+      color: #ef4444;
+    }
+
+    .token-description {
+      font-size: 12px;
+      color: #9ca3af;
+      line-height: 1.4;
+      overflow: hidden;
+      text-overflow: ellipsis;
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
-      overflow: hidden;
+      margin-top: 2px;
+    }
+
+    /* Mobile responsive */
+    @media (max-width: 640px) {
+      .token-card-compact {
+        padding: 12px;
+        gap: 12px;
+      }
+
+      .token-image-wrapper {
+        width: 56px;
+        height: 56px;
+      }
+
+      .token-name {
+        font-size: 14px;
+      }
+
+      .token-time,
+      .market-cap-row {
+        font-size: 11px;
+      }
     }
   `]
 })
 export class TokenCardComponent {
   @Input() token!: Token;
+  Math = Math; // Expose Math to template
 
   constructor(private router: Router) {}
 
@@ -116,6 +225,41 @@ export class TokenCardComponent {
     const createdAt = new Date(this.token.createdAt);
     const hoursSinceCreation = (Date.now() - createdAt.getTime()) / (1000 * 60 * 60);
     return hoursSinceCreation < 24;
+  }
+
+  getTimeAgo(): string {
+    const createdAt = new Date(this.token.createdAt);
+    const now = new Date();
+    const diffMs = now.getTime() - createdAt.getTime();
+    const diffSec = Math.floor(diffMs / 1000);
+    const diffMin = Math.floor(diffSec / 60);
+    const diffHour = Math.floor(diffMin / 60);
+    const diffDay = Math.floor(diffHour / 24);
+
+    if (diffSec < 60) return `${diffSec}s ago`;
+    if (diffMin < 60) return `${diffMin}m ago`;
+    if (diffHour < 24) return `${diffHour}h ago`;
+    return `${diffDay}d ago`;
+  }
+
+  getBondingProgress(): number {
+    // Calculate bonding curve progress (0-100%)
+    // Assume graduation threshold is $50k market cap
+    const graduationThreshold = 50000;
+    const numMarketCap = typeof this.token.marketCap === 'string' 
+      ? parseFloat(this.token.marketCap) 
+      : this.token.marketCap;
+    
+    if (!numMarketCap || numMarketCap === 0) return 0;
+    
+    const progress = (numMarketCap / graduationThreshold) * 100;
+    return Math.min(progress, 100);
+  }
+
+  getPriceChange(): number {
+    // Mock price change for now (would come from API with historical data)
+    // Random between -10% and +10% for demonstration
+    return (Math.random() * 20) - 10;
   }
 
   getCreatorIcon(): string {
