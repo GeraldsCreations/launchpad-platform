@@ -22,137 +22,114 @@ interface ChartStats {
   imports: [CommonModule, CardModule, ButtonModule],
   animations: tokenDetailAnimations,
   template: `
-    <div class="live-chart-container" [@cardSlideIn]>
-      <p-card>
-        <ng-template pTemplate="header">
-          <div class="flex items-center justify-between p-4 border-b border-gray-700">
-            <h3 class="text-lg font-semibold text-white">Price Chart</h3>
-            
-            <!-- Timeframe Selector -->
-            <div class="flex items-center gap-2">
-              @for (tf of timeframes; track tf) {
-                <button
-                  (click)="selectTimeframe(tf)"
-                  [class.active]="selectedTimeframe === tf"
-                  class="timeframe-btn px-3 py-1.5 rounded text-sm font-medium transition-all duration-200"
-                  [class.bg-primary-500]="selectedTimeframe === tf"
-                  [class.text-white]="selectedTimeframe === tf"
-                  [class.bg-gray-800]="selectedTimeframe !== tf"
-                  [class.text-gray-400]="selectedTimeframe !== tf"
-                  [class.hover:bg-gray-700]="selectedTimeframe !== tf">
-                  {{ tf }}
-                </button>
-              }
-              
-              <button
-                (click)="toggleFullscreen()"
-                class="fullscreen-btn p-2 rounded bg-gray-800 text-gray-400 hover:bg-gray-700 transition-colors ml-2">
-                <i [class]="isFullscreen ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"></i>
-              </button>
-            </div>
-          </div>
-        </ng-template>
-
-        <!-- Chart Container -->
-        <div class="chart-wrapper" [class.fullscreen]="isFullscreen">
-          @if (loading) {
-            <div class="loading-skeleton flex items-center justify-center" 
-                 style="height: 400px;">
-              <div class="text-gray-400">
-                <i class="pi pi-spin pi-spinner text-2xl mb-2"></i>
-                <div class="text-sm">Loading chart...</div>
-              </div>
-            </div>
-          } @else {
-            <div #chartContainer class="chart-container"></div>
+    <div class="live-chart-container">
+      <!-- Chart Header -->
+      <div class="chart-header">
+        <h3 class="chart-title">Price Chart</h3>
+        
+        <!-- Timeframe Selector -->
+        <div class="timeframe-selector">
+          @for (tf of timeframes; track tf) {
+            <button
+              (click)="selectTimeframe(tf)"
+              [class.active]="selectedTimeframe === tf"
+              class="timeframe-btn">
+              {{ tf }}
+            </button>
           }
+          
+          <button
+            (click)="toggleFullscreen()"
+            class="fullscreen-btn">
+            <i [class]="isFullscreen ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"></i>
+          </button>
         </div>
+      </div>
 
-        <!-- Chart Stats -->
-        @if (chartStats && !loading) {
-          <div class="chart-stats grid grid-cols-2 md:grid-cols-5 gap-4 p-4 bg-gray-800/50 rounded-lg mt-4">
-            <div>
-              <div class="text-xs text-gray-400">Open</div>
-              <div class="text-sm font-semibold text-white">{{ formatPrice(chartStats.open) }}</div>
-            </div>
-            <div>
-              <div class="text-xs text-gray-400">High</div>
-              <div class="text-sm font-semibold text-green-500">{{ formatPrice(chartStats.high) }}</div>
-            </div>
-            <div>
-              <div class="text-xs text-gray-400">Low</div>
-              <div class="text-sm font-semibold text-red-500">{{ formatPrice(chartStats.low) }}</div>
-            </div>
-            <div>
-              <div class="text-xs text-gray-400">Close</div>
-              <div class="text-sm font-semibold text-white">{{ formatPrice(chartStats.close) }}</div>
-            </div>
-            <div>
-              <div class="text-xs text-gray-400">Volume</div>
-              <div class="text-sm font-semibold text-primary-400">{{ formatVolume(chartStats.volume) }}</div>
-            </div>
+      <!-- Chart Container -->
+      <div class="chart-wrapper" [class.fullscreen]="isFullscreen">
+        @if (loading) {
+          <div class="loading-skeleton">
+            <i class="pi pi-spin pi-spinner"></i>
+            <div class="loading-text">Loading chart...</div>
           </div>
+        } @else {
+          <div #chartContainer class="chart-container"></div>
         }
-
-        <!-- Graduation Progress -->
-        @if (!graduated && graduationPrice && currentPrice > 0) {
-          <div class="graduation-progress p-4 bg-gradient-to-r from-purple-900/30 to-blue-900/30 rounded-lg mt-4 border border-purple-500/30">
-            <div class="flex items-center justify-between mb-2">
-              <div class="flex items-center gap-2">
-                <i class="pi pi-chart-line text-purple-400"></i>
-                <span class="text-sm font-semibold text-white">Bonding Curve Progress</span>
-              </div>
-              <span class="text-xs text-gray-400">{{ getGraduationProgress() }}% to graduation</span>
-            </div>
-            
-            <!-- Progress Bar -->
-            <div class="relative w-full h-2 bg-gray-800 rounded-full overflow-hidden">
-              <div 
-                class="absolute top-0 left-0 h-full bg-gradient-to-r from-purple-500 to-blue-500 transition-all duration-300"
-                [style.width.%]="getGraduationProgress()">
-              </div>
-            </div>
-            
-            <div class="flex items-center justify-between mt-2 text-xs">
-              <span class="text-gray-400">
-                Current: <span class="text-white font-semibold">{{ formatPrice(currentPrice) }} SOL</span>
-              </span>
-              <span class="text-gray-400">
-                Graduate at: <span class="text-purple-400 font-semibold">{{ formatPrice(graduationPrice) }} SOL</span>
-              </span>
-            </div>
-            
-            <div class="mt-2 text-xs text-gray-500">
-              <i class="pi pi-info-circle mr-1"></i>
-              Token will graduate to normal DEX pools when it reaches the graduation price
-            </div>
-          </div>
-        }
-
-        <!-- Graduated Badge -->
-        @if (graduated) {
-          <div class="graduated-badge p-4 bg-gradient-to-r from-green-900/30 to-emerald-900/30 rounded-lg mt-4 border border-green-500/30">
-            <div class="flex items-center gap-2">
-              <i class="pi pi-check-circle text-green-400 text-xl"></i>
-              <div>
-                <div class="text-sm font-semibold text-white">Token Graduated! 🎉</div>
-                <div class="text-xs text-gray-400 mt-1">Now trading on normal DEX pools</div>
-              </div>
-            </div>
-          </div>
-        }
-
-      </p-card>
+      </div>
     </div>
   `,
   styles: [`
     .live-chart-container {
+      display: flex;
+      flex-direction: column;
       height: 100%;
+      background: #0a0a0f;
+    }
+
+    .chart-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .chart-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #ffffff;
+      margin: 0;
+    }
+
+    .timeframe-selector {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .timeframe-btn {
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      border: none;
+      background: #1a1a25;
+      color: rgba(255, 255, 255, 0.6);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .timeframe-btn:hover {
+      background: #2a2a35;
+      color: #ffffff;
+    }
+
+    .timeframe-btn.active {
+      background: #8b5cf6;
+      color: #ffffff;
+    }
+
+    .fullscreen-btn {
+      padding: 8px;
+      border-radius: 6px;
+      border: none;
+      background: #1a1a25;
+      color: rgba(255, 255, 255, 0.6);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-left: 8px;
+    }
+
+    .fullscreen-btn:hover {
+      background: #2a2a35;
+      color: #ffffff;
     }
 
     .chart-wrapper {
       position: relative;
-      min-height: 400px;
+      flex: 1;
+      min-height: 350px;
     }
 
     .chart-wrapper.fullscreen {
@@ -169,11 +146,12 @@ interface ChartStats {
 
     .chart-container {
       width: 100%;
-      height: 400px;
+      height: 100%;
+      min-height: 350px;
     }
 
     .fullscreen .chart-container {
-      height: calc(100vh - 200px);
+      height: calc(100vh - 120px);
     }
 
     .timeframe-btn.active {
@@ -240,10 +218,11 @@ export class LiveChartComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!this.chartContainer) return;
 
     const container = this.chartContainer.nativeElement;
+    const height = container.clientHeight || 400;
     
     this.chart = createChart(container, {
       width: container.clientWidth,
-      height: 400,
+      height: height,
       layout: {
         background: { color: '#0a0a0f' },
         textColor: '#9ca3af',
@@ -393,7 +372,9 @@ export class LiveChartComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!this.chart || !this.chartContainer) return;
     
     const container = this.chartContainer.nativeElement;
-    const height = this.isFullscreen ? window.innerHeight - 200 : 400;
+    const height = this.isFullscreen 
+      ? window.innerHeight - 120 
+      : container.clientHeight || 400;
     
     this.chart.applyOptions({
       width: container.clientWidth,
