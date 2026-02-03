@@ -75,6 +75,7 @@ import { DbcController } from './controllers/dbc.controller';
     PriceOracleService,
     SolPriceService,
     FeeCollectionService,
+    DbcService, // Export for use in PublicApiModule
   ],
 })
 export class MeteoraApiModule {}

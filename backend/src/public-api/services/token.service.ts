@@ -3,6 +3,7 @@ import { TokenRepository } from '../../database/repositories/token.repository';
 import { Token } from '../../database/entities/token.entity';
 import { CreateTokenDto } from '../dto/create-token.dto';
 import { BlockchainService } from './blockchain.service';
+import { DbcService } from '../../meteora-api/services/dbc.service';
 import { PublicKey } from '@solana/web3.js';
 
 @Injectable()
@@ -12,6 +13,7 @@ export class TokenService {
   constructor(
     private readonly tokenRepository: TokenRepository,
     private readonly blockchainService: BlockchainService,
+    private readonly dbcService: DbcService,
   ) {}
 
   /**
@@ -28,28 +30,21 @@ export class TokenService {
   }> {
     this.logger.log(`Building token creation transaction: ${createTokenDto.symbol}`);
 
-    // This would call the DBC service to build the transaction
-    // For now, throw error until DBC service is wired up
-    throw new Error(
-      'Token creation transaction building not implemented yet. ' +
-      'DBC service needs to be injected into TokenService.'
-    );
-
-    // TODO: Once DBC service is available:
-    // const result = await this.dbcService.buildCreateTokenTransaction({
-    //   name: createTokenDto.name,
-    //   symbol: createTokenDto.symbol,
-    //   description: createTokenDto.description,
-    //   imageUrl: createTokenDto.imageUrl,
-    //   creatorWallet: createTokenDto.creator,
-    //   creatorBotId: 'human', // Or get from DTO
-    //   firstBuyAmount: createTokenDto.initialBuy,
-    // });
-    // 
-    // return {
-    //   ...result,
-    //   message: 'Sign and submit this transaction to create your token on-chain. The indexer will automatically detect it.',
-    // };
+    // Call DBC service to build the transaction
+    const result = await this.dbcService.buildCreateTokenTransaction({
+      name: createTokenDto.name,
+      symbol: createTokenDto.symbol,
+      description: createTokenDto.description || '',
+      imageUrl: createTokenDto.imageUrl,
+      creatorWallet: createTokenDto.creator,
+      creatorBotId: createTokenDto.creatorType || 'human',
+      firstBuyAmount: createTokenDto.initialBuy,
+    });
+    
+    return {
+      ...result,
+      message: 'Sign and submit this transaction to create your token on-chain. The indexer will automatically detect it.',
+    };
   }
 
   /**
