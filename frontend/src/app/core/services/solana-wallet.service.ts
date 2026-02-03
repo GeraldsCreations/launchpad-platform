@@ -40,7 +40,7 @@ export class SolanaWalletService {
     const projectId = REOWN_PROJECT_ID !== 'ff9fa0efdc94bc398850632c21195957' 
       ? REOWN_PROJECT_ID 
       : REOWN_DEMO_PROJECT_ID;
-
+    console.log('Using Reown Project ID:', projectId);
     this.appKit = createAppKit({
       adapters: [this.solanaAdapter as any],
       networks: [solana, solanaTestnet, solanaDevnet],
