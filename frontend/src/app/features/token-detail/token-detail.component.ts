@@ -398,7 +398,7 @@ export class TokenDetailComponent implements OnInit, OnDestroy {
     const totalSupply = 1_000_000_000; // 1 billion tokens
     
     // If we have actual total supply, use it
-    const actualSupply = this.token.total_supply ? parseFloat(this.token.total_supply) : totalSupply;
+    const actualSupply = this.token.total_supply || totalSupply;
     
     // Calculate graduation price in SOL
     // Assuming SOL = $150 (should be fetched from price oracle in production)

@@ -8,7 +8,6 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { FormsModule } from '@angular/forms';
 import { ApiService, Token } from '../../core/services/api.service';
 import { TokenCardComponent } from '../../shared/components/token-card.component';
-import { BotBadgeComponent } from '../../shared/components/bot-badge/bot-badge.component';
 
 interface SortOption {
   label: string;
@@ -34,7 +33,6 @@ interface BotStats {
     DropdownModule,
     SkeletonModule,
     TokenCardComponent,
-    BotBadgeComponent,
   ],
   template: `
     <div class="bot-tokens-page">
