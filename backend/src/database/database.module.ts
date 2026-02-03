@@ -12,9 +12,7 @@ import { FeeClaimerVault } from './entities/fee-claimer-vault.entity';
 import { BotCreatorReward } from './entities/bot-creator-reward.entity';
 import { LpPosition } from '../meteora-api/entities/lp-position.entity';
 import { LpWithdrawal } from '../meteora-api/entities/lp-withdrawal.entity';
-import { ChatMessage } from './entities/chat-message.entity';
-import { ChatBan } from './entities/chat-ban.entity';
-import { ChatRoom } from './entities/chat-room.entity';
+// Chat entities removed
 import { PlatformConfig } from './entities/platform-config.entity';
 import { TokenRepository } from './repositories/token.repository';
 import { TradeRepository } from './repositories/trade.repository';
@@ -32,7 +30,7 @@ import { TradeRepository } from './repositories/trade.repository';
           username: configService.get('DATABASE_USER'),
           password: configService.get('DATABASE_PASSWORD'),
           database: configService.get('DATABASE_NAME'),
-          entities: [Token, Trade, Holder, User, PlatformStats, MeteoraPool, MeteoraTransaction, FeeClaimerVault, BotCreatorReward, LpPosition, LpWithdrawal, ChatMessage, ChatBan, ChatRoom, PlatformConfig],
+          entities: [Token, Trade, Holder, User, PlatformStats, MeteoraPool, MeteoraTransaction, FeeClaimerVault, BotCreatorReward, LpPosition, LpWithdrawal, PlatformConfig],
           synchronize: configService.get('NODE_ENV') === 'development',
           logging: configService.get('NODE_ENV') === 'development',
           ssl: configService.get('DATABASE_SSL') === 'true' ? { rejectUnauthorized: false } : false,
@@ -59,7 +57,7 @@ import { TradeRepository } from './repositories/trade.repository';
         return dbConfig;
       },
     }),
-    TypeOrmModule.forFeature([Token, Trade, Holder, User, PlatformStats, MeteoraPool, MeteoraTransaction, FeeClaimerVault, BotCreatorReward, LpPosition, LpWithdrawal, ChatMessage, ChatBan, ChatRoom, PlatformConfig]),
+    TypeOrmModule.forFeature([Token, Trade, Holder, User, PlatformStats, MeteoraPool, MeteoraTransaction, FeeClaimerVault, BotCreatorReward, LpPosition, LpWithdrawal, PlatformConfig]),
   ],
   providers: [TokenRepository, TradeRepository],
   exports: [TypeOrmModule, TokenRepository, TradeRepository],
