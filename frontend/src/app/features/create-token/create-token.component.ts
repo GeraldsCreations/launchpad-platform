@@ -68,13 +68,32 @@ import { NotificationService } from '../../core/services/notification.service';
           </div>
 
           <div>
-            <label class="block text-sm font-medium mb-2">Image URL</label>
-            <input 
-              pInputText
-              [(ngModel)]="formData.imageUrl"
-              name="imageUrl"
-              placeholder="https://..."
-              class="w-full">
+            <label class="block text-sm font-medium mb-2">Token Image *</label>
+            <div class="image-upload-container">
+              @if (imagePreview) {
+                <div class="image-preview">
+                  <img [src]="imagePreview" alt="Token preview">
+                  <button 
+                    type="button"
+                    class="remove-image-btn"
+                    (click)="removeImage()">
+                    <i class="pi pi-times"></i>
+                  </button>
+                </div>
+              } @else {
+                <div class="upload-zone" (click)="fileInput.click()">
+                  <i class="pi pi-cloud-upload text-4xl text-gray-500 mb-2"></i>
+                  <p class="text-gray-400">Click to upload image</p>
+                  <p class="text-xs text-gray-500 mt-1">PNG or JPG (max 2MB)</p>
+                </div>
+              }
+              <input 
+                #fileInput
+                type="file"
+                accept="image/png,image/jpeg,image/jpg"
+                (change)="onImageSelect($event)"
+                class="hidden">
+            </div>
           </div>
 
           <div>
@@ -129,9 +148,9 @@ import { NotificationService } from '../../core/services/notification.service';
               Important Information
             </h3>
             <ul class="text-sm text-gray-400 space-y-1">
-              <li>• Creation fee: 1 SOL (includes initial liquidity)</li>
+              <li>• <strong class="text-white">Creation fee: 0.02 SOL</strong> (platform + network fees)</li>
               <li>• All transactions are final and on-chain</li>
-              <li>• You'll receive 10% of total supply</li>
+              <li>• Token image uploaded (max 2MB PNG/JPG)</li>
               <li>• Trading fee: 1% on all transactions</li>
             </ul>
           </div>
@@ -159,6 +178,67 @@ import { NotificationService } from '../../core/services/notification.service';
     .create-token-container {
       min-height: calc(100vh - 80px);
     }
+
+    .image-upload-container {
+      border: 2px dashed rgba(139, 92, 246, 0.3);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .upload-zone {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 2rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: rgba(139, 92, 246, 0.05);
+    }
+
+    .upload-zone:hover {
+      background: rgba(139, 92, 246, 0.1);
+      border-color: rgba(139, 92, 246, 0.5);
+    }
+
+    .image-preview {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1;
+      overflow: hidden;
+    }
+
+    .image-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .remove-image-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .remove-image-btn:hover {
+      background: rgba(239, 68, 68, 0.9);
+      transform: scale(1.1);
+    }
+
+    .hidden {
+      display: none;
+    }
   `]
 })
 export class CreateTokenComponent {
@@ -172,6 +252,8 @@ export class CreateTokenComponent {
 
   creating = false;
   walletConnected = false;
+  imagePreview: string | null = null;
+  imageBase64: string | null = null;
 
   constructor(
     private apiService: ApiService,
@@ -184,10 +266,42 @@ export class CreateTokenComponent {
     });
   }
 
+  onImageSelect(event: any): void {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.match(/image\/(png|jpeg|jpg)/)) {
+      this.notificationService.error('Invalid File', 'Please upload a PNG or JPG image');
+      return;
+    }
+
+    // Validate file size (2MB max)
+    const maxSize = 2 * 1024 * 1024; // 2MB
+    if (file.size > maxSize) {
+      this.notificationService.error('File Too Large', 'Image must be less than 2MB');
+      return;
+    }
+
+    // Read file and convert to base64
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      this.imagePreview = e.target.result;
+      this.imageBase64 = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  removeImage(): void {
+    this.imagePreview = null;
+    this.imageBase64 = null;
+  }
+
   canCreate(): boolean {
     return this.walletConnected && 
            this.formData.name.length > 0 && 
            this.formData.symbol.length > 0 &&
+           this.imageBase64 !== null &&
            !this.creating;
   }
 
@@ -210,7 +324,7 @@ export class CreateTokenComponent {
         name: this.formData.name,
         symbol: this.formData.symbol,
         description: this.formData.description || undefined,
-        imageUrl: this.formData.imageUrl || undefined,
+        imageUrl: this.imageBase64 || undefined,  // Send base64 image
         creator: creatorAddress,
         creatorType: 'human',
         initialBuy: this.formData.initialBuySol > 0 ? this.formData.initialBuySol : undefined
