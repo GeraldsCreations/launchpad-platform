@@ -409,23 +409,25 @@ export class LiveChartComponent implements OnInit, AfterViewInit, OnDestroy {
     window.removeEventListener('resize', this.handleResize.bind(this));
   }
 
-  formatPrice(price: number | null | undefined): string {
-    if (price === null || price === undefined || price === 0) return '0.00';
-    if (price < 0.0001) return price.toFixed(8);
-    if (price < 1) return price.toFixed(6);
-    return price.toFixed(4);
+  formatPrice(price: number | string | null | undefined): string {
+    if (price === null || price === undefined) return '0.00';
+    const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+    if (isNaN(numPrice) || numPrice === 0) return '0.00';
+    if (numPrice < 0.0001) return numPrice.toFixed(8);
+    if (numPrice < 1) return numPrice.toFixed(6);
+    return numPrice.toFixed(4);
   }
 
-  formatVolume(volume: number | null | undefined): string {
-    if (volume === null || volume === undefined || volume === 0) {
-      return '0.00';
+  formatVolume(volume: number | string | null | undefined): string {
+    if (volume === null || volume === undefined) return '0.00';
+    const numVolume = typeof volume === 'string' ? parseFloat(volume) : volume;
+    if (isNaN(numVolume) || numVolume === 0) return '0.00';
+    if (numVolume >= 1000000) {
+      return `${(numVolume / 1000000).toFixed(2)}M`;
+    } else if (numVolume >= 1000) {
+      return `${(numVolume / 1000).toFixed(2)}K`;
     }
-    if (volume >= 1000000) {
-      return `${(volume / 1000000).toFixed(2)}M`;
-    } else if (volume >= 1000) {
-      return `${(volume / 1000).toFixed(2)}K`;
-    }
-    return volume.toFixed(2);
+    return numVolume.toFixed(2);
   }
 
   getGraduationProgress(): number {

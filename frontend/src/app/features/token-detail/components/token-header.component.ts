@@ -172,12 +172,14 @@ export class TokenHeaderComponent implements OnChanges {
     this.sellClicked.emit();
   }
 
-  formatPrice(price: number | null | undefined): string {
-    if (price === null || price === undefined || price === 0) return '0.00000000';
-    if (price < 0.00000001) return price.toExponential(2);
-    if (price < 0.0001) return price.toFixed(8);
-    if (price < 1) return price.toFixed(6);
-    return price.toFixed(4);
+  formatPrice(price: number | string | null | undefined): string {
+    if (price === null || price === undefined) return '0.00000000';
+    const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+    if (isNaN(numPrice) || numPrice === 0) return '0.00000000';
+    if (numPrice < 0.00000001) return numPrice.toExponential(2);
+    if (numPrice < 0.0001) return numPrice.toFixed(8);
+    if (numPrice < 1) return numPrice.toFixed(6);
+    return numPrice.toFixed(4);
   }
 
   truncateAddress(address: string): string {

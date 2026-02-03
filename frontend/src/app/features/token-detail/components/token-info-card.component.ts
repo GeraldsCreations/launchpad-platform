@@ -219,28 +219,34 @@ export class TokenInfoCardComponent {
 
   constructor(private notificationService: NotificationService) {}
 
-  formatPrice(price: number | null | undefined): string {
-    if (price === null || price === undefined || price === 0) return '0.00000000';
-    if (price < 0.00000001) return price.toExponential(2);
-    if (price < 0.0001) return price.toFixed(8);
-    if (price < 1) return price.toFixed(6);
-    return price.toFixed(4);
+  formatPrice(price: number | string | null | undefined): string {
+    if (price === null || price === undefined) return '0.00000000';
+    const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+    if (isNaN(numPrice) || numPrice === 0) return '0.00000000';
+    if (numPrice < 0.00000001) return numPrice.toExponential(2);
+    if (numPrice < 0.0001) return numPrice.toFixed(8);
+    if (numPrice < 1) return numPrice.toFixed(6);
+    return numPrice.toFixed(4);
   }
 
-  formatMarketCap(marketCap: number): string {
-    if (marketCap >= 1000000) {
-      return `$${(marketCap / 1000000).toFixed(2)}M`;
-    } else if (marketCap >= 1000) {
-      return `$${(marketCap / 1000).toFixed(2)}K`;
+  formatMarketCap(marketCap: number | string): string {
+    const num = typeof marketCap === 'string' ? parseFloat(marketCap) : marketCap;
+    if (isNaN(num)) return '$0.00';
+    if (num >= 1000000) {
+      return `$${(num / 1000000).toFixed(2)}M`;
+    } else if (num >= 1000) {
+      return `$${(num / 1000).toFixed(2)}K`;
     }
-    return `$${marketCap.toFixed(2)}`;
+    return `$${num.toFixed(2)}`;
   }
 
-  formatVolume(volume: number): string {
-    if (volume >= 1000) {
-      return `${(volume / 1000).toFixed(2)}K`;
+  formatVolume(volume: number | string): string {
+    const num = typeof volume === 'string' ? parseFloat(volume) : volume;
+    if (isNaN(num)) return '0.00';
+    if (num >= 1000) {
+      return `${(num / 1000).toFixed(2)}K`;
     }
-    return volume.toFixed(2);
+    return num.toFixed(2);
   }
 
   formatSupply(supply: number | string): string {
