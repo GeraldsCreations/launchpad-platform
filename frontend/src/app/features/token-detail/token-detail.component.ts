@@ -15,6 +15,7 @@ import { TradeInterfaceComponent } from './components/trade-interface.component'
 import { BondingCurveProgressComponent } from './components/bonding-curve-progress.component';
 import { ActivityTabsComponent } from './components/activity-tabs.component';
 import { AIInsightsCardComponent } from './components/ai-insights-card.component';
+import { RecentTradesTableComponent } from './components/recent-trades-table.component';
 // Import Trade type from activity-feed for backward compatibility
 import { Trade } from './components/activity-feed.component';
 
@@ -31,7 +32,8 @@ import { tokenDetailAnimations } from './token-detail.animations';
     TradeInterfaceComponent,
     BondingCurveProgressComponent,
     ActivityTabsComponent,
-    AIInsightsCardComponent
+    AIInsightsCardComponent,
+    RecentTradesTableComponent
   ],
   animations: tokenDetailAnimations,
   template: `
@@ -101,42 +103,33 @@ import { tokenDetailAnimations } from './token-detail.animations';
           </div>
         </div>
 
-        <!-- 3-Column Layout -->
+        <!-- 2-Column Layout: Chart/Trades + Trading -->
         <div class="main-content-grid max-w-7xl mx-auto px-4 py-6">
           
-          <!-- Column 1: Chart (60%) -->
-          <div class="chart-column">
-            <app-live-chart
-              [tokenAddress]="token.address"
-              [currentPrice]="currentPrice"
-              [graduationPrice]="getGraduationPrice()"
-              [graduated]="token.graduated"
-              #liveChart>
-            </app-live-chart>
+          <!-- Left Panel: Chart + Trades Table (70%) -->
+          <div class="left-panel">
+            <!-- Live Chart -->
+            <div class="chart-section">
+              <app-live-chart
+                [tokenAddress]="token.address"
+                [currentPrice]="currentPrice"
+                [graduationPrice]="getGraduationPrice()"
+                [graduated]="token.graduated"
+                #liveChart>
+              </app-live-chart>
+            </div>
 
-            <!-- Bonding Curve Progress -->
-            <app-bonding-curve-progress
-              [progressPercent]="dbcProgress || 0"
-              [currentMarketCap]="token.marketCap"
-              [graduationThreshold]="50000"
-              [showDetails]="false">
-            </app-bonding-curve-progress>
+            <!-- Recent Trades Table -->
+            <div class="trades-section">
+              <app-recent-trades-table
+                [tokenAddress]="token.address"
+                [maxTrades]="30">
+              </app-recent-trades-table>
+            </div>
           </div>
 
-          <!-- Column 2: Activity Tabs (20%) -->
-          <div class="activity-column">
-            <app-activity-tabs
-              [tokenAddress]="token.address"
-              [tokenSymbol]="token.symbol"
-              [canSendMessages]="false"
-              [isLive]="isLive"
-              [threadCount]="5"
-              [holderCount]="token.holderCount || 0">
-            </app-activity-tabs>
-          </div>
-
-          <!-- Column 3: Trading Panel (20%) -->
-          <div class="trading-column">
+          <!-- Right Panel: Trading Interface (30%) -->
+          <div class="right-panel">
             <app-trade-interface
               [tokenAddress]="token.address"
               [tokenSymbol]="token.symbol"
@@ -152,8 +145,28 @@ import { tokenDetailAnimations } from './token-detail.animations';
               [statusText]="'AI Agent Active'"
               [statusClass]="'active'">
             </app-ai-insights-card>
+
+            <!-- Bonding Curve Progress -->
+            <app-bonding-curve-progress
+              [progressPercent]="dbcProgress || 0"
+              [currentMarketCap]="token.marketCap"
+              [graduationThreshold]="50000"
+              [showDetails]="false">
+            </app-bonding-curve-progress>
           </div>
 
+        </div>
+
+        <!-- Bottom Tabs: Thread, Holders, AI Logs -->
+        <div class="bottom-tabs-section max-w-7xl mx-auto px-4 pb-6">
+          <app-activity-tabs
+            [tokenAddress]="token.address"
+            [tokenSymbol]="token.symbol"
+            [canSendMessages]="false"
+            [isLive]="isLive"
+            [threadCount]="5"
+            [holderCount]="token.holderCount || 0">
+          </app-activity-tabs>
         </div>
 
       </div>
@@ -263,45 +276,72 @@ import { tokenDetailAnimations } from './token-detail.animations';
       transform: scale(1.02);
     }
 
-    /* 3-Column Grid Layout */
+    /* 2-Column Grid Layout: Chart/Trades + Trading */
     .main-content-grid {
       display: grid;
-      grid-template-columns: 60% 20% 20%;
-      gap: 20px;
+      grid-template-columns: 70% 30%;
+      gap: 1.5rem;
     }
 
-    .chart-column {
+    .left-panel {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 1rem;
     }
 
-    .activity-column {
-      min-height: 600px;
+    .chart-section {
+      background: var(--bg-secondary, #1a1a2e);
+      border-radius: 12px;
+      overflow: hidden;
+      height: 450px;
     }
 
-    .trading-column {
+    .trades-section {
+      background: var(--bg-secondary, #1a1a2e);
+      border-radius: 12px;
+      height: 350px;
+      overflow: hidden;
+    }
+
+    .right-panel {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 1rem;
       position: sticky;
-      top: 20px;
+      top: 1rem;
       height: fit-content;
     }
 
+    /* Bottom Tabs Section */
+    .bottom-tabs-section {
+      margin-top: 2rem;
+      background: var(--bg-secondary, #1a1a2e);
+      border-radius: 12px;
+      padding: 1rem;
+      min-height: 400px;
+    }
+
     /* Responsive: Mobile/Tablet */
-    @media (max-width: 1200px) {
+    @media (max-width: 1024px) {
       .main-content-grid {
         grid-template-columns: 1fr;
       }
 
-      .trading-column {
+      .chart-section {
+        height: 350px;
+      }
+
+      .trades-section {
+        height: 300px;
+      }
+
+      .right-panel {
         position: relative;
         top: 0;
       }
 
-      .activity-column {
-        min-height: 400px;
+      .bottom-tabs-section {
+        margin-top: 1rem;
       }
     }
 
