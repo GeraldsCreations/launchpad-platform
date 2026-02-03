@@ -200,12 +200,12 @@ export class CreateTokenComponent {
     try {
       const result = await this.apiService.createToken(this.formData).toPromise();
       if (result) {
-        this.notificationService.transactionSuccess(result.transaction_signature);
-        this.notificationService.tokenCreated(this.formData.name, result.token_address);
+        this.notificationService.success('Token Created!', `${this.formData.name} has been created successfully`);
+        this.notificationService.tokenCreated(this.formData.name, result.address);
         
         // Navigate after a short delay to allow user to see the success message
         setTimeout(() => {
-          this.router.navigate(['/token', result.token_address]);
+          this.router.navigate(['/token', result.address]);
         }, 1500);
       }
     } catch (error: any) {

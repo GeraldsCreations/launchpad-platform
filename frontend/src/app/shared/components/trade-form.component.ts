@@ -37,7 +37,7 @@ import { Subject, debounceTime, takeUntil } from 'rxjs';
               <div class="bg-gray-800 p-4 rounded-lg space-y-2">
                 <div class="flex justify-between text-sm">
                   <span class="text-gray-400">You receive:</span>
-                  <span class="font-semibold">{{ buyQuote.amount_out.toLocaleString() }} {{ tokenSymbol }}</span>
+                  <span class="font-semibold">{{ buyQuote.amountOut.toLocaleString() }} {{ tokenSymbol }}</span>
                 </div>
                 <div class="flex justify-between text-sm">
                   <span class="text-gray-400">Price:</span>
@@ -49,9 +49,9 @@ import { Subject, debounceTime, takeUntil } from 'rxjs';
                 </div>
                 <div class="flex justify-between text-sm">
                   <span class="text-gray-400">Price Impact:</span>
-                  <span [class.text-yellow-500]="buyQuote.price_impact > 5"
-                        [class.text-red-500]="buyQuote.price_impact > 10">
-                    {{ buyQuote.price_impact.toFixed(2) }}%
+                  <span [class.text-yellow-500]="buyQuote.priceImpact > 5"
+                        [class.text-red-500]="buyQuote.priceImpact > 10">
+                    {{ buyQuote.priceImpact.toFixed(2) }}%
                   </span>
                 </div>
               </div>
@@ -100,7 +100,7 @@ import { Subject, debounceTime, takeUntil } from 'rxjs';
               <div class="bg-gray-800 p-4 rounded-lg space-y-2">
                 <div class="flex justify-between text-sm">
                   <span class="text-gray-400">You receive:</span>
-                  <span class="font-semibold">{{ sellQuote.amount_out.toFixed(4) }} SOL</span>
+                  <span class="font-semibold">{{ sellQuote.amountOut.toFixed(4) }} SOL</span>
                 </div>
                 <div class="flex justify-between text-sm">
                   <span class="text-gray-400">Price:</span>
@@ -112,9 +112,9 @@ import { Subject, debounceTime, takeUntil } from 'rxjs';
                 </div>
                 <div class="flex justify-between text-sm">
                   <span class="text-gray-400">Price Impact:</span>
-                  <span [class.text-yellow-500]="sellQuote.price_impact > 5"
-                        [class.text-red-500]="sellQuote.price_impact > 10">
-                    {{ sellQuote.price_impact.toFixed(2) }}%
+                  <span [class.text-yellow-500]="sellQuote.priceImpact > 5"
+                        [class.text-red-500]="sellQuote.priceImpact > 10">
+                    {{ sellQuote.priceImpact.toFixed(2) }}%
                   </span>
                 </div>
               </div>
@@ -236,14 +236,14 @@ export class TradeFormComponent implements OnInit, OnDestroy {
     this.buying = true;
     try {
       const result = await this.apiService.buyToken({
-        token_address: this.tokenAddress,
+        tokenAddress: this.tokenAddress,
         amount: this.buyAmount,
         slippage: 1
       }).toPromise();
 
-      if (result) {
-        const tokensReceived = this.buyQuote?.amount_out || 0;
-        this.notificationService.transactionSuccess(result.transaction_signature);
+      if (result && result.success) {
+        const tokensReceived = this.buyQuote?.amountOut || 0;
+        this.notificationService.transactionSuccess(result.signature);
         this.notificationService.buySuccess(this.tokenSymbol, tokensReceived);
         this.buyAmount = 0;
         this.buyQuote = null;
@@ -263,13 +263,13 @@ export class TradeFormComponent implements OnInit, OnDestroy {
     this.selling = true;
     try {
       const result = await this.apiService.sellToken({
-        token_address: this.tokenAddress,
+        tokenAddress: this.tokenAddress,
         amount: this.sellAmount,
         slippage: 1
       }).toPromise();
 
-      if (result) {
-        this.notificationService.transactionSuccess(result.transaction_signature);
+      if (result && result.success) {
+        this.notificationService.transactionSuccess(result.signature);
         this.notificationService.sellSuccess(this.tokenSymbol, this.sellAmount);
         this.sellAmount = 0;
         this.sellQuote = null;

@@ -109,8 +109,8 @@ export class ApiService {
     }).pipe(catchError(this.handleError));
   }
 
-  createToken(request: CreateTokenRequest): Observable<{ token_address: string; transaction_signature: string }> {
-    return this.http.post<{ token_address: string; transaction_signature: string }>(
+  createToken(request: CreateTokenRequest): Observable<Token> {
+    return this.http.post<Token>(
       `${this.baseUrl}/tokens/create`,
       request
     ).pipe(catchError(this.handleError));
@@ -133,15 +133,15 @@ export class ApiService {
     }).pipe(catchError(this.handleError));
   }
 
-  buyToken(request: TradeRequest): Observable<{ transaction_signature: string }> {
-    return this.http.post<{ transaction_signature: string }>(
+  buyToken(request: TradeRequest): Observable<{ success: boolean; signature: string; trade: Trade }> {
+    return this.http.post<{ success: boolean; signature: string; trade: Trade }>(
       `${this.baseUrl}/trade/buy`,
       request
     ).pipe(catchError(this.handleError));
   }
 
-  sellToken(request: TradeRequest): Observable<{ transaction_signature: string }> {
-    return this.http.post<{ transaction_signature: string }>(
+  sellToken(request: TradeRequest): Observable<{ success: boolean; signature: string; trade: Trade }> {
+    return this.http.post<{ success: boolean; signature: string; trade: Trade }>(
       `${this.baseUrl}/trade/sell`,
       request
     ).pipe(catchError(this.handleError));

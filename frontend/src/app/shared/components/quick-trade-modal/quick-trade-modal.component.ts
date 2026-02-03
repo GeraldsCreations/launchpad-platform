@@ -121,7 +121,7 @@ export interface Token {
               <div *ngIf="buyQuote" class="price-display">
                 <div class="price-row">
                   <span class="label">You Receive:</span>
-                  <span class="value highlight">{{ buyQuote.amount_out.toLocaleString() }} {{ selectedToken?.symbol }}</span>
+                  <span class="value highlight">{{ buyQuote.amountOut.toLocaleString() }} {{ selectedToken?.symbol }}</span>
                 </div>
                 <div class="price-row">
                   <span class="label">Price:</span>
@@ -171,7 +171,7 @@ export interface Token {
               <div *ngIf="sellQuote" class="price-display">
                 <div class="price-row">
                   <span class="label">You Receive:</span>
-                  <span class="value highlight">{{ sellQuote.amount_out.toFixed(4) }} SOL</span>
+                  <span class="value highlight">{{ sellQuote.amountOut.toFixed(4) }} SOL</span>
                 </div>
                 <div class="price-row">
                   <span class="label">Price:</span>
@@ -183,7 +183,7 @@ export interface Token {
                 </div>
                 <div class="price-row total">
                   <span class="label font-semibold">You Get:</span>
-                  <span class="value font-bold">{{ (sellQuote.amount_out - estimatedGasFee).toFixed(4) }} SOL</span>
+                  <span class="value font-bold">{{ (sellQuote.amountOut - estimatedGasFee).toFixed(4) }} SOL</span>
                 </div>
               </div>
 
@@ -631,22 +631,22 @@ export class QuickTradeModalComponent implements OnInit, OnDestroy {
     
     if (!quote) return;
 
-    const platformFee = (isBuy ? this.buyAmount : quote.amount_out) * this.platformFeePercent;
+    const platformFee = (isBuy ? this.buyAmount : quote.amountOut) * this.platformFeePercent;
 
     this.transactionPreview = {
       type: isBuy ? 'buy' : 'sell',
       tokenSymbol: this.selectedToken.symbol,
-      tokenAmount: isBuy ? quote.amount_out : this.sellAmount,
-      solAmount: isBuy ? this.buyAmount : quote.amount_out,
+      tokenAmount: isBuy ? quote.amountOut : this.sellAmount,
+      solAmount: isBuy ? this.buyAmount : quote.amountOut,
       price: quote.price,
-      priceImpact: quote.price_impact,
+      priceImpact: quote.priceImpact,
       slippage: this.slippage,
       gasFee: this.estimatedGasFee,
       platformFee: platformFee,
-      totalCost: isBuy ? this.totalCost : quote.amount_out - platformFee - this.estimatedGasFee,
+      totalCost: isBuy ? this.totalCost : quote.amountOut - platformFee - this.estimatedGasFee,
       minimumReceived: isBuy 
-        ? quote.amount_out * (1 - this.slippage / 100)
-        : quote.amount_out * (1 - this.slippage / 100)
+        ? quote.amountOut * (1 - this.slippage / 100)
+        : quote.amountOut * (1 - this.slippage / 100)
     };
 
     this.showPreview = true;
@@ -671,7 +671,7 @@ export class QuickTradeModalComponent implements OnInit, OnDestroy {
     this.trading = true;
     try {
       const result = await this.apiService.buyToken({
-        token_address: this.selectedToken.address,
+        tokenAddress: this.selectedToken.address,
         amount: this.buyAmount,
         slippage: this.slippage
       }).toPromise();
@@ -697,7 +697,7 @@ export class QuickTradeModalComponent implements OnInit, OnDestroy {
     this.trading = true;
     try {
       const result = await this.apiService.sellToken({
-        token_address: this.selectedToken.address,
+        tokenAddress: this.selectedToken.address,
         amount: this.sellAmount,
         slippage: this.slippage
       }).toPromise();

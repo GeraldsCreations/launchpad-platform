@@ -352,7 +352,7 @@ export class TradeInterfaceComponent implements OnInit, OnDestroy {
 
     try {
       const tradeRequest = {
-        token_address: this.tokenAddress,
+        tokenAddress: this.tokenAddress,
         amount: this.amountSOL,
         slippage: 1 // 1% slippage tolerance
       };
@@ -363,7 +363,7 @@ export class TradeInterfaceComponent implements OnInit, OnDestroy {
 
       const result = await observable.toPromise();
 
-      if (result?.transaction_signature) {
+      if (result?.success && result.signature) {
         this.notificationService.success(
           `${this.tradeType === 'buy' ? 'Bought' : 'Sold'} ${this.formatTokenAmount(this.estimatedTokens)} ${this.tokenSymbol}`
         );
