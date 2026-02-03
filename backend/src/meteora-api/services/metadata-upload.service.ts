@@ -114,26 +114,38 @@ export class MetadataUploadService {
     const filename = `token-image.${ext}`;
 
     this.logger.log('Creating FormData...');
+    this.logger.log(`FormData type: ${typeof FormData}`);
+    this.logger.log(`FormData constructor: ${FormData.name}`);
 
     // Create form data (Node.js style)
     let formData: FormData;
     try {
       formData = new FormData();
-      this.logger.log('FormData instance created');
+      this.logger.log(`FormData instance created: ${typeof formData}`);
+      this.logger.log(`Has append method: ${typeof formData.append}`);
       
-      formData.append('file', buffer, {
-        filename,
-        contentType: mimeType,
-      } as any);
-      
-      this.logger.log('File appended to FormData');
+      // Try simple append first
+      try {
+        formData.append('file', buffer, filename);
+        this.logger.log('File appended to FormData (simple)');
+      } catch (appendError: any) {
+        this.logger.error('Append failed:', appendError);
+        // Try with options
+        formData.append('file', buffer, {
+          filename,
+          contentType: mimeType,
+        } as any);
+        this.logger.log('File appended to FormData (with options)');
+      }
     } catch (error: any) {
-      this.logger.error('FormData creation failed:', error?.message || 'No error message');
-      this.logger.error('Error toString:', error?.toString());
-      this.logger.error('Error type:', typeof error);
-      this.logger.error('Error keys:', Object.keys(error || {}));
-      this.logger.error('Full error:', JSON.stringify(error, null, 2));
-      throw error;
+      this.logger.error('FormData creation failed!');
+      this.logger.error('Error is null/undefined:', error === null || error === undefined);
+      if (error) {
+        this.logger.error('Error message:', error?.message || '(no message)');
+        this.logger.error('Error name:', error?.name || '(no name)');
+        this.logger.error('Error constructor:', error?.constructor?.name || '(no constructor)');
+      }
+      throw new Error(`FormData creation failed: ${error}`);
     }
 
     this.logger.log('Sending request to NFT.storage (image)...');
