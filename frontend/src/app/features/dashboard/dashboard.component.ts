@@ -11,13 +11,13 @@ import { ApiService, Trade } from '../../core/services/api.service';
 import { Subject, takeUntil } from 'rxjs';
 
 interface PortfolioToken {
-  token_address: string;
-  token_name: string;
-  token_symbol: string;
+  tokenAddress: string;
+  tokenName: string;
+  tokenSymbol: string;
   balance: number;
-  value_usd: number;
+  valueUsd: number;
   pnl: number;
-  pnl_percent: number;
+  pnlPercent: number;
 }
 
 @Component({
@@ -115,21 +115,21 @@ interface PortfolioToken {
                   <ng-template pTemplate="body" let-item>
                     <tr>
                       <td>
-                        <div class="font-semibold">{{ item.token_name }}</div>
-                        <div class="text-sm text-gray-400">{{ item.token_symbol }}</div>
+                        <div class="font-semibold">{{ item.tokenName }}</div>
+                        <div class="text-sm text-gray-400">{{ item.tokenSymbol }}</div>
                       </td>
                       <td>{{ item.balance.toLocaleString() }}</td>
-                      <td>{{ item.value_usd.toFixed(4) }} SOL</td>
+                      <td>{{ item.valueUsd.toFixed(4) }} SOL</td>
                       <td>
                         <span [class.text-green-500]="item.pnl >= 0" [class.text-red-500]="item.pnl < 0">
                           {{ item.pnl >= 0 ? '+' : '' }}{{ item.pnl.toFixed(4) }} SOL
-                          ({{ item.pnl_percent.toFixed(2) }}%)
+                          ({{ item.pnlPercent.toFixed(2) }}%)
                         </span>
                       </td>
                       <td>
                         <p-button 
                           icon="pi pi-external-link"
-                          [routerLink]="['/token', item.token_address]"
+                          [routerLink]="['/token', item.tokenAddress]"
                           styleClass="p-button-sm p-button-text">
                         </p-button>
                       </td>
