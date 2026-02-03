@@ -1,0 +1,177 @@
+.watchlist-page {
+  background: linear-gradient(180deg, #0a0a0f 0%, #111118 100%);
+  min-height: 100vh;
+}
+
+// Glassmorphism effect
+.glassmorphism {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+// Empty state
+.empty-state {
+  padding: 4rem 0;
+  
+  .explore-button {
+    ::ng-deep .p-button {
+      background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+      border: none;
+      padding: 0.75rem 2rem;
+      font-size: 1.125rem;
+      transition: all 0.3s ease;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 24px rgba(139, 92, 246, 0.4);
+      }
+    }
+  }
+}
+
+// Token grid
+.token-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  animation: fadeIn 0.5s ease;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// Token card
+.token-card {
+  position: relative;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  
+  // Stagger animation
+  @for $i from 1 through 20 {
+    &:nth-child(#{$i}) {
+      animation: fadeInUp 0.5s ease #{$i * 0.05}s backwards;
+    }
+  }
+
+  // Hover effect
+  &:hover {
+    transform: translateY(-8px);
+    border-color: rgba(139, 92, 246, 0.3);
+    box-shadow: 0 20px 40px rgba(139, 92, 246, 0.2);
+
+    .card-glow {
+      opacity: 1;
+    }
+  }
+
+  // Card glow effect
+  .card-glow {
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(167, 139, 250, 0.1));
+    border-radius: 1rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+    filter: blur(20px);
+  }
+
+  // Active/pressed state
+  &:active {
+    transform: translateY(-4px);
+  }
+
+  // Mobile responsive
+  @media (max-width: 640px) {
+    padding: 1.25rem;
+  }
+}
+
+// Math helper (expose to template)
+:host {
+  ::ng-deep {
+    .Math {
+      display: none;
+    }
+  }
+}
+
+// Animations
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Performance optimizations
+* {
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+// 60fps animations
+.token-card,
+.card-glow {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+}
+
+// Dropdown custom styling
+::ng-deep {
+  .p-dropdown {
+    background: rgba(31, 41, 55, 0.5) !important;
+    border: 1px solid rgba(75, 85, 99, 0.5) !important;
+    color: white !important;
+
+    &:hover {
+      border-color: rgba(139, 92, 246, 0.5) !important;
+    }
+
+    .p-dropdown-trigger {
+      color: rgba(139, 92, 246, 1) !important;
+    }
+
+    .p-dropdown-label {
+      color: white !important;
+    }
+  }
+
+  .p-dropdown-panel {
+    background: rgba(31, 41, 55, 0.95) !important;
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(75, 85, 99, 0.5) !important;
+
+    .p-dropdown-item {
+      color: white !important;
+
+      &:hover {
+        background: rgba(139, 92, 246, 0.2) !important;
+      }
+
+      &.p-highlight {
+        background: rgba(139, 92, 246, 0.3) !important;
+        color: white !important;
+      }
+    }
+  }
+}

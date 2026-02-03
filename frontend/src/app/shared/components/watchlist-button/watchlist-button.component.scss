@@ -1,0 +1,89 @@
+.watchlist-button {
+  // Base styles
+  background: rgba(139, 92, 246, 0.1);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  cursor: pointer;
+  
+  // Star icon color
+  .star-icon {
+    color: #8b5cf6; // Primary purple
+    position: relative;
+    z-index: 1;
+  }
+
+  // Hover state
+  &:hover {
+    background: rgba(139, 92, 246, 0.2);
+    border-color: rgba(139, 92, 246, 0.4);
+    transform: scale(1.05);
+
+    .star-icon {
+      color: #a78bfa; // Lighter purple
+      filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.6));
+    }
+  }
+
+  // Active state (pressed)
+  &:active {
+    transform: scale(0.95);
+  }
+
+  // Focus state (keyboard navigation)
+  &:focus-visible {
+    outline: none;
+    ring: 2px;
+    ring-color: #8b5cf6;
+    ring-offset: 2px;
+  }
+
+  // Disabled state
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    
+    &:hover {
+      transform: none;
+      background: rgba(139, 92, 246, 0.1);
+    }
+  }
+
+  // Mobile touch target (minimum 44x44px for accessibility)
+  @media (hover: none) and (pointer: coarse) {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  // Animation optimizations
+  will-change: transform;
+  transform: translateZ(0); // Force GPU acceleration
+
+  // Smooth transitions
+  transition: 
+    background-color 200ms ease,
+    border-color 200ms ease,
+    transform 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+// Special styling when in watchlist
+.watchlist-button.in-watchlist {
+  .star-icon {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+}
+
+// Pulse glow animation
+@keyframes pulse-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 4px rgba(139, 92, 246, 0.4));
+  }
+  50% {
+    filter: drop-shadow(0 0 12px rgba(139, 92, 246, 0.8));
+  }
+}
+
+// 60fps optimizations
+* {
+  backface-visibility: hidden;
+  perspective: 1000px;
+}

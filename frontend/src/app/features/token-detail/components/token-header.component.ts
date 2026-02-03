@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { BadgeModule } from 'primeng/badge';
 import { tokenDetailAnimations, getPriceFlashState } from '../token-detail.animations';
+import { WatchlistButtonComponent } from '../../../shared/components/watchlist-button/watchlist-button.component';
 
 @Component({
   selector: 'app-token-header',
   standalone: true,
-  imports: [CommonModule, ButtonModule, BadgeModule],
+  imports: [CommonModule, ButtonModule, BadgeModule, WatchlistButtonComponent],
   animations: tokenDetailAnimations,
   template: `
     <div class="token-header fixed top-0 left-0 right-0 z-50 backdrop-blur-lg bg-gray-900/80 border-b border-gray-800">
@@ -22,13 +23,18 @@ import { tokenDetailAnimations, getPriceFlashState } from '../token-detail.anima
               class="w-12 h-12 md:w-16 md:h-16 rounded-full object-cover ring-2 ring-primary-500/30"
               (error)="onImageError($event)">
             
-            <div>
-              <div class="flex items-center gap-2 mb-1">
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-1 flex-wrap">
                 <h1 class="text-xl md:text-2xl font-bold text-white">{{ tokenName }}</h1>
                 <p-badge [value]="tokenSymbol" styleClass="bg-primary-500"></p-badge>
                 @if (graduated) {
                   <p-badge value="GRADUATED" severity="success"></p-badge>
                 }
+                <app-watchlist-button
+                  [tokenAddress]="tokenAddress"
+                  [tokenSymbol]="tokenSymbol"
+                  size="small">
+                </app-watchlist-button>
               </div>
               <div class="text-xs md:text-sm text-gray-400">
                 {{ truncateAddress(tokenAddress) }}

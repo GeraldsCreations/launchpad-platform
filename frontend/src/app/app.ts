@@ -36,6 +36,16 @@ export class App {
       routerLink: '/explore'
     },
     {
+      label: 'Portfolio',
+      icon: 'pi pi-wallet',
+      routerLink: '/portfolio'
+    },
+    {
+      label: 'Watchlist',
+      icon: 'pi pi-star',
+      routerLink: '/watchlist'
+    },
+    {
       label: 'Create',
       icon: 'pi pi-plus-circle',
       routerLink: '/create'

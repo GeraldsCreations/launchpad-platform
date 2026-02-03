@@ -1,0 +1,150 @@
+<div class="watchlist-page min-h-screen bg-gray-900 py-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 class="text-3xl md:text-4xl font-bold text-white mb-2 flex items-center gap-3">
+            ⭐ My Watchlist
+          </h1>
+          <p class="text-gray-400">
+            {{ tokens.length }} token{{ tokens.length !== 1 ? 's' : '' }} saved
+          </p>
+        </div>
+
+        <!-- Sort Dropdown -->
+        @if (tokens.length > 0) {
+          <div class="flex items-center gap-3">
+            <label class="text-sm text-gray-400">Sort by:</label>
+            <p-dropdown
+              [(ngModel)]="sortBy"
+              [options]="sortOptions"
+              optionLabel="label"
+              optionValue="value"
+              (onChange)="onSortChange()"
+              styleClass="w-48"
+              [style]="{'background': 'rgba(31, 41, 55, 0.5)', 'border': '1px solid rgba(75, 85, 99, 0.5)'}">
+            </p-dropdown>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    @if (loading) {
+      <div class="flex justify-center items-center py-20">
+        <div class="text-center">
+          <p-progressSpinner styleClass="w-16 h-16"></p-progressSpinner>
+          <p class="text-gray-400 mt-4">Loading your watchlist...</p>
+        </div>
+      </div>
+    }
+
+    <!-- Empty State -->
+    @else if (tokens.length === 0) {
+      <div class="empty-state">
+        <div class="glassmorphism rounded-2xl p-12 text-center max-w-md mx-auto">
+          <div class="text-8xl mb-6 animate-bounce">⭐</div>
+          <h2 class="text-2xl font-bold text-white mb-3">Your Watchlist is Empty</h2>
+          <p class="text-gray-400 mb-6">
+            Start tracking your favorite tokens by clicking the star button on any token card or detail page.
+          </p>
+          <a routerLink="/" class="inline-block">
+            <p-button 
+              label="Explore Tokens"
+              icon="pi pi-compass"
+              styleClass="p-button-lg"
+              class="explore-button">
+            </p-button>
+          </a>
+        </div>
+      </div>
+    }
+
+    <!-- Token Grid -->
+    @else {
+      <div class="token-grid">
+        @for (token of tokens; track trackByAddress($index, token)) {
+          <div 
+            class="token-card glassmorphism group"
+            [routerLink]="['/token', token.address]"
+            @fadeInStagger>
+            
+            <!-- Watchlist Button (Top Right) -->
+            <div class="absolute top-3 right-3 z-10">
+              <app-watchlist-button
+                [tokenAddress]="token.address"
+                [tokenSymbol]="token.symbol"
+                size="small">
+              </app-watchlist-button>
+            </div>
+
+            <!-- Token Image & Info -->
+            <div class="flex items-start gap-4 mb-4">
+              <img 
+                [src]="token.image_url || 'assets/default-token.svg'"
+                [alt]="token.name"
+                class="w-16 h-16 rounded-full object-cover ring-2 ring-primary-500/30"
+                (error)="$any($event.target).src = 'assets/default-token.svg'">
+              
+              <div class="flex-1 min-w-0">
+                <h3 class="text-xl font-bold text-white mb-1 truncate">{{ token.name }}</h3>
+                <p class="text-sm text-gray-400 mb-2">{{ token.symbol }}</p>
+                
+                <!-- Graduated Badge -->
+                @if (token.graduated) {
+                  <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-500/20 text-green-400 border border-green-500/30">
+                    🎓 Graduated
+                  </span>
+                }
+              </div>
+            </div>
+
+            <!-- Price Info -->
+            <div class="space-y-3 mb-4">
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-gray-400">Price</span>
+                <span class="text-lg font-bold text-white">{{ formatPrice(token.current_price) }} SOL</span>
+              </div>
+
+              <!-- Price Change -->
+              @if (token.priceChangePercent !== undefined) {
+                <div class="flex justify-between items-center">
+                  <span class="text-sm text-gray-400">24h Change</span>
+                  <span [class]="getPriceChangeClass(token.priceChangePercent)" class="text-sm font-semibold">
+                    {{ getPriceChangeIcon(token.priceChangePercent) }} {{ Math.abs(token.priceChangePercent).toFixed(2) }}%
+                  </span>
+                </div>
+              }
+
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-gray-400">Market Cap</span>
+                <span class="text-sm font-semibold text-white">{{ formatNumber(token.market_cap) }}</span>
+              </div>
+
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-gray-400">24h Volume</span>
+                <span class="text-sm font-semibold text-white">{{ formatNumber(token.volume_24h) }}</span>
+              </div>
+            </div>
+
+            <!-- Address (Copy on Click) -->
+            <div class="pt-3 border-t border-gray-700/50">
+              <button
+                (click)="copyAddress(token.address, $event)"
+                class="flex items-center gap-2 text-xs text-gray-500 hover:text-primary-400 transition-colors w-full">
+                <i class="pi pi-copy"></i>
+                <span>{{ truncateAddress(token.address) }}</span>
+              </button>
+            </div>
+
+            <!-- Hover Glow Effect -->
+            <div class="card-glow"></div>
+          </div>
+        }
+      </div>
+    }
+
+  </div>
+</div>
