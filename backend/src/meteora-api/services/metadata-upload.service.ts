@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import FormData from 'form-data';
+import axios from 'axios';
 
 /**
  * Metadata Upload Service
@@ -112,38 +113,51 @@ export class MetadataUploadService {
     const ext = mimeType.split('/')[1] || 'png';
     const filename = `token-image.${ext}`;
 
+    this.logger.log('Creating FormData...');
+
     // Create form data (Node.js style)
-    const formData = new FormData();
-    formData.append('file', buffer, {
-      filename,
-      contentType: mimeType,
-    } as any);
+    let formData: FormData;
+    try {
+      formData = new FormData();
+      this.logger.log('FormData instance created');
+      
+      formData.append('file', buffer, {
+        filename,
+        contentType: mimeType,
+      } as any);
+      
+      this.logger.log('File appended to FormData');
+    } catch (error: any) {
+      this.logger.error('FormData creation failed:', error?.message || 'No error message');
+      this.logger.error('Error toString:', error?.toString());
+      this.logger.error('Error type:', typeof error);
+      this.logger.error('Error keys:', Object.keys(error || {}));
+      this.logger.error('Full error:', JSON.stringify(error, null, 2));
+      throw error;
+    }
 
     this.logger.log('Sending request to NFT.storage (image)...');
 
     try {
-      const response = await fetch('https://api.nft.storage/upload', {
-        method: 'POST',
+      const response = await axios.post('https://api.nft.storage/upload', formData, {
         headers: {
           'Authorization': `Bearer ${this.nftStorageApiKey}`,
           ...formData.getHeaders(),
         },
-        body: formData as any,
+        maxBodyLength: Infinity,
+        maxContentLength: Infinity,
       });
 
       this.logger.log(`Response status: ${response.status} ${response.statusText}`);
-
-      if (!response.ok) {
-        const error = await response.text();
-        this.logger.error(`NFT.storage error response: ${error}`);
-        throw new Error(`NFT.storage upload failed (${response.status}): ${error}`);
-      }
-
-      const result = await response.json();
-      this.logger.log(`Upload result: ${JSON.stringify(result)}`);
-      return `ipfs://${result.value.cid}`;
+      this.logger.log(`Upload result: ${JSON.stringify(response.data)}`);
+      
+      return `ipfs://${response.data.value.cid}`;
     } catch (error: any) {
       this.logger.error('Upload error:', error.message);
+      if (error.response) {
+        this.logger.error(`Response status: ${error.response.status}`);
+        this.logger.error(`Response data:`, error.response.data);
+      }
       throw error;
     }
   }
@@ -163,28 +177,25 @@ export class MetadataUploadService {
     this.logger.log('Sending request to NFT.storage (metadata JSON)...');
 
     try {
-      const response = await fetch('https://api.nft.storage/upload', {
-        method: 'POST',
+      const response = await axios.post('https://api.nft.storage/upload', formData, {
         headers: {
           'Authorization': `Bearer ${this.nftStorageApiKey}`,
           ...formData.getHeaders(),
         },
-        body: formData as any,
+        maxBodyLength: Infinity,
+        maxContentLength: Infinity,
       });
 
       this.logger.log(`Response status: ${response.status} ${response.statusText}`);
-
-      if (!response.ok) {
-        const error = await response.text();
-        this.logger.error(`NFT.storage error response: ${error}`);
-        throw new Error(`NFT.storage upload failed (${response.status}): ${error}`);
-      }
-
-      const result = await response.json();
-      this.logger.log(`Metadata upload result: ${JSON.stringify(result)}`);
-      return `ipfs://${result.value.cid}`;
+      this.logger.log(`Metadata upload result: ${JSON.stringify(response.data)}`);
+      
+      return `ipfs://${response.data.value.cid}`;
     } catch (error: any) {
       this.logger.error('Upload error:', error.message);
+      if (error.response) {
+        this.logger.error(`Response status: ${error.response.status}`);
+        this.logger.error(`Response data:`, error.response.data);
+      }
       throw error;
     }
   }
