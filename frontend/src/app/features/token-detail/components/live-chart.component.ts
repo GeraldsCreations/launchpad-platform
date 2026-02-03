@@ -204,8 +204,11 @@ export class LiveChartComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    this.initChart();
-    this.loadChartData();
+    // Small delay to ensure DOM is fully rendered
+    setTimeout(() => {
+      this.initChart();
+      this.loadChartData();
+    }, 100);
   }
 
   ngOnDestroy(): void {
@@ -215,10 +218,20 @@ export class LiveChartComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private initChart(): void {
-    if (!this.chartContainer) return;
+    if (!this.chartContainer) {
+      console.error('Chart container not found');
+      return;
+    }
 
     const container = this.chartContainer.nativeElement;
-    const height = container.clientHeight || 400;
+    const containerHeight = container.clientHeight;
+    const height = containerHeight > 0 ? containerHeight : 400;
+    
+    console.log('Initializing chart:', {
+      containerHeight,
+      width: container.clientWidth,
+      finalHeight: height
+    });
     
     this.chart = createChart(container, {
       width: container.clientWidth,
@@ -271,13 +284,16 @@ export class LiveChartComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private loadChartData(): void {
     this.loading = true;
+    console.log('Loading chart data...');
 
     // Simulate loading chart data (replace with real API call)
     setTimeout(() => {
       const data = this.generateMockData();
+      console.log('Generated mock data:', data.length, 'candles');
       
       if (this.candlestickSeries && data.length > 0) {
         this.candlestickSeries.setData(data);
+        console.log('Chart data set successfully');
         
         // Add graduation line if applicable
         if (this.graduationLine && this.graduationPrice && data.length > 0) {
@@ -299,9 +315,15 @@ export class LiveChartComponent implements OnInit, AfterViewInit, OnDestroy {
           close: latestCandle.close,
           volume: Math.random() * 10000, // Mock volume
         };
+      } else {
+        console.warn('Chart series not initialized or no data:', {
+          hasSeries: !!this.candlestickSeries,
+          dataLength: data.length
+        });
       }
       
       this.loading = false;
+      console.log('Chart loading complete, loading =', this.loading);
     }, 1000);
   }
 

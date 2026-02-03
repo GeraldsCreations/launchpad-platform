@@ -4,11 +4,21 @@ import { RouterModule } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { PortfolioService, TokenHolding, PortfolioSummary } from './services/portfolio.service';
 import { PortfolioCardComponent } from './components/portfolio-card.component';
+import { PullToRefreshDirective } from '../../shared/directives/pull-to-refresh.directive';
+import { SwipeDirective } from '../../shared/directives/swipe.directive';
+import { LongPressDirective } from '../../shared/directives/long-press.directive';
 
 @Component({
   selector: 'app-portfolio',
   standalone: true,
-  imports: [CommonModule, RouterModule, PortfolioCardComponent],
+  imports: [
+    CommonModule, 
+    RouterModule, 
+    PortfolioCardComponent,
+    PullToRefreshDirective,
+    SwipeDirective,
+    LongPressDirective
+  ],
   templateUrl: './portfolio.page.html',
   styleUrls: ['./portfolio.page.scss']
 })
@@ -56,6 +66,30 @@ export class PortfolioPage implements OnInit, OnDestroy {
 
   onTradeClick(tokenAddress: string): void {
     console.log('Navigate to token:', tokenAddress);
+  }
+
+  onSwipeLeft(holding: TokenHolding): void {
+    // Show delete/remove action
+    if (confirm(`Remove ${holding.tokenName} from portfolio?`)) {
+      console.log('Removing token:', holding.tokenAddress);
+      // Implement actual removal logic
+    }
+  }
+
+  onSwipeRight(holding: TokenHolding): void {
+    // Show edit action
+    console.log('Edit token:', holding.tokenAddress);
+    // Could open an edit modal or navigate to token detail
+  }
+
+  onLongPress(holding: TokenHolding): void {
+    // Show quick actions menu
+    console.log('Quick actions for:', holding.tokenAddress);
+    // Could show a context menu with options like:
+    // - View details
+    // - Trade
+    // - Add to watchlist
+    // - Remove from portfolio
   }
 
   formatValue(value: number): string {

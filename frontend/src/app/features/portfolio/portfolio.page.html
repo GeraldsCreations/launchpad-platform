@@ -1,4 +1,4 @@
-<div class="portfolio-page">
+<div class="portfolio-page" appPullToRefresh (refresh)="refresh()">
   <!-- Portfolio Summary -->
   <div class="summary-section">
     <div class="summary-header">
@@ -53,7 +53,12 @@
       <div class="scroller-container">
         <div class="scroller-track">
           @for (holding of holdings; track holding.tokenAddress; let i = $index) {
-            <div class="card-wrapper">
+            <div class="card-wrapper" 
+                 appSwipe
+                 (swipeLeft)="onSwipeLeft(holding)"
+                 (swipeRight)="onSwipeRight(holding)"
+                 appLongPress
+                 (longPress)="onLongPress(holding)">
               <app-portfolio-card [holding]="holding" [animationDelay]="i * 100" (tradeClicked)="onTradeClick($event)"></app-portfolio-card>
             </div>
           }

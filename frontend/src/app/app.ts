@@ -7,6 +7,8 @@ import { MenuItem } from 'primeng/api';
 import { WalletButtonComponent } from './shared/components/wallet-button.component';
 import { SearchBarComponent } from './shared/components/search-bar/search-bar.component';
 import { GlobalChatComponent } from './components/global-chat/global-chat.component';
+import { MobileBottomNavComponent } from './components/mobile-bottom-nav/mobile-bottom-nav.component';
+import { PwaInstallPromptComponent } from './components/pwa-install-prompt/pwa-install-prompt.component';
 
 @Component({
   selector: 'app-root',
@@ -20,7 +22,9 @@ import { GlobalChatComponent } from './components/global-chat/global-chat.compon
     ToastModule,
     WalletButtonComponent,
     SearchBarComponent,
-    GlobalChatComponent
+    GlobalChatComponent,
+    MobileBottomNavComponent,
+    PwaInstallPromptComponent
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss'
