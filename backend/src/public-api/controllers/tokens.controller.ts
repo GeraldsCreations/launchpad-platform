@@ -8,34 +8,51 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
+  UnauthorizedException,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
 import { ThrottlerGuard } from '@nestjs/throttler';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { Wallet } from '../../auth/decorators/wallet.decorator';
 import { TokenService } from '../services/token.service';
 import { CreateTokenDto } from '../dto/create-token.dto';
 import { Token } from '../../database/entities/token.entity';
 
-@ApiTags('tokens')
+@ApiTags('Tokens')
 @Controller('tokens')
 @UseGuards(ThrottlerGuard)
 export class TokensController {
   constructor(private readonly tokenService: TokenService) {}
 
   @Post('create')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Build token creation transaction (unsigned)' })
+  @ApiOperation({ summary: 'Create token (requires auth)' })
   @ApiResponse({ 
     status: 200, 
     description: 'Transaction built successfully. Sign and submit to create token on-chain.' 
   })
   @ApiResponse({ status: 400, description: 'Invalid request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized - auth token required' })
+  @ApiResponse({ status: 403, description: 'Forbidden - creator wallet must match authenticated wallet' })
   @ApiResponse({ status: 429, description: 'Rate limit exceeded' })
-  async createToken(@Body() createTokenDto: CreateTokenDto): Promise<{
+  async createToken(
+    @Body() createTokenDto: CreateTokenDto,
+    @Wallet() authenticatedWallet: string,
+  ): Promise<{
     transaction: string;
     poolAddress: string;
     tokenMint: string;
     message: string;
   }> {
+    // Verify authenticated wallet matches creator wallet
+    if (createTokenDto.creator.toLowerCase() !== authenticatedWallet.toLowerCase()) {
+      throw new UnauthorizedException(
+        'Creator wallet must match authenticated wallet'
+      );
+    }
+
     return this.tokenService.createToken(createTokenDto);
   }
 

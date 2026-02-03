@@ -77,10 +77,19 @@ async function bootstrap() {
     .setTitle('LaunchPad API')
     .setDescription('Token launch platform API for Solana')
     .setVersion('1.0')
-    .addTag('tokens', 'Token operations')
-    .addTag('trading', 'Trading operations')
-    .addTag('analytics', 'Analytics and statistics')
-    .addBearerAuth()
+    .addTag('Auth', 'Authentication endpoints')
+    .addTag('Tokens', 'Token creation and management')
+    .addTag('Trade', 'Trading operations')
+    .addTag('Rewards', 'Bot creator rewards')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        description: 'JWT token from /auth/login endpoint',
+      },
+      'JWT',
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

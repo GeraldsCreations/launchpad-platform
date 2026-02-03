@@ -8,37 +8,68 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
+  UnauthorizedException,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
 import { ThrottlerGuard } from '@nestjs/throttler';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { Wallet } from '../../auth/decorators/wallet.decorator';
 import { TradingService, TradeQuote, TradeResult } from '../services/trading.service';
 import { BuyTokenDto } from '../dto/buy-token.dto';
 import { SellTokenDto } from '../dto/sell-token.dto';
 import { Trade } from '../../database/entities/trade.entity';
 
-@ApiTags('trading')
+@ApiTags('Trade')
 @Controller('trade')
 @UseGuards(ThrottlerGuard)
 export class TradingController {
   constructor(private readonly tradingService: TradingService) {}
 
   @Post('buy')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Buy tokens with SOL' })
+  @ApiOperation({ summary: 'Buy tokens with SOL (requires auth)' })
   @ApiResponse({ status: 200, description: 'Trade executed successfully' })
   @ApiResponse({ status: 400, description: 'Invalid request or slippage exceeded' })
+  @ApiResponse({ status: 401, description: 'Unauthorized - auth token required' })
+  @ApiResponse({ status: 403, description: 'Forbidden - buyer wallet must match authenticated wallet' })
   @ApiResponse({ status: 429, description: 'Rate limit exceeded' })
-  async buyToken(@Body() buyTokenDto: BuyTokenDto): Promise<TradeResult> {
+  async buyToken(
+    @Body() buyTokenDto: BuyTokenDto,
+    @Wallet() authenticatedWallet: string,
+  ): Promise<TradeResult> {
+    // Verify authenticated wallet matches buyer wallet
+    if (buyTokenDto.buyer.toLowerCase() !== authenticatedWallet.toLowerCase()) {
+      throw new UnauthorizedException(
+        'Buyer wallet must match authenticated wallet'
+      );
+    }
+
     return this.tradingService.buyToken(buyTokenDto);
   }
 
   @Post('sell')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Sell tokens for SOL' })
+  @ApiOperation({ summary: 'Sell tokens for SOL (requires auth)' })
   @ApiResponse({ status: 200, description: 'Trade executed successfully' })
   @ApiResponse({ status: 400, description: 'Invalid request or slippage exceeded' })
+  @ApiResponse({ status: 401, description: 'Unauthorized - auth token required' })
+  @ApiResponse({ status: 403, description: 'Forbidden - seller wallet must match authenticated wallet' })
   @ApiResponse({ status: 429, description: 'Rate limit exceeded' })
-  async sellToken(@Body() sellTokenDto: SellTokenDto): Promise<TradeResult> {
+  async sellToken(
+    @Body() sellTokenDto: SellTokenDto,
+    @Wallet() authenticatedWallet: string,
+  ): Promise<TradeResult> {
+    // Verify authenticated wallet matches seller wallet
+    if (sellTokenDto.seller.toLowerCase() !== authenticatedWallet.toLowerCase()) {
+      throw new UnauthorizedException(
+        'Seller wallet must match authenticated wallet'
+      );
+    }
+
     return this.tradingService.sellToken(sellTokenDto);
   }
 
