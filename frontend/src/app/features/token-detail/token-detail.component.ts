@@ -71,10 +71,10 @@ import { tokenDetailAnimations } from './token-detail.animations';
             <div class="header-content">
               <div class="token-title-section">
                 <img 
-                  [src]="token.imageUrl || 'assets/placeholder-token.png'" 
+                  [src]="token.imageUrl || 'assets/placeholder-token.svg'" 
                   [alt]="token.name"
                   class="token-logo"
-                  onerror="this.src='assets/placeholder-token.png'">
+                  onerror="this.src='assets/placeholder-token.svg'">
                 <div class="token-info">
                   <div class="token-name-row">
                     <i class="pi pi-bolt neural-icon"></i>
