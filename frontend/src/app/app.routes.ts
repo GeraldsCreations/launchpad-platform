@@ -4,11 +4,13 @@ import { TokenDetailComponent } from './features/token-detail/token-detail.compo
 import { CreateTokenComponent } from './features/create-token/create-token.component';
 import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { ExploreComponent } from './features/explore/explore.component';
+import { PortfolioPage } from './features/portfolio/portfolio.page';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'token/:address', component: TokenDetailComponent },
   { path: 'create', component: CreateTokenComponent },
+  { path: 'portfolio', component: PortfolioPage },
   { path: 'dashboard', component: DashboardComponent },
   { path: 'explore', component: ExploreComponent },
   { path: '**', redirectTo: '' }

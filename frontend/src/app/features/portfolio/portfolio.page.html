@@ -1,0 +1,88 @@
+<div class="portfolio-page">
+  <!-- Portfolio Summary -->
+  <div class="summary-section">
+    <div class="summary-header">
+      <h1 class="page-title">
+        <span class="title-icon">💼</span>
+        My Portfolio
+      </h1>
+      <button class="refresh-button" (click)="refresh()" [class.spinning]="refreshing">
+        <svg class="refresh-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M1 4v6h6M23 20v-6h-6"/>
+          <path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="summary-cards">
+      <!-- Total Value -->
+      <div class="summary-card primary">
+        <div class="summary-icon">💰</div>
+        <div class="summary-content">
+          <p class="summary-label">Total Value</p>
+          <p class="summary-value">${{ formatValue(summary.totalValueUSD) }}</p>
+        </div>
+      </div>
+
+      <!-- 24h Change -->
+      <div class="summary-card" [class.positive]="summary.totalChangePercent24h >= 0" [class.negative]="summary.totalChangePercent24h < 0">
+        <div class="summary-icon">{{ summary.totalChangePercent24h >= 0 ? '📈' : '📉' }}</div>
+        <div class="summary-content">
+          <p class="summary-label">24h Change</p>
+          <p class="summary-value change">{{ summary.totalChangePercent24h >= 0 ? '+' : '' }}{{ summary.totalChangePercent24h.toFixed(2) }}%</p>
+          <p class="summary-subvalue">{{ summary.totalChangePercent24h >= 0 ? '+' : '' }}${{ formatValue(Math.abs(summary.totalChange24h)) }}</p>
+        </div>
+      </div>
+
+      <!-- Token Count -->
+      <div class="summary-card">
+        <div class="summary-icon">🪙</div>
+        <div class="summary-content">
+          <p class="summary-label">Tokens</p>
+          <p class="summary-value">{{ summary.tokenCount }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Holdings Scroller -->
+  @if (holdings.length > 0) {
+    <div class="holdings-section">
+      <h2 class="section-title">Your Holdings</h2>
+      
+      <div class="scroller-container">
+        <div class="scroller-track">
+          @for (holding of holdings; track holding.tokenAddress; let i = $index) {
+            <div class="card-wrapper">
+              <app-portfolio-card [holding]="holding" [animationDelay]="i * 100" (tradeClicked)="onTradeClick($event)"></app-portfolio-card>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  } @else {
+    <!-- Empty State -->
+    <div class="empty-state">
+      <div class="empty-content">
+        <div class="empty-icon">🎯</div>
+        <h2 class="empty-title">No tokens yet</h2>
+        <p class="empty-description">Start building your portfolio by exploring and trading tokens</p>
+        <div class="empty-actions">
+          <button class="cta-button primary" routerLink="/explore">
+            <svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/>
+              <path d="M21 21l-4.35-4.35"/>
+            </svg>
+            Browse Tokens
+          </button>
+          <button class="cta-button secondary" (click)="addDemoTokens()">
+            <svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 5v14M5 12h14"/>
+            </svg>
+            Add Demo Data
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

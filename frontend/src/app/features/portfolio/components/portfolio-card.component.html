@@ -1,0 +1,75 @@
+<div class="portfolio-card" [class.price-flash-up]="holding.priceFlash === 'up'" [class.price-flash-down]="holding.priceFlash === 'down'">
+  
+  @if (holding.loading) {
+    <!-- Skeleton Loading State -->
+    <div class="skeleton-card">
+      <div class="skeleton skeleton-logo"></div>
+      <div class="skeleton skeleton-title"></div>
+      <div class="skeleton skeleton-text"></div>
+      <div class="skeleton skeleton-price"></div>
+      <div class="skeleton skeleton-button"></div>
+    </div>
+  } @else {
+    <!-- Token Logo & Name -->
+    <div class="card-header">
+      <div class="token-logo-wrapper">
+        @if (holding.tokenLogo) {
+          <img [src]="holding.tokenLogo" 
+               [alt]="holding.tokenName"
+               class="token-logo"
+               (error)="onImageError($event)">
+        } @else {
+          <div class="token-logo-placeholder">
+            {{ holding.tokenSymbol.charAt(0) }}
+          </div>
+        }
+      </div>
+      <div class="token-info">
+        <h3 class="token-name">{{ holding.tokenName }}</h3>
+        <p class="token-symbol">{{ holding.tokenSymbol }}</p>
+      </div>
+    </div>
+
+    <!-- Balance -->
+    <div class="balance-section">
+      <p class="balance-label">Balance</p>
+      <p class="balance-value">{{ formatBalance(holding.balance) }}</p>
+    </div>
+
+    <!-- Price Info -->
+    <div class="price-section">
+      <div class="current-price">
+        <span class="price-label">Price</span>
+        <span class="price-value">${{ formatPrice(holding.currentPrice) }}</span>
+      </div>
+      <div class="price-change"
+           [class.positive]="holding.priceChangePercent24h >= 0"
+           [class.negative]="holding.priceChangePercent24h < 0">
+        <svg class="change-icon" viewBox="0 0 24 24" fill="currentColor">
+          @if (holding.priceChangePercent24h >= 0) {
+            <path d="M7 14l5-5 5 5z"/>
+          } @else {
+            <path d="M7 10l5 5 5-5z"/>
+          }
+        </svg>
+        <span>{{ Math.abs(holding.priceChangePercent24h).toFixed(2) }}%</span>
+      </div>
+    </div>
+
+    <!-- USD Value -->
+    <div class="value-section">
+      <p class="value-label">Value</p>
+      <p class="value-amount">${{ formatValue(holding.valueUSD) }}</p>
+    </div>
+
+    <!-- Trade Button -->
+    <button class="trade-button" 
+            [routerLink]="['/token', holding.tokenAddress]"
+            (click)="onTradeClick()">
+      <svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+      </svg>
+      Trade
+    </button>
+  }
+</div>
