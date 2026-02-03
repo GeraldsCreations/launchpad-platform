@@ -58,12 +58,30 @@ export class PullToRefreshDirective implements OnInit, OnDestroy {
     this.renderer.setStyle(this.refreshIndicator, 'justify-content', 'center');
     this.renderer.setStyle(this.refreshIndicator, 'transition', 'opacity 0.2s');
     this.renderer.setStyle(this.refreshIndicator, 'opacity', '0');
-    this.refreshIndicator.innerHTML = `
-      <svg class="animate-spin h-6 w-6 text-purple-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-      </svg>
-    `;
+    
+    // Create SVG element
+    const svg = this.renderer.createElement('svg', 'svg');
+    this.renderer.setAttribute(svg, 'class', 'animate-spin h-6 w-6 text-purple-500');
+    this.renderer.setAttribute(svg, 'xmlns', 'http://www.w3.org/2000/svg');
+    this.renderer.setAttribute(svg, 'fill', 'none');
+    this.renderer.setAttribute(svg, 'viewBox', '0 0 24 24');
+    
+    const circle = this.renderer.createElement('circle', 'svg');
+    this.renderer.setAttribute(circle, 'class', 'opacity-25');
+    this.renderer.setAttribute(circle, 'cx', '12');
+    this.renderer.setAttribute(circle, 'cy', '12');
+    this.renderer.setAttribute(circle, 'r', '10');
+    this.renderer.setAttribute(circle, 'stroke', 'currentColor');
+    this.renderer.setAttribute(circle, 'stroke-width', '4');
+    
+    const path = this.renderer.createElement('path', 'svg');
+    this.renderer.setAttribute(path, 'class', 'opacity-75');
+    this.renderer.setAttribute(path, 'fill', 'currentColor');
+    this.renderer.setAttribute(path, 'd', 'M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z');
+    
+    this.renderer.appendChild(svg, circle);
+    this.renderer.appendChild(svg, path);
+    this.renderer.appendChild(this.refreshIndicator, svg);
 
     // Insert at the beginning of the element
     this.renderer.setStyle(this.el.nativeElement, 'position', 'relative');

@@ -159,6 +159,13 @@ interface ChartStats {
     }
 
     .loading-skeleton {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      min-height: 350px;
+      color: rgba(255, 255, 255, 0.6);
       background: linear-gradient(
         90deg,
         rgba(255, 255, 255, 0.05) 25%,
@@ -167,6 +174,15 @@ interface ChartStats {
       );
       background-size: 200% 100%;
       animation: shimmer 2s infinite;
+    }
+
+    .loading-skeleton i {
+      font-size: 32px;
+      margin-bottom: 12px;
+    }
+
+    .loading-text {
+      font-size: 14px;
     }
 
     @keyframes shimmer {

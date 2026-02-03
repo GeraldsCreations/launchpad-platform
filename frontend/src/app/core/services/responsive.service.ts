@@ -59,7 +59,7 @@ export class ResponsiveService {
       isMobile: size === 'mobile',
       isTablet: size === 'tablet',
       isDesktop: size === 'desktop',
-      isTouchDevice: this.isTouchDevice()
+      isTouchDevice: this.checkTouchDevice()
     };
   }
 
@@ -69,7 +69,7 @@ export class ResponsiveService {
     return 'desktop';
   }
 
-  private isTouchDevice(): boolean {
+  private checkTouchDevice(): boolean {
     return (
       'ontouchstart' in window ||
       navigator.maxTouchPoints > 0 ||
