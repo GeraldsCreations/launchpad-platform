@@ -29,7 +29,7 @@ export class MetadataUploadService {
   }
 
   /**
-   * Upload metadata to IPFS via nft.storage
+   * Upload metadata to IPFS via Pinata
    * Returns the IPFS URI (ipfs://...)
    */
   async uploadMetadata(metadata: {

@@ -12,9 +12,7 @@ export * from './services/trading.service';
 export * from './services/price-oracle.service';
 
 // Controllers
-export * from './controllers/tokens.controller';
-export * from './controllers/trading.controller';
-export * from './controllers/pools.controller';
+export * from './controllers/sol-price.controller';
 
 // DTOs
 export * from './dto/create-token.dto';

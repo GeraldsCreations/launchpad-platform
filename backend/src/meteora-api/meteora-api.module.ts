@@ -27,15 +27,9 @@ import { AutoPoolCreationService } from './services/auto-pool-creation.service';
 import { DbcService } from './services/dbc.service';
 import { MetadataUploadService } from './services/metadata-upload.service';
 
-// Controllers (removed duplicates and unused endpoints)
-// Removed: TokensController (duplicate - use /v1/tokens in public-api)
-// Removed: TradingController (duplicate - use /v1/trade in public-api)
-// Removed: TransactionBuilderController (unused)
-// Removed: LpManagementController (automated via services)
-// Removed: RewardsController (managed via services)
-import { PoolsController } from './controllers/pools.controller';
+// Controllers
+// Only SolPriceController remains - provides SOL/USD price to frontend
 import { SolPriceController } from './controllers/sol-price.controller';
-import { DbcController } from './controllers/dbc.controller';
 
 @Module({
   imports: [
@@ -53,10 +47,7 @@ import { DbcController } from './controllers/dbc.controller';
     ]),
   ],
   controllers: [
-    // Keep only non-duplicate, actively used endpoints
-    PoolsController,      // Pool stats and info
-    SolPriceController,   // SOL price oracle
-    DbcController,        // DBC configuration for token launches
+    SolPriceController,   // SOL/USD price oracle (used by frontend)
   ],
   providers: [
     MeteoraService,

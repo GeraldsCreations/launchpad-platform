@@ -5,7 +5,6 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { DatabaseModule } from './database/database.module';
 import { PublicApiModule } from './public-api/public-api.module';
-import { PrivateApiModule } from './private-api/private-api.module';
 import { WebsocketModule } from './websocket/websocket.module';
 import { IndexerModule } from './indexer/indexer.module';
 import { MeteoraApiModule } from './meteora-api/meteora-api.module';
@@ -36,7 +35,6 @@ import { ChatModule } from './chat/chat.module';
 
     // Application modules
     PublicApiModule,
-    PrivateApiModule,
     WebsocketModule,
     IndexerModule,
     MeteoraApiModule,
