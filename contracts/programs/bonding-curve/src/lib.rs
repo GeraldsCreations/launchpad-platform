@@ -355,8 +355,11 @@ pub struct Buy<'info> {
     )]
     pub sol_vault: AccountInfo<'info>,
     
-    /// CHECK: Fee collector account
-    #[account(mut)]
+    /// CHECK: Fee collector account - validated against stored config
+    #[account(
+        mut,
+        constraint = fee_collector.key() == bonding_curve.fee_collector @ ErrorCode::InvalidFeeCollector
+    )]
     pub fee_collector: AccountInfo<'info>,
     
     pub token_program: Program<'info, Token>,
@@ -392,8 +395,11 @@ pub struct Sell<'info> {
     )]
     pub sol_vault: AccountInfo<'info>,
     
-    /// CHECK: Fee collector account
-    #[account(mut)]
+    /// CHECK: Fee collector account - validated against stored config
+    #[account(
+        mut,
+        constraint = fee_collector.key() == bonding_curve.fee_collector @ ErrorCode::InvalidFeeCollector
+    )]
     pub fee_collector: AccountInfo<'info>,
     
     pub token_program: Program<'info, Token>,
@@ -495,4 +501,6 @@ pub enum ErrorCode {
     InsufficientReserves,
     #[msg("Already graduated")]
     AlreadyGraduated,
+    #[msg("Invalid fee collector address")]
+    InvalidFeeCollector,
 }
