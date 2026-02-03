@@ -7,13 +7,16 @@ import { tokenDetailAnimations } from '../token-detail.animations';
 import { Subject, takeUntil } from 'rxjs';
 
 export interface Trade {
-  id: string;
+  id: number;
+  transactionSignature: string;
+  tokenAddress: string;
   trader: string;
   side: 'buy' | 'sell';
-  amount_sol: number;
-  amount_tokens: number;
+  amountSol: number;
+  amountTokens: number;
   price: number;
-  timestamp: string | number;
+  fee: number;
+  timestamp: string;
 }
 
 @Component({
@@ -73,7 +76,7 @@ export interface Trade {
                     <!-- Amount & Price -->
                     <div class="flex flex-col">
                       <span class="text-sm font-semibold text-white">
-                        {{ formatTokenAmount(trade.amount_tokens) }} {{ tokenSymbol }}
+                        {{ formatTokenAmount(trade.amountTokens) }} {{ tokenSymbol }}
                       </span>
                       <span class="text-xs text-gray-400">
                         @ {{ formatPrice(trade.price) }} SOL
@@ -86,13 +89,13 @@ export interface Trade {
                         class="text-sm font-bold"
                         [class.text-green-400]="trade.side === 'buy'"
                         [class.text-red-400]="trade.side === 'sell'">
-                        {{ trade.side === 'buy' ? '+' : '-' }}{{ trade.amount_sol.toFixed(4) }} SOL
+                        {{ trade.side === 'buy' ? '+' : '-' }}{{ trade.amountSol.toFixed(4) }} SOL
                       </span>
                     </div>
                   </div>
 
                   <!-- Large Trade Indicator -->
-                  @if (trade.amount_sol >= 1) {
+                  @if (trade.amountSol >= 1) {
                     <div class="mt-2 flex items-center gap-1">
                       <i class="pi pi-star-fill text-xs text-yellow-500"></i>
                       <span class="text-xs text-yellow-500 font-medium">Large Trade</span>
@@ -231,7 +234,7 @@ export class ActivityFeedComponent implements OnInit, OnDestroy {
     }
 
     // Show notification for large trades
-    if (trade.amount_sol >= 1) {
+    if (trade.amountSol >= 1) {
       this.showLargeTradeNotification(trade);
     }
   }

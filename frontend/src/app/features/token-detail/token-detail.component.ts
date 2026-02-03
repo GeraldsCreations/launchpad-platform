@@ -247,7 +247,7 @@ export class TokenDetailComponent implements OnInit, OnDestroy {
         next: (trades) => {
           if (this.activityFeed) {
             const formattedTrades: Trade[] = trades.map(t => ({
-              id: t.id ? parseInt(t.id) : 0,
+              id: typeof t.id === 'string' ? parseInt(t.id, 10) : Number(t.id) || 0,
               transactionSignature: '',
               tokenAddress: this.token?.address || '',
               trader: t.trader,
@@ -256,7 +256,7 @@ export class TokenDetailComponent implements OnInit, OnDestroy {
               amountTokens: t.amountTokens,
               price: t.price,
               fee: 0,
-              timestamp: typeof t.timestamp === 'number' ? t.timestamp.toString() : t.timestamp
+              timestamp: t.timestamp.toString()
             }));
             this.activityFeed.setTrades(formattedTrades);
           }
