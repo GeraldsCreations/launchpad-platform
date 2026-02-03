@@ -14,11 +14,16 @@ export class MetadataUploadService {
   constructor(private configService: ConfigService) {
     this.nftStorageApiKey = this.configService.get('NFT_STORAGE_API_KEY') || '';
     
+    this.logger.log('🔍 Checking NFT.storage API key...');
+    this.logger.log(`   Raw value: ${this.nftStorageApiKey ? `${this.nftStorageApiKey.substring(0, 10)}...` : '(empty)'}`);
+    this.logger.log(`   Length: ${this.nftStorageApiKey.length} characters`);
+    
     if (!this.nftStorageApiKey || this.nftStorageApiKey.trim() === '') {
       this.logger.warn('⚠️  NFT_STORAGE_API_KEY not set. Using placeholder URIs.');
       this.logger.warn('⚠️  Get a free key at: https://nft.storage');
     } else {
-      this.logger.log('✅ NFT.storage API key configured');
+      this.logger.log('✅ NFT.storage API key configured successfully!');
+      this.logger.log(`✅ Key starts with: ${this.nftStorageApiKey.substring(0, 15)}...`);
     }
   }
 
@@ -33,6 +38,13 @@ export class MetadataUploadService {
     image: string; // Can be base64 data URL or http URL
   }): Promise<string> {
     try {
+      // Debug: Show API key status
+      this.logger.log(`🔑 API Key check: ${this.nftStorageApiKey ? 'SET' : 'NOT SET'}`);
+      if (this.nftStorageApiKey) {
+        this.logger.log(`🔑 Key length: ${this.nftStorageApiKey.length}`);
+        this.logger.log(`🔑 Key preview: ${this.nftStorageApiKey.substring(0, 15)}...`);
+      }
+      
       // If no API key, return placeholder
       if (!this.nftStorageApiKey || this.nftStorageApiKey.trim() === '') {
         this.logger.warn('⚠️  No NFT.storage API key - using placeholder URI');
@@ -66,9 +78,13 @@ export class MetadataUploadService {
       this.logger.log(`✅ Metadata uploaded: ${metadataUri}`);
 
       return metadataUri;
-    } catch (error) {
-      this.logger.error('Failed to upload metadata:', error.message);
-      this.logger.error('Error details:', error);
+    } catch (error: any) {
+      this.logger.error('Failed to upload metadata:', error.message || 'Unknown error');
+      this.logger.error('Error type:', error.constructor?.name);
+      this.logger.error('Error stack:', error.stack);
+      if (error.cause) {
+        this.logger.error('Error cause:', error.cause);
+      }
       this.logger.warn('Falling back to placeholder URI');
       return this.createPlaceholderUri(metadata);
     }
@@ -96,35 +112,40 @@ export class MetadataUploadService {
     const ext = mimeType.split('/')[1] || 'png';
     const filename = `token-image.${ext}`;
 
-    // Upload to nft.storage
+    // Create form data (Node.js style)
     const formData = new FormData();
     formData.append('file', buffer, {
       filename,
       contentType: mimeType,
-    });
+    } as any);
 
-    this.logger.log('Sending request to NFT.storage...');
+    this.logger.log('Sending request to NFT.storage (image)...');
 
-    const response = await fetch('https://api.nft.storage/upload', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${this.nftStorageApiKey}`,
-        ...formData.getHeaders(),
-      },
-      body: formData as any,
-    });
+    try {
+      const response = await fetch('https://api.nft.storage/upload', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.nftStorageApiKey}`,
+          ...formData.getHeaders(),
+        },
+        body: formData as any,
+      });
 
-    this.logger.log(`Response status: ${response.status} ${response.statusText}`);
+      this.logger.log(`Response status: ${response.status} ${response.statusText}`);
 
-    if (!response.ok) {
-      const error = await response.text();
-      this.logger.error(`NFT.storage error response: ${error}`);
-      throw new Error(`NFT.storage upload failed (${response.status}): ${error}`);
+      if (!response.ok) {
+        const error = await response.text();
+        this.logger.error(`NFT.storage error response: ${error}`);
+        throw new Error(`NFT.storage upload failed (${response.status}): ${error}`);
+      }
+
+      const result = await response.json();
+      this.logger.log(`Upload result: ${JSON.stringify(result)}`);
+      return `ipfs://${result.value.cid}`;
+    } catch (error: any) {
+      this.logger.error('Upload error:', error.message);
+      throw error;
     }
-
-    const result = await response.json();
-    this.logger.log(`Upload result: ${JSON.stringify(result)}`);
-    return `ipfs://${result.value.cid}`;
   }
 
   /**
@@ -137,24 +158,35 @@ export class MetadataUploadService {
     formData.append('file', jsonBuffer, {
       filename: 'metadata.json',
       contentType: 'application/json',
-    });
+    } as any);
 
-    const response = await fetch('https://api.nft.storage/upload', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${this.nftStorageApiKey}`,
-        ...formData.getHeaders(),
-      },
-      body: formData as any,
-    });
+    this.logger.log('Sending request to NFT.storage (metadata JSON)...');
 
-    if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`NFT.storage upload failed: ${error}`);
+    try {
+      const response = await fetch('https://api.nft.storage/upload', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.nftStorageApiKey}`,
+          ...formData.getHeaders(),
+        },
+        body: formData as any,
+      });
+
+      this.logger.log(`Response status: ${response.status} ${response.statusText}`);
+
+      if (!response.ok) {
+        const error = await response.text();
+        this.logger.error(`NFT.storage error response: ${error}`);
+        throw new Error(`NFT.storage upload failed (${response.status}): ${error}`);
+      }
+
+      const result = await response.json();
+      this.logger.log(`Metadata upload result: ${JSON.stringify(result)}`);
+      return `ipfs://${result.value.cid}`;
+    } catch (error: any) {
+      this.logger.error('Upload error:', error.message);
+      throw error;
     }
-
-    const result = await response.json();
-    return `ipfs://${result.value.cid}`;
   }
 
   /**
