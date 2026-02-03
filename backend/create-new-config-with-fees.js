@@ -5,8 +5,7 @@
  */
 
 const { Connection, PublicKey, Keypair, sendAndConfirmTransaction } = require('@solana/web3.js');
-const { DynamicBondingCurveClient } = require('@meteora-ag/dynamic-bonding-curve-sdk');
-const { buildCurveWithMarketCap, ActivationType, MigrationOption, MigrationFeeOption } = require('@meteora-ag/dynamic-bonding-curve-sdk');
+const { DynamicBondingCurveClient, buildCurveWithMarketCap, ActivationType, MigrationOption, MigrationFeeOption, BaseFeeMode } = require('@meteora-ag/dynamic-bonding-curve-sdk');
 const BN = require('bn.js');
 const fs = require('fs');
 require('dotenv').config();
@@ -48,14 +47,25 @@ async function main() {
     tokenDecimal: 9,
     totalSupply: new BN(1_000_000_000),
     tokenUpdateAuthorityOption: 0, // None
-    baseFeeMode: 0, // Dynamic
+    
+    // Locked vesting parameters (no vesting)
+    lockedVestingParams: {
+      totalLockedVestingAmount: 0,
+      numberOfVestingPeriod: 0,
+      cliffUnlockAmount: 0,
+      totalVestingDuration: 0,
+      cliffDurationFromMigrationTime: 0,
+    },
+    
+    leftover: 0,
+    
+    // Fee schedule during bonding curve
     baseFeeParams: {
-      initialFee: {
-        feePercentage: 100, // 1%
-        totalDuration: 0,
-      },
-      finalFee: {
-        feePercentage: 25, // 0.25%
+      baseFeeMode: 1, // FeeSchedulerLinear
+      feeSchedulerParam: {
+        startingFeeBps: 100, // Start at 1%
+        endingFeeBps: 25,    // End at 0.25%
+        numberOfPeriod: 10,
         totalDuration: 86400, // 1 day
       },
     },
@@ -88,9 +98,10 @@ async function main() {
     
     collectFeeMode: 0,
     creatorTradingFeePercentage: 0,
-    poolCreationFee: 0.05, // 0.05 SOL
+    poolCreationFee: 0.05, // SDK will convert to lamports
     migrationOption: MigrationOption.MET_DAMM_V2,
     migrationFeeOption: MigrationFeeOption.FixedBps25,
+    solPrice: 100, // Current SOL price for market cap calculation
   });
 
   console.log(`✅ Curve built with ${curveConfig.curve?.length || 0} points\n`);

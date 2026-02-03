@@ -30,6 +30,7 @@ import { MetadataUploadService } from './services/metadata-upload.service';
 // Controllers
 // Only SolPriceController remains - provides SOL/USD price to frontend
 import { SolPriceController } from './controllers/sol-price.controller';
+import { AdminDbcController } from './controllers/admin-dbc.controller';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { SolPriceController } from './controllers/sol-price.controller';
   ],
   controllers: [
     SolPriceController,   // SOL/USD price oracle (used by frontend)
+    AdminDbcController,   // Admin endpoint for config creation
   ],
   providers: [
     MeteoraService,
