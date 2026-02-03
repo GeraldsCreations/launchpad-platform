@@ -310,7 +310,7 @@ export class IndexerService implements OnModuleInit, OnModuleDestroy {
       } catch (error) {
         this.logger.error('Error checking sync status:', error);
       }
-    }, 10000); // Check every 10 seconds
+    }, 60000); // Check every 60 seconds (reduced to avoid rate limits)
   }
 
   /**
