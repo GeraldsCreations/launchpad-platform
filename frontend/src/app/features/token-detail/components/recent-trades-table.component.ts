@@ -295,9 +295,9 @@ export class RecentTradesTableComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     // Subscribe to real-time trades
-    this.wsService.trades$
+    this.wsService.newTrade$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(trade => {
+      .subscribe((trade: any) => {
         this.addTrade(trade);
       });
 
@@ -312,14 +312,14 @@ export class RecentTradesTableComponent implements OnInit, OnDestroy {
 
   private addTrade(trade: any): void {
     const recentTrade: RecentTrade = {
-      id: trade.signature || Date.now().toString(),
+      id: trade.id || trade.signature || Date.now().toString(),
       type: trade.side,
       price: trade.price,
       priceUsd: trade.price * 100, // Assuming SOL = $100
       amountSol: trade.amountSol,
-      amountTokens: trade.amountTokens,
+      amountTokens: typeof trade.amountTokens === 'string' ? trade.amountTokens : trade.amountTokens.toString(),
       trader: trade.trader,
-      timestamp: trade.timestamp || new Date().toISOString(),
+      timestamp: typeof trade.timestamp === 'number' ? new Date(trade.timestamp).toISOString() : trade.timestamp || new Date().toISOString(),
       txSignature: trade.signature || ''
     };
 
