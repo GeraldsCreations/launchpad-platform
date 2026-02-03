@@ -50,6 +50,17 @@ export class DbcService {
     this.partnerService = new PartnerService(this.connection, 'confirmed');
     this.creatorService = new CreatorService(this.connection, 'confirmed');
 
+    // Load platform config from environment if available
+    const configKeyEnv = this.configService.get('DBC_PLATFORM_CONFIG_KEY');
+    if (configKeyEnv) {
+      try {
+        this.platformConfigKey = new PublicKey(configKeyEnv);
+        this.logger.log(`✅ Platform config loaded from env: ${this.platformConfigKey.toBase58()}`);
+      } catch (error) {
+        this.logger.warn(`Failed to load config key from env: ${error.message}`);
+      }
+    }
+
     this.logger.log('✅ DBC Service initialized');
   }
 
