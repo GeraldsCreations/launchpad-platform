@@ -230,11 +230,12 @@ export class LiveChartComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    // Small delay to ensure DOM is fully rendered and container dimensions are set
+    // Delay to ensure DOM is fully rendered and container dimensions are set
+    // Increased delay to allow CSS layout to complete
     setTimeout(() => {
       this.initChart();
       this.loadChartData();
-    }, 50);
+    }, 200);
   }
 
   ngOnDestroy(): void {
@@ -256,12 +257,24 @@ export class LiveChartComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
+    const containerWidth = container.clientWidth;
     const containerHeight = container.clientHeight;
+    
+    // If dimensions are still zero, retry after a bit
+    if (containerWidth === 0 || containerHeight === 0) {
+      console.warn('⚠️ Container dimensions are zero, retrying in 100ms...', {
+        containerWidth,
+        containerHeight
+      });
+      setTimeout(() => this.initChart(), 100);
+      return;
+    }
+    
     const height = containerHeight > 0 ? containerHeight : 400;
     
     console.log('✅ Initializing chart:', {
       containerHeight,
-      containerWidth: container.clientWidth,
+      containerWidth,
       finalHeight: height
     });
     

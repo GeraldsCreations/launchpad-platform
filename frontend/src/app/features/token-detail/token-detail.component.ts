@@ -294,6 +294,15 @@ import { tokenDetailAnimations } from './token-detail.animations';
       border-radius: 12px;
       overflow: hidden;
       height: 450px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chart-section app-live-chart {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
     }
 
     .trades-section {

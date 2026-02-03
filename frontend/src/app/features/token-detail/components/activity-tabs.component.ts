@@ -46,7 +46,7 @@ import { AILogsComponent } from './ai-logs.component';
       <!-- Tab Content -->
       <div class="tab-content">
         <!-- Thread Tab -->
-        <div *ngIf="activeTab === 'thread'" [@fadeIn]>
+        <div *ngIf="activeTab === 'thread'">
           <app-thread
             [tokenAddress]="tokenAddress"
             [canSendMessages]="canSendMessages"
@@ -55,7 +55,7 @@ import { AILogsComponent } from './ai-logs.component';
         </div>
 
         <!-- Holders Tab -->
-        <div *ngIf="activeTab === 'holders'" [@fadeIn]>
+        <div *ngIf="activeTab === 'holders'">
           <app-holders-list
             [tokenAddress]="tokenAddress"
             [tokenSymbol]="tokenSymbol">
@@ -63,7 +63,7 @@ import { AILogsComponent } from './ai-logs.component';
         </div>
 
         <!-- AI Logs Tab -->
-        <div *ngIf="activeTab === 'ai'" [@fadeIn]>
+        <div *ngIf="activeTab === 'ai'">
           <app-ai-logs
             [tokenAddress]="tokenAddress"
             [isLive]="isLive">
