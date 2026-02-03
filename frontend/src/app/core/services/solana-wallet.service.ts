@@ -213,21 +213,52 @@ export class SolanaWalletService {
     }
 
     try {
-      // Use AppKit's connection provider
       const connection = this.getConnection();
       
-      // Get the connected wallet's provider through the adapter
+      // Get the wallet provider
       const provider = (this.solanaAdapter as any)?.provider || (window as any).solana;
       
       if (!provider) {
         throw new Error('Wallet provider not available');
       }
 
-      // Sign and send transaction
-      const { signature } = await provider.sendTransaction(transaction, connection);
+      console.log('🔐 Signing transaction with wallet provider...');
+
+      // For Reown AppKit / WalletConnect, we need to:
+      // 1. Sign the transaction (wallet popup)
+      // 2. Send the signed transaction to Solana
+      
+      let signedTx: Transaction | VersionedTransaction;
+      
+      if (provider.signTransaction) {
+        // Standard wallet adapter pattern (Phantom, Solflare, etc.)
+        signedTx = await provider.signTransaction(transaction);
+        console.log('✅ Transaction signed by wallet');
+      } else if (provider.signAndSendTransaction) {
+        // Some wallets have combined method
+        console.log('Using wallet signAndSendTransaction...');
+        const result = await provider.signAndSendTransaction(transaction);
+        const signature = typeof result === 'string' ? result : result.signature;
+        await connection.confirmTransaction(signature, 'confirmed');
+        return signature;
+      } else {
+        throw new Error('Wallet does not support transaction signing');
+      }
+
+      // Send the signed transaction to Solana
+      console.log('📡 Sending signed transaction to Solana...');
+      
+      const rawTransaction = signedTx.serialize();
+      const signature = await connection.sendRawTransaction(rawTransaction, {
+        skipPreflight: false,
+        preflightCommitment: 'confirmed',
+      });
+      
+      console.log('✅ Transaction sent:', signature);
       
       // Wait for confirmation
-      await connection.confirmTransaction(signature);
+      await connection.confirmTransaction(signature, 'confirmed');
+      console.log('✅ Transaction confirmed');
       
       return signature;
     } catch (error) {
