@@ -3,6 +3,7 @@
 <!-- Premium navbar -->
 <nav class="sticky top-0 z-50 bg-gradient-to-b from-black via-black/95 to-transparent backdrop-blur-xl border-b border-white/10">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Desktop Navigation -->
     <div class="flex items-center justify-between h-20">
       <!-- Logo -->
       <a routerLink="/" class="flex items-center gap-3 hover:scale-105 transition-transform group">
@@ -39,7 +40,7 @@
           Create
         </a>
         <a 
-          routerLink="/dashboard"
+          routerLink="/portfolio"
           routerLinkActive="nav-link-active"
           class="nav-link">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -49,8 +50,18 @@
         </a>
       </div>
 
+      <!-- Search Bar -->
+      <div class="flex-1 max-w-lg mx-4 hidden lg:block">
+        <app-search-bar></app-search-bar>
+      </div>
+
       <!-- Wallet Button -->
       <app-wallet-button></app-wallet-button>
+    </div>
+
+    <!-- Mobile Search Bar (full width on small screens) -->
+    <div class="lg:hidden py-3">
+      <app-search-bar></app-search-bar>
     </div>
   </div>
 </nav>

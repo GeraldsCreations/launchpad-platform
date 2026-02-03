@@ -5,6 +5,7 @@ import { MenubarModule } from 'primeng/menubar';
 import { ToastModule } from 'primeng/toast';
 import { MenuItem } from 'primeng/api';
 import { WalletButtonComponent } from './shared/components/wallet-button.component';
+import { SearchBarComponent } from './shared/components/search-bar/search-bar.component';
 
 @Component({
   selector: 'app-root',
@@ -16,7 +17,8 @@ import { WalletButtonComponent } from './shared/components/wallet-button.compone
     RouterLinkActive,
     MenubarModule,
     ToastModule,
-    WalletButtonComponent
+    WalletButtonComponent,
+    SearchBarComponent
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss'

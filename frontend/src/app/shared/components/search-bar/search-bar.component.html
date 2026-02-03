@@ -1,0 +1,43 @@
+<div class="search-container">
+  <!-- Search Input -->
+  <div class="search-input-wrapper" [class.error]="errorMessage()">
+    <span class="search-icon">🔍</span>
+    <input
+      type="text"
+      class="search-input"
+      placeholder="Search by token address..."
+      [(ngModel)]="searchQuery"
+      (keyup.enter)="onSearch()"
+      (focus)="onFocus()"
+      (blur)="onBlur()"
+      autocomplete="off"
+      spellcheck="false"
+    />
+    @if (searchQuery()) {
+      <button class="clear-btn" (click)="clearInput()" type="button">×</button>
+    }
+  </div>
+
+  <!-- Error Message -->
+  @if (errorMessage()) {
+    <div class="error-message">{{ errorMessage() }}</div>
+  }
+
+  <!-- Recent Searches Dropdown -->
+  @if (showDropdown() && recentSearches().length > 0) {
+    <div class="recent-dropdown">
+      <div class="dropdown-header">
+        <span>Recent Searches</span>
+        <button class="clear-all-btn" (click)="clearAll()" type="button">Clear All</button>
+      </div>
+      <div class="recent-list">
+        @for (address of recentSearches(); track address) {
+          <div class="recent-item" (click)="selectRecent(address)">
+            <span class="address-full">{{ address }}</span>
+            <span class="address-truncated">{{ truncateAddress(address) }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>
