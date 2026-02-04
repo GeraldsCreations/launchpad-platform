@@ -1,7 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { MobileGestureService } from '../../core/services/mobile-gesture.service';
+import { WatchlistService } from '../../core/services/watchlist.service';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-mobile-bottom-nav',
@@ -43,6 +45,31 @@ import { MobileGestureService } from '../../core/services/mobile-gesture.service
           </svg>
         </div>
         <span class="label">Create</span>
+      </a>
+      
+      <a 
+        routerLink="/watchlist"
+        routerLinkActive="active"
+        class="nav-item">
+        <div class="icon-wrapper">
+          <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+          </svg>
+          <span class="badge" *ngIf="watchlistCount > 0">{{ watchlistCount }}</span>
+        </div>
+        <span class="label">Watchlist</span>
+      </a>
+      
+      <a 
+        routerLink="/dashboard"
+        routerLinkActive="active"
+        class="nav-item">
+        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        </svg>
+        <span class="label">Profile</span>
       </a>
     </nav>
   `,
@@ -148,6 +175,42 @@ import { MobileGestureService } from '../../core/services/mobile-gesture.service
       box-shadow: 0 6px 16px rgba(139, 92, 246, 0.6);
     }
 
+    /* Watchlist badge */
+    .icon-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .badge {
+      position: absolute;
+      top: -6px;
+      right: -8px;
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      min-width: 18px;
+      height: 18px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 4px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.1);
+      }
+    }
+
     /* Add padding to body when bottom nav is visible */
     @media (max-width: 767px) {
       :host {
@@ -156,15 +219,34 @@ import { MobileGestureService } from '../../core/services/mobile-gesture.service
     }
   `]
 })
-export class MobileBottomNavComponent {
+export class MobileBottomNavComponent implements OnInit, OnDestroy {
   isMobile = false;
+  watchlistCount = 0;
+  private destroy$ = new Subject<void>();
 
-  constructor(private gestureService: MobileGestureService) {
+  constructor(
+    private gestureService: MobileGestureService,
+    private watchlistService: WatchlistService
+  ) {
     this.isMobile = this.gestureService.isMobile();
     
     // Update on resize
     window.addEventListener('resize', () => {
       this.isMobile = this.gestureService.isMobile();
     });
+  }
+
+  ngOnInit(): void {
+    // Subscribe to watchlist changes
+    this.watchlistService.watchlist$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(watchlist => {
+        this.watchlistCount = watchlist.length;
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }
