@@ -1,0 +1,56 @@
+<div class="top-performers">
+  <h3 class="title">{{ title }}</h3>
+  
+  <div class="performers-list">
+    <div
+      *ngFor="let performer of performers; let i = index; trackBy: trackByAddress"
+      class="performer-item"
+      (click)="onTokenClick(performer.tokenAddress)"
+    >
+      <div class="performer-rank">
+        <span class="rank-number">{{ i + 1 }}</span>
+        <span *ngIf="showBadge && i === 0" class="badge gold">🥇</span>
+        <span *ngIf="showBadge && i === 1" class="badge silver">🥈</span>
+        <span *ngIf="showBadge && i === 2" class="badge bronze">🥉</span>
+      </div>
+      
+      <div class="performer-info">
+        <div class="token-symbol">{{ performer.tokenSymbol }}</div>
+        <div class="token-name">{{ performer.tokenName }}</div>
+      </div>
+      
+      <div class="performer-metrics">
+        <div class="metric-row">
+          <span class="metric-label">Value:</span>
+          <span class="metric-value">{{ formatCurrency(performer.currentValue) }}</span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-label">P&L:</span>
+          <span class="metric-value" [ngClass]="getChangeClass(performer.pnl)">
+            {{ formatCurrency(performer.pnl) }}
+          </span>
+        </div>
+      </div>
+      
+      <div class="performer-change" [ngClass]="getChangeClass(performer.pnlPercent)">
+        <div class="change-value">{{ formatPercent(performer.pnlPercent) }}</div>
+        <div class="change-icon">
+          <svg *ngIf="performer.pnlPercent > 0" width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M8 3L12 7H9V13H7V7H4L8 3Z" fill="currentColor"/>
+          </svg>
+          <svg *ngIf="performer.pnlPercent < 0" width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M8 13L4 9H7V3H9V9H12L8 13Z" fill="currentColor"/>
+          </svg>
+          <svg *ngIf="performer.pnlPercent === 0" width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M4 8H12" stroke="currentColor" stroke-width="2"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+    
+    <div *ngIf="performers.length === 0" class="empty-state">
+      <p>No performance data available</p>
+      <p class="empty-hint">Start trading to see your top performers</p>
+    </div>
+  </div>
+</div>

@@ -1,190 +1,199 @@
-<div class="analytics-container">
+<div class="analytics-page">
   <!-- Loading State -->
   <div *ngIf="loading" class="loading-container">
-    <p-progressSpinner></p-progressSpinner>
+    <div class="spinner"></div>
     <p>Loading analytics...</p>
   </div>
 
   <!-- Main Content -->
   <div *ngIf="!loading">
-    
     <!-- Page Header -->
     <div class="page-header">
-      <h1>Platform Analytics</h1>
-      <p>Market overview and performance metrics</p>
+      <h1>📊 Portfolio Analytics</h1>
+      <p>Track your performance and gains</p>
     </div>
 
-    <!-- Metrics Grid -->
-    <div class="metrics-grid">
-      <div class="metric-card">
-        <div class="metric-icon">📊</div>
-        <div class="metric-content">
-          <div class="metric-label">Total Market Cap</div>
-          <div class="metric-value">{{ formatCurrency(metrics.totalValue) }}</div>
-        </div>
-      </div>
-      
-      <div class="metric-card">
-        <div class="metric-icon">🪙</div>
-        <div class="metric-content">
-          <div class="metric-label">Total Tokens</div>
-          <div class="metric-value">{{ metrics.totalTokens }}</div>
-        </div>
-      </div>
-      
-      <div class="metric-card">
-        <div class="metric-icon">💰</div>
-        <div class="metric-content">
-          <div class="metric-label">Avg Market Cap</div>
-          <div class="metric-value">{{ formatCurrency(metrics.avgMarketCap) }}</div>
-        </div>
-      </div>
-      
-      <div class="metric-card">
-        <div class="metric-icon">📈</div>
-        <div class="metric-content">
-          <div class="metric-label">24h Volume</div>
-          <div class="metric-value">{{ formatCurrency(metrics.totalVolume) }}</div>
-        </div>
+    <!-- Empty State -->
+    <div *ngIf="!hasData" class="empty-state">
+      <div class="empty-icon">📈</div>
+      <h2>Start Trading to See Analytics</h2>
+      <p>Your portfolio performance, P&L, and trading metrics will appear here once you start trading.</p>
+      <div class="empty-actions">
+        <button class="btn-primary" routerLink="/">Browse Tokens</button>
+        <button class="btn-secondary" (click)="addDemoData()">Load Demo Data</button>
       </div>
     </div>
 
-    <!-- Performance Chart -->
-    <div class="chart-card">
-      <div class="chart-header">
-        <h3>Market Performance</h3>
-        <div class="timeframe-selector">
-          <button 
-            [class.active]="selectedTimeframe === '1D'"
-            (click)="selectTimeframe('1D')">1D</button>
-          <button 
-            [class.active]="selectedTimeframe === '1W'"
-            (click)="selectTimeframe('1W')">1W</button>
-          <button 
-            [class.active]="selectedTimeframe === '1M'"
-            (click)="selectTimeframe('1M')">1M</button>
-          <button 
-            [class.active]="selectedTimeframe === 'ALL'"
-            (click)="selectTimeframe('ALL')">ALL</button>
-        </div>
-      </div>
-      
-      <div class="chart-container">
-        <svg viewBox="0 0 100 100" preserveAspectRatio="none">
-          <defs>
-            <linearGradient id="chartGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stop-color="#8b5cf6" stop-opacity="0.3"/>
-              <stop offset="100%" stop-color="#8b5cf6" stop-opacity="0"/>
-            </linearGradient>
-          </defs>
-          
-          <path 
-            [attr.d]="getChartGradientPath()" 
-            fill="url(#chartGradient)"/>
-          
-          <path 
-            [attr.d]="getChartPath()" 
-            stroke="#8b5cf6"
-            stroke-width="0.5" 
-            fill="none"
-            class="chart-line"/>
-        </svg>
-        
-        <div class="chart-labels">
-          <span *ngFor="let label of chartData.labels; let i = index" 
-                [style.left.%]="(i / (chartData.labels.length - 1)) * 100"
-                class="chart-label">
-            {{ label }}
-          </span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Top Performers -->
-    <div class="performers-card">
-      <h3>🔥 Top Tokens by Market Cap</h3>
-      
-      <div class="performer-list">
-        <div *ngFor="let token of topPerformers; let i = index" 
-             class="performer-item"
-             (click)="navigateToToken(token.address)">
-          <div class="performer-rank">{{ i + 1 }}</div>
-          <div class="performer-info">
-            <div class="performer-name">{{ token.symbol }}</div>
-            <div class="performer-subtitle">{{ token.name }}</div>
+    <!-- Analytics Content -->
+    <div *ngIf="hasData" class="analytics-content">
+      <!-- Portfolio Overview -->
+      <div class="overview-grid">
+        <div class="metric-card portfolio-value">
+          <div class="metric-header">
+            <span class="metric-icon">💰</span>
+            <span class="metric-label">Total Portfolio Value</span>
           </div>
-          <div class="performer-metrics">
-            <div class="performer-price">{{ formatCurrency(token.currentPrice) }}</div>
-            <div class="performer-mcap">{{ formatCurrency(token.marketCap) }}</div>
+          <div class="metric-value">{{ formatCurrency(animatedTotalValue) }}</div>
+          <div class="metric-change" [ngClass]="getChangeClass(portfolioSummary.totalChange24h)">
+            {{ formatCurrency(portfolioSummary.totalChange24h) }} ({{ formatPercent(portfolioSummary.totalChangePercent24h) }}) 24h
+          </div>
+        </div>
+
+        <div class="metric-card pnl-card">
+          <div class="metric-header">
+            <span class="metric-icon">📈</span>
+            <span class="metric-label">Total P&L</span>
+          </div>
+          <div class="metric-value" [ngClass]="getChangeClass(pnlData.total)">
+            {{ formatCurrency(animatedPnL) }}
+          </div>
+          <div class="metric-change" [ngClass]="getChangeClass(pnlData.totalPercent)">
+            {{ formatPercent(pnlData.totalPercent) }} return
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-icon">✅</span>
+            <span class="metric-label">Realized P&L</span>
+          </div>
+          <div class="metric-value" [ngClass]="getChangeClass(pnlData.realized)">
+            {{ formatCurrency(pnlData.realized) }}
+          </div>
+          <div class="metric-sub">
+            {{ formatPercent(pnlData.realizedPercent) }}
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-icon">⏳</span>
+            <span class="metric-label">Unrealized P&L</span>
+          </div>
+          <div class="metric-value" [ngClass]="getChangeClass(pnlData.unrealized)">
+            {{ formatCurrency(pnlData.unrealized) }}
+          </div>
+          <div class="metric-sub">
+            {{ formatPercent(pnlData.unrealizedPercent) }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Performance Chart -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3>Portfolio Performance</h3>
+          <div class="timeframe-selector">
+            <button
+              [class.active]="selectedTimeframe === '1D'"
+              (click)="selectTimeframe('1D')">1D</button>
+            <button
+              [class.active]="selectedTimeframe === '1W'"
+              (click)="selectTimeframe('1W')">1W</button>
+            <button
+              [class.active]="selectedTimeframe === '1M'"
+              (click)="selectTimeframe('1M')">1M</button>
+            <button
+              [class.active]="selectedTimeframe === 'ALL'"
+              (click)="selectTimeframe('ALL')">ALL</button>
           </div>
         </div>
         
-        <div *ngIf="topPerformers.length === 0" class="empty-state">
-          <p>No tokens available</p>
+        <div class="chart-content">
+          <app-performance-chart
+            [data]="performanceData"
+            [timeRange]="selectedTimeframe"
+            [height]="300">
+          </app-performance-chart>
         </div>
       </div>
-    </div>
 
-    <!-- Market Distribution -->
-    <div class="distribution-card">
-      <h3>Market Distribution (Top 8)</h3>
-      
-      <div class="distribution-bar">
-        <div 
-          *ngFor="let holding of holdings"
-          [style.width.%]="holding.percentage"
-          [style.background-color]="holding.color"
-          class="distribution-segment"
-          [title]="holding.token.symbol + ': ' + holding.percentage.toFixed(1) + '%'">
+      <!-- Top Performers -->
+      <div class="performers-section">
+        <div class="performers-card best">
+          <app-top-performers
+            [performers]="topPerformers"
+            [title]="'🔥 Top Performers'"
+            [showBadge]="true"
+            (tokenClick)="navigateToToken($event)">
+          </app-top-performers>
         </div>
-      </div>
-      
-      <div class="distribution-legend">
-        <div *ngFor="let holding of holdings" 
-             class="legend-item"
-             (click)="navigateToToken(holding.token.address)">
-          <div class="legend-color" [style.background-color]="holding.color"></div>
-          <div class="legend-info">
-            <span class="legend-symbol">{{ holding.token.symbol }}</span>
-            <span class="legend-value">{{ formatCurrency(holding.token.marketCap || 0) }}</span>
-          </div>
-          <span class="legend-percent">{{ holding.percentage.toFixed(1) }}%</span>
-        </div>
-      </div>
-    </div>
 
-    <!-- All Tokens Table -->
-    <div class="tokens-card">
-      <h3>All Tokens ({{ tokens.length }})</h3>
-      
-      <div class="tokens-table">
-        <div class="table-header">
-          <div class="col-rank">#</div>
-          <div class="col-token">Token</div>
-          <div class="col-price">Price</div>
-          <div class="col-volume">24h Volume</div>
-          <div class="col-mcap">Market Cap</div>
+        <div class="performers-card worst" *ngIf="worstPerformers.length > 0">
+          <app-top-performers
+            [performers]="worstPerformers"
+            [title]="'❄️ Worst Performers'"
+            [showBadge]="false"
+            (tokenClick)="navigateToToken($event)">
+          </app-top-performers>
         </div>
+      </div>
+
+      <!-- Trading Activity -->
+      <div class="activity-card">
+        <h3>📊 Trading Activity Summary</h3>
         
-        <div *ngFor="let token of tokens; let i = index" 
-             class="table-row"
-             (click)="navigateToToken(token.address)">
-          <div class="col-rank">{{ i + 1 }}</div>
-          <div class="col-token">
-            <div class="token-symbol">{{ token.symbol }}</div>
-            <div class="token-name">{{ token.name }}</div>
+        <div class="activity-grid">
+          <div class="activity-metric">
+            <div class="activity-icon">🔢</div>
+            <div class="activity-info">
+              <div class="activity-label">Total Trades</div>
+              <div class="activity-value">{{ tradingActivity.totalTrades }}</div>
+              <div class="activity-sub">
+                {{ tradingActivity.buyCount }} buys, {{ tradingActivity.sellCount }} sells
+              </div>
+            </div>
           </div>
-          <div class="col-price">{{ formatCurrency(token.currentPrice) }}</div>
-          <div class="col-volume">{{ formatCurrency(token.volume24h) }}</div>
-          <div class="col-mcap">{{ formatCurrency(token.marketCap || 0) }}</div>
+
+          <div class="activity-metric">
+            <div class="activity-icon">💵</div>
+            <div class="activity-info">
+              <div class="activity-label">Total Volume</div>
+              <div class="activity-value">{{ formatCurrency(tradingActivity.totalVolume) }}</div>
+              <div class="activity-sub">
+                Avg: {{ formatCurrency(tradingActivity.avgTradeSize) }}
+              </div>
+            </div>
+          </div>
+
+          <div class="activity-metric">
+            <div class="activity-icon">💸</div>
+            <div class="activity-info">
+              <div class="activity-label">Fees Paid</div>
+              <div class="activity-value negative">{{ formatCurrency(tradingActivity.totalFeesPaid) }}</div>
+              <div class="activity-sub">
+                Transaction costs
+              </div>
+            </div>
+          </div>
+
+          <div class="activity-metric">
+            <div class="activity-icon">🎯</div>
+            <div class="activity-info">
+              <div class="activity-label">Largest Trade</div>
+              <div class="activity-value">{{ formatCurrency(tradingActivity.largestTrade) }}</div>
+              <div class="activity-sub">
+                Single transaction
+              </div>
+            </div>
+          </div>
         </div>
-        
-        <div *ngIf="tokens.length === 0" class="empty-state">
-          <p>No tokens available</p>
-          <p-button routerLink="/" label="Browse Tokens" icon="pi pi-home"></p-button>
-        </div>
+      </div>
+
+      <!-- Portfolio Tokens Count -->
+      <div class="tokens-info">
+        <p>Currently tracking {{ portfolioSummary.tokenCount }} {{ portfolioSummary.tokenCount === 1 ? 'token' : 'tokens' }} in your portfolio</p>
+        <p class="last-updated">Last updated: {{ formatTimestamp(portfolioSummary.lastUpdated) }}</p>
       </div>
     </div>
 
+    <!-- Wallet Not Connected -->
+    <div *ngIf="!walletConnected && !hasData" class="wallet-prompt">
+      <p>Connect your wallet to see personalized analytics</p>
+      <button class="btn-primary" (click)="connectWallet()">
+        <span class="wallet-icon">👛</span>
+        Connect Wallet
+      </button>
+    </div>
   </div>
 </div>
