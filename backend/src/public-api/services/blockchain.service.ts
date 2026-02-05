@@ -17,13 +17,15 @@ export class BlockchainService {
     
     this.connection = new Connection(rpcUrl, commitment as any);
     
-    this.bondingCurveProgramId = new PublicKey(
-      this.configService.get<string>('BONDING_CURVE_PROGRAM_ID') || 'BondCurve11111111111111111111111111111111',
-    );
+    const bondingCurveProgramIdStr = this.configService.get<string>('BONDING_CURVE_PROGRAM_ID') || 'BondCurve11111111111111111111111111111111';
+    console.log('[PublicKey] blockchain.service.ts:20 - Before creating PublicKey from BONDING_CURVE_PROGRAM_ID:', bondingCurveProgramIdStr);
+    this.bondingCurveProgramId = new PublicKey(bondingCurveProgramIdStr);
+    console.log('[PublicKey] blockchain.service.ts:20 - After creating PublicKey:', this.bondingCurveProgramId.toBase58());
     
-    this.tokenFactoryProgramId = new PublicKey(
-      this.configService.get<string>('TOKEN_FACTORY_PROGRAM_ID') || 'TokenFact11111111111111111111111111111111',
-    );
+    const tokenFactoryProgramIdStr = this.configService.get<string>('TOKEN_FACTORY_PROGRAM_ID') || 'TokenFact11111111111111111111111111111111';
+    console.log('[PublicKey] blockchain.service.ts:24 - Before creating PublicKey from TOKEN_FACTORY_PROGRAM_ID:', tokenFactoryProgramIdStr);
+    this.tokenFactoryProgramId = new PublicKey(tokenFactoryProgramIdStr);
+    console.log('[PublicKey] blockchain.service.ts:24 - After creating PublicKey:', this.tokenFactoryProgramId.toBase58());
 
     this.logger.log(`Connected to Solana RPC: ${rpcUrl}`);
   }
@@ -33,7 +35,9 @@ export class BlockchainService {
    */
   async getBalance(wallet: string): Promise<number> {
     try {
+      console.log('[PublicKey] blockchain.service.ts:38 - Before creating PublicKey from wallet:', wallet);
       const publicKey = new PublicKey(wallet);
+      console.log('[PublicKey] blockchain.service.ts:38 - After creating PublicKey:', publicKey.toBase58());
       const balance = await this.connection.getBalance(publicKey);
       return balance / LAMPORTS_PER_SOL;
     } catch (error) {
@@ -142,7 +146,9 @@ export class BlockchainService {
    */
   async getTokenBalance(tokenAccount: string): Promise<string> {
     try {
+      console.log('[PublicKey] blockchain.service.ts:149 - Before creating PublicKey from tokenAccount:', tokenAccount);
       const publicKey = new PublicKey(tokenAccount);
+      console.log('[PublicKey] blockchain.service.ts:149 - After creating PublicKey:', publicKey.toBase58());
       const balance = await this.connection.getTokenAccountBalance(publicKey);
       return balance.value.amount;
     } catch (error) {

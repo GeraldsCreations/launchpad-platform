@@ -31,10 +31,20 @@ export class PoolCreationService {
   private readonly logger = new Logger(PoolCreationService.name);
 
   // Native SOL mint address (wrapped SOL)
-  private readonly NATIVE_SOL = new PublicKey('So11111111111111111111111111111111111111112');
+  private readonly NATIVE_SOL = (() => {
+    console.log('[PublicKey] pool-creation.service.ts:34 - Creating NATIVE_SOL PublicKey');
+    const key = new PublicKey('So11111111111111111111111111111111111111112');
+    console.log('[PublicKey] pool-creation.service.ts:34 - Created NATIVE_SOL:', key.toBase58());
+    return key;
+  })();
   
   // Meteora DLMM program ID (devnet)
-  private readonly DLMM_PROGRAM_ID = new PublicKey(LBCLMM_PROGRAM_IDS['devnet']);
+  private readonly DLMM_PROGRAM_ID = (() => {
+    console.log('[PublicKey] pool-creation.service.ts:37 - Creating DLMM_PROGRAM_ID from:', LBCLMM_PROGRAM_IDS['devnet']);
+    const key = new PublicKey(LBCLMM_PROGRAM_IDS['devnet']);
+    console.log('[PublicKey] pool-creation.service.ts:37 - Created DLMM_PROGRAM_ID:', key.toBase58());
+    return key;
+  })();
 
   constructor(
     private meteoraService: MeteoraService,
@@ -329,7 +339,10 @@ export class PoolCreationService {
       this.logger.log(`Adding ${liquidityAmountSOL} SOL initial liquidity...`);
 
       // Get DLMM instance
-      const dlmm = await DLMM.create(connection, new PublicKey(poolAddress));
+      console.log('[PublicKey] pool-creation.service.ts:342 - Before creating PublicKey from poolAddress:', poolAddress);
+      const poolPubkey = new PublicKey(poolAddress);
+      console.log('[PublicKey] pool-creation.service.ts:342 - After creating PublicKey:', poolPubkey.toBase58());
+      const dlmm = await DLMM.create(connection, poolPubkey);
 
       // Generate position keypair
       const positionKeypair = Keypair.generate();

@@ -81,7 +81,9 @@ export class AuthService {
       const signatureBytes = Buffer.from(signature, 'base64');
       
       // Get public key bytes
+      console.log('[PublicKey] auth.service.ts:84 - Before creating PublicKey from walletAddress:', walletAddress);
       const publicKey = new PublicKey(walletAddress);
+      console.log('[PublicKey] auth.service.ts:84 - After creating PublicKey:', publicKey.toBase58());
       const publicKeyBytes = publicKey.toBytes();
 
       // Verify signature

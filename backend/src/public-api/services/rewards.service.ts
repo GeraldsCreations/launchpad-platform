@@ -84,7 +84,9 @@ export class RewardsService {
       for (const pool of pools) {
         try {
           // Get pool fees from DBC
+          console.log('[PublicKey] rewards.service.ts:87 - Before creating PublicKey from pool.poolAddress:', pool.poolAddress);
           const poolPubkey = new PublicKey(pool.poolAddress);
+          console.log('[PublicKey] rewards.service.ts:87 - After creating PublicKey:', poolPubkey.toBase58());
           const feeBreakdown = await this.dbcClient.state.getPoolFeeBreakdown(poolPubkey);
 
           if (!feeBreakdown) {
@@ -131,8 +133,13 @@ export class RewardsService {
     try {
       this.logger.log(`Building creator fee claim for pool: ${poolAddress}`);
 
+      console.log('[PublicKey] rewards.service.ts:137 - Before creating PublicKey from poolAddress:', poolAddress);
       const poolPubkey = new PublicKey(poolAddress);
+      console.log('[PublicKey] rewards.service.ts:137 - After creating PublicKey:', poolPubkey.toBase58());
+      
+      console.log('[PublicKey] rewards.service.ts:138 - Before creating PublicKey from creatorWallet:', creatorWallet);
       const creatorPubkey = new PublicKey(creatorWallet);
+      console.log('[PublicKey] rewards.service.ts:138 - After creating PublicKey:', creatorPubkey.toBase58());
 
       // Verify this is actually the pool creator
       const pool = await this.poolRepository.findOne({
@@ -204,7 +211,9 @@ export class RewardsService {
     try {
       this.logger.log(`Claiming platform fees from pool: ${poolAddress}`);
 
+      console.log('[PublicKey] rewards.service.ts:214 - Before creating PublicKey from poolAddress:', poolAddress);
       const poolPubkey = new PublicKey(poolAddress);
+      console.log('[PublicKey] rewards.service.ts:214 - After creating PublicKey:', poolPubkey.toBase58());
       const platformWallet = this.getPlatformWalletKeypair();
 
       // Get pool fees to check claimable amount

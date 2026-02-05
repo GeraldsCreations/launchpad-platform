@@ -51,9 +51,17 @@ export class FeeCollectionService {
 
       // Derive fee claimer vault PDA (Program Derived Address)
       // In production, use Meteora's actual PDA derivation
+      console.log('[PublicKey] fee-collection.service.ts:55 - Before creating PublicKey from poolAddress for PDA:', poolAddress);
+      const poolPubkeyForPDA = new PublicKey(poolAddress);
+      console.log('[PublicKey] fee-collection.service.ts:55 - After creating PublicKey:', poolPubkeyForPDA.toBase58());
+      
+      console.log('[PublicKey] fee-collection.service.ts:56 - Creating PublicKey for Meteora DLMM program');
+      const meteoraProgramId = new PublicKey('LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo');
+      console.log('[PublicKey] fee-collection.service.ts:56 - Created DLMM program PublicKey:', meteoraProgramId.toBase58());
+      
       const [feeClaimerPDA] = await PublicKey.findProgramAddress(
-        [Buffer.from('fee_claimer'), new PublicKey(poolAddress).toBuffer()],
-        new PublicKey('LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo'), // Meteora DLMM program
+        [Buffer.from('fee_claimer'), poolPubkeyForPDA.toBuffer()],
+        meteoraProgramId, // Meteora DLMM program
       );
 
       this.logger.log(
@@ -139,7 +147,9 @@ export class FeeCollectionService {
       
       // In production, use actual fee info from Meteora
       // For now, simulate checking balance
+      console.log('[PublicKey] fee-collection.service.ts:150 - Before creating PublicKey from vault.feeClaimerPubkey:', vault.feeClaimerPubkey);
       const feeClaimerPubkey = new PublicKey(vault.feeClaimerPubkey);
+      console.log('[PublicKey] fee-collection.service.ts:150 - After creating PublicKey:', feeClaimerPubkey.toBase58());
       const balance = await connection.getBalance(feeClaimerPubkey);
       const availableFees = balance / LAMPORTS_PER_SOL;
 
@@ -333,7 +343,9 @@ export class FeeCollectionService {
       );
 
       // Create transfer transaction
+      console.log('[PublicKey] fee-collection.service.ts:346 - Before creating PublicKey from botWallet:', botWallet);
       const recipientPubkey = new PublicKey(botWallet);
+      console.log('[PublicKey] fee-collection.service.ts:346 - After creating PublicKey:', recipientPubkey.toBase58());
       const lamports = Math.floor(totalAmount * LAMPORTS_PER_SOL);
 
       const transaction = new Transaction().add(

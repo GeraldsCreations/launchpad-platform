@@ -30,10 +30,20 @@ export class TransactionBuilderService {
   private readonly logger = new Logger(TransactionBuilderService.name);
 
   // Native SOL mint address
-  private readonly NATIVE_SOL = new PublicKey('So11111111111111111111111111111111111111112');
+  private readonly NATIVE_SOL = (() => {
+    console.log('[PublicKey] transaction-builder.service.ts:33 - Creating NATIVE_SOL PublicKey');
+    const key = new PublicKey('So11111111111111111111111111111111111111112');
+    console.log('[PublicKey] transaction-builder.service.ts:33 - Created NATIVE_SOL:', key.toBase58());
+    return key;
+  })();
   
   // Meteora DLMM program ID (devnet)
-  private readonly DLMM_PROGRAM_ID = new PublicKey(LBCLMM_PROGRAM_IDS['devnet']);
+  private readonly DLMM_PROGRAM_ID = (() => {
+    console.log('[PublicKey] transaction-builder.service.ts:36 - Creating DLMM_PROGRAM_ID from:', LBCLMM_PROGRAM_IDS['devnet']);
+    const key = new PublicKey(LBCLMM_PROGRAM_IDS['devnet']);
+    console.log('[PublicKey] transaction-builder.service.ts:36 - Created DLMM_PROGRAM_ID:', key.toBase58());
+    return key;
+  })();
 
   constructor(private meteoraService: MeteoraService) {}
 
@@ -62,7 +72,9 @@ export class TransactionBuilderService {
     tokenMint: string;
   }> {
     const connection = this.meteoraService.getConnection();
+    console.log('[PublicKey] transaction-builder.service.ts:75 - Before creating PublicKey from dto.creator:', dto.creator);
     const creatorPubkey = new PublicKey(dto.creator);
+    console.log('[PublicKey] transaction-builder.service.ts:75 - After creating PublicKey:', creatorPubkey.toBase58());
     const platformWallet = this.getPlatformWalletPubkey();
 
     try {
@@ -217,9 +229,13 @@ export class TransactionBuilderService {
     positionPubkey: string;
   }> {
     const connection = this.meteoraService.getConnection();
+    console.log('[PublicKey] transaction-builder.service.ts:232 - Before creating PublicKey from botWallet:', botWallet);
     const botPubkey = new PublicKey(botWallet);
+    console.log('[PublicKey] transaction-builder.service.ts:232 - After creating PublicKey:', botPubkey.toBase58());
     const platformWallet = this.getPlatformWalletPubkey();
+    console.log('[PublicKey] transaction-builder.service.ts:234 - Before creating PublicKey from tokenMint:', tokenMint);
     const tokenMintPubkey = new PublicKey(tokenMint);
+    console.log('[PublicKey] transaction-builder.service.ts:234 - After creating PublicKey:', tokenMintPubkey.toBase58());
 
     try {
       this.logger.log(`Building pool + liquidity transaction for token: ${tokenMint}`);

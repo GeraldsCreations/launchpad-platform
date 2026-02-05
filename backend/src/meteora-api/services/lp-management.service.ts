@@ -98,11 +98,16 @@ export class LpManagementService {
       this.logger.log(`Withdrawal: ${withdrawAmount} SOL, Fee: ${platformFee} SOL, Net: ${netAmount} SOL`);
 
       // Get DLMM instance
-      const dlmm = await DLMM.create(connection, new PublicKey(poolAddress));
+      console.log('[PublicKey] lp-management.service.ts:101 - Before creating PublicKey from poolAddress:', poolAddress);
+      const poolPubkey = new PublicKey(poolAddress);
+      console.log('[PublicKey] lp-management.service.ts:101 - After creating PublicKey:', poolPubkey.toBase58());
+      const dlmm = await DLMM.create(connection, poolPubkey);
 
       // TODO: Implement actual liquidity removal with Meteora SDK
       // Get position details
+      console.log('[PublicKey] lp-management.service.ts:105 - Before creating PublicKey from positionPubkey:', position.positionPubkey);
       const positionPubkey = new PublicKey(position.positionPubkey);
+      console.log('[PublicKey] lp-management.service.ts:105 - After creating PublicKey:', positionPubkey.toBase58());
 
       // Calculate BPS for removal (10000 = 100%)
       const bpsToRemove = new BN(percentToWithdraw * 100); // Convert percent to BPS
@@ -181,7 +186,10 @@ export class LpManagementService {
       const position = await this.findPosition(botWallet, poolAddress);
 
       // Get DLMM instance
-      const dlmm = await DLMM.create(connection, new PublicKey(poolAddress));
+      console.log('[PublicKey] lp-management.service.ts:184 - Before creating PublicKey from poolAddress:', poolAddress);
+      const poolPubkey2 = new PublicKey(poolAddress);
+      console.log('[PublicKey] lp-management.service.ts:184 - After creating PublicKey:', poolPubkey2.toBase58());
+      const dlmm = await DLMM.create(connection, poolPubkey2);
 
       // First, need to remove some liquidity to get tokens
       // This is simplified - in production you'd calculate exact liquidity to remove

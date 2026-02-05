@@ -83,11 +83,15 @@ export class TradingService {
       );
 
       // Create swap transaction
+      console.log('[PublicKey] trading.service.ts:90 - Before creating PublicKey from dto.poolAddress:', dto.poolAddress);
+      const lbPairPubkey = new PublicKey(dto.poolAddress);
+      console.log('[PublicKey] trading.service.ts:90 - After creating PublicKey:', lbPairPubkey.toBase58());
+      
       const swapTx = await dlmm.swap({
         inToken: dlmm.tokenX.publicKey,
         binArraysPubkey: swapQuote.binArraysPubkey,
         inAmount: amountInLamports,
-        lbPair: new PublicKey(dto.poolAddress),
+        lbPair: lbPairPubkey,
         user: userKeypair.publicKey,
         minOutAmount: swapQuote.minOutAmount,
         outToken: dlmm.tokenY.publicKey,
@@ -205,11 +209,15 @@ export class TradingService {
       this.logger.log(`Swap quote: ${solAmount} SOL`);
 
       // Create swap transaction
+      console.log('[PublicKey] trading.service.ts:215 - Before creating PublicKey from dto.poolAddress:', dto.poolAddress);
+      const lbPairPubkey2 = new PublicKey(dto.poolAddress);
+      console.log('[PublicKey] trading.service.ts:215 - After creating PublicKey:', lbPairPubkey2.toBase58());
+      
       const swapTx = await dlmm.swap({
         inToken: dlmm.tokenY.publicKey,
         binArraysPubkey: swapQuote.binArraysPubkey,
         inAmount: amountInTokens,
-        lbPair: new PublicKey(dto.poolAddress),
+        lbPair: lbPairPubkey2,
         user: userKeypair.publicKey,
         minOutAmount: swapQuote.minOutAmount,
         outToken: dlmm.tokenX.publicKey,

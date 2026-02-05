@@ -56,16 +56,19 @@ export class IndexerService implements OnModuleInit, OnModuleDestroy {
     this.connection = new Connection(rpcUrl, 'confirmed');
     this.wsConnection = new Connection(rpcUrl, 'confirmed');
     
-    this.bondingCurveProgramId = new PublicKey(
-      this.configService.get<string>('BONDING_CURVE_PROGRAM_ID') || 'BondCurve11111111111111111111111111111111',
-    );
+    const bondingCurveProgramIdStr = this.configService.get<string>('BONDING_CURVE_PROGRAM_ID') || 'BondCurve11111111111111111111111111111111';
+    console.log('[PublicKey] indexer.service.ts:59 - Before creating PublicKey from BONDING_CURVE_PROGRAM_ID:', bondingCurveProgramIdStr);
+    this.bondingCurveProgramId = new PublicKey(bondingCurveProgramIdStr);
+    console.log('[PublicKey] indexer.service.ts:59 - After creating PublicKey:', this.bondingCurveProgramId.toBase58());
     
     // Our platform config - ONLY index tokens created with this config
     const configKey = this.configService.get<string>('DBC_PLATFORM_CONFIG_KEY');
     if (!configKey) {
       throw new Error('DBC_PLATFORM_CONFIG_KEY not set in environment variables');
     }
+    console.log('[PublicKey] indexer.service.ts:68 - Before creating PublicKey from DBC_PLATFORM_CONFIG_KEY:', configKey);
     this.platformConfigKey = new PublicKey(configKey);
+    console.log('[PublicKey] indexer.service.ts:68 - After creating PublicKey:', this.platformConfigKey.toBase58());
     
     this.logger.log(`🔒 Indexer will ONLY track tokens from config: ${this.platformConfigKey.toBase58()}`);
   }

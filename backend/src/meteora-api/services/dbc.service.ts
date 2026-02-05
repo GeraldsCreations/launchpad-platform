@@ -72,13 +72,17 @@ export class DbcService implements OnModuleInit {
       });
 
       if (config) {
+        console.log('[PublicKey] dbc.service.ts:75 - Before creating PublicKey from config.value:', config.value);
         this.platformConfigKey = new PublicKey(config.value);
+        console.log('[PublicKey] dbc.service.ts:75 - After creating PublicKey:', this.platformConfigKey.toBase58());
         this.logger.log(`✅ Platform config loaded from DB: ${this.platformConfigKey.toBase58()}`);
       } else {
         // Try environment variable as fallback
         const configKeyEnv = this.configService.get('DBC_PLATFORM_CONFIG_KEY');
         if (configKeyEnv) {
+          console.log('[PublicKey] dbc.service.ts:81 - Before creating PublicKey from configKeyEnv:', configKeyEnv);
           this.platformConfigKey = new PublicKey(configKeyEnv);
+          console.log('[PublicKey] dbc.service.ts:81 - After creating PublicKey:', this.platformConfigKey.toBase58());
           this.logger.log(`✅ Platform config loaded from ENV: ${this.platformConfigKey.toBase58()}`);
           
           // Save to DB for future use
@@ -287,12 +291,16 @@ export class DbcService implements OnModuleInit {
       try {
         // Anchor expects PublicKeys for accounts, not Wallet/Keypair objects
         // Pass ONLY PublicKeys for all account parameters
+        console.log('[PublicKey] dbc.service.ts:299 - Creating quoteMint PublicKey for SOL');
+        const quoteMintPubkey = new PublicKey('So11111111111111111111111111111111111111112');
+        console.log('[PublicKey] dbc.service.ts:299 - Created quoteMint PublicKey:', quoteMintPubkey.toBase58());
+        
         const configTx = await this.client.partner.createConfig({
           ...curveConfig,
           config: configKeypair.publicKey, // PublicKey, not Keypair!
           feeClaimer: platformWallet.publicKey,
           leftoverReceiver: platformWallet.publicKey,
-          quoteMint: new PublicKey('So11111111111111111111111111111111111111112'),
+          quoteMint: quoteMintPubkey,
           payer: platformWallet.publicKey, // PublicKey, not Wallet!
         });
         
@@ -357,7 +365,9 @@ export class DbcService implements OnModuleInit {
       this.logger.log(`Config: ${params.configKey.toBase58()}`);
       this.logger.log(`Token Mint: ${params.baseMintKeypair.publicKey.toBase58()}`);
 
+      console.log('[PublicKey] dbc.service.ts:368 - Creating quoteMint PublicKey for native SOL');
       const quoteMint = new PublicKey('So11111111111111111111111111111111111111112'); // Native SOL
+      console.log('[PublicKey] dbc.service.ts:368 - Created quoteMint PublicKey:', quoteMint.toBase58());
 
       // Derive pool address deterministically
       const poolAddress = deriveDbcPoolAddress(
@@ -437,7 +447,9 @@ export class DbcService implements OnModuleInit {
         throw new Error('Platform config not initialized. Call /admin/create-config first.');
       }
 
+      console.log('[PublicKey] dbc.service.ts:450 - Before creating PublicKey from params.creatorWallet:', params.creatorWallet);
       const creatorPubkey = new PublicKey(params.creatorWallet);
+      console.log('[PublicKey] dbc.service.ts:450 - After creating PublicKey:', creatorPubkey.toBase58());
 
       // Generate token mint keypair (server-side, ephemeral)
       const baseMintKeypair = Keypair.generate();
@@ -517,7 +529,9 @@ export class DbcService implements OnModuleInit {
    */
   async getPoolInfo(poolAddress: string): Promise<any> {
     try {
+      console.log('[PublicKey] dbc.service.ts:532 - Before creating PublicKey from poolAddress:', poolAddress);
       const poolPubkey = new PublicKey(poolAddress);
+      console.log('[PublicKey] dbc.service.ts:532 - After creating PublicKey:', poolPubkey.toBase58());
       
       // Create DBC program instance
       const { program } = createDbcProgram(this.connection);
@@ -548,7 +562,9 @@ export class DbcService implements OnModuleInit {
    * Set platform config key and save to database
    */
   async setPlatformConfigKey(configKey: string): Promise<void> {
+    console.log('[PublicKey] dbc.service.ts:565 - Before creating PublicKey from configKey:', configKey);
     this.platformConfigKey = new PublicKey(configKey);
+    console.log('[PublicKey] dbc.service.ts:565 - After creating PublicKey:', this.platformConfigKey.toBase58());
     this.logger.log(`Platform config set: ${configKey}`);
     
     // Save to database

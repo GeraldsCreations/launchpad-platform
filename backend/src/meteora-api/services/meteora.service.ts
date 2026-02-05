@@ -26,7 +26,9 @@ export class MeteoraService {
    */
   async getDLMM(poolAddress: string): Promise<DLMM> {
     try {
+      console.log('[PublicKey] meteora.service.ts:29 - Before creating PublicKey from poolAddress:', poolAddress);
       const poolPubkey = new PublicKey(poolAddress);
+      console.log('[PublicKey] meteora.service.ts:29 - After creating PublicKey:', poolPubkey.toBase58());
       const dlmm = await DLMM.create(this.connection, poolPubkey);
       return dlmm;
     } catch (error) {

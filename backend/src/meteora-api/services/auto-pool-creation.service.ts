@@ -26,10 +26,20 @@ export class AutoPoolCreationService {
   private readonly logger = new Logger(AutoPoolCreationService.name);
 
   // Native SOL mint address
-  private readonly NATIVE_SOL = new PublicKey('So11111111111111111111111111111111111111112');
+  private readonly NATIVE_SOL = (() => {
+    console.log('[PublicKey] auto-pool-creation.service.ts:29 - Creating NATIVE_SOL PublicKey');
+    const key = new PublicKey('So11111111111111111111111111111111111111112');
+    console.log('[PublicKey] auto-pool-creation.service.ts:29 - Created NATIVE_SOL:', key.toBase58());
+    return key;
+  })();
   
   // Meteora DLMM program ID (devnet)
-  private readonly DLMM_PROGRAM_ID = new PublicKey(LBCLMM_PROGRAM_IDS['devnet']);
+  private readonly DLMM_PROGRAM_ID = (() => {
+    console.log('[PublicKey] auto-pool-creation.service.ts:32 - Creating DLMM_PROGRAM_ID from:', LBCLMM_PROGRAM_IDS['devnet']);
+    const key = new PublicKey(LBCLMM_PROGRAM_IDS['devnet']);
+    console.log('[PublicKey] auto-pool-creation.service.ts:32 - Created DLMM_PROGRAM_ID:', key.toBase58());
+    return key;
+  })();
 
   // Default liquidity amount from platform (configurable)
   private readonly DEFAULT_PLATFORM_LIQUIDITY_SOL = 0.5;
@@ -71,7 +81,9 @@ export class AutoPoolCreationService {
   }> {
     const connection = this.meteoraService.getConnection();
     const platformWallet = this.getPlatformWallet();
+    console.log('[PublicKey] auto-pool-creation.service.ts:84 - Before creating PublicKey from tokenMint:', tokenMint);
     const tokenMintPubkey = new PublicKey(tokenMint);
+    console.log('[PublicKey] auto-pool-creation.service.ts:84 - After creating PublicKey:', tokenMintPubkey.toBase58());
 
     try {
       this.logger.log(`Creating pool for token ${tokenMint} with initial price ${initialPrice}`);
@@ -233,7 +245,10 @@ export class AutoPoolCreationService {
     try {
       this.logger.log(`Adding ${liquidityAmountSOL} SOL liquidity to pool ${poolAddress}`);
 
-      const dlmm = await DLMM.create(connection, new PublicKey(poolAddress));
+      console.log('[PublicKey] auto-pool-creation.service.ts:248 - Before creating PublicKey from poolAddress:', poolAddress);
+      const poolPubkey = new PublicKey(poolAddress);
+      console.log('[PublicKey] auto-pool-creation.service.ts:248 - After creating PublicKey:', poolPubkey.toBase58());
+      const dlmm = await DLMM.create(connection, poolPubkey);
 
       // Generate position keypair
       const positionKeypair = Keypair.generate();
